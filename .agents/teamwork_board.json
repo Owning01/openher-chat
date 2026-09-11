@@ -1,0 +1,568 @@
+{
+  "project": "OpenHer Chat",
+  "repo": "G:\\Proyectos\\openher-chat",
+  "orchestratorState": "EXECUTING",
+  "integrityMode": "development",
+  "rules": [
+    "Stack fijo: Vite + React 19 + TS estricto + Tailwind 4 + pnpm; Capacitor Android; desktop SPA/PWA",
+    "File scoping estricto por WORKER_DISPATCH",
+    "Solo T01 agrega dependencias; lista aprobada en el plan",
+    "tsc --noEmit limpio y vitest verde antes de cada WORKER_COMPLETE",
+    "Cero console.log / dead code / TODOs sueltos",
+    "Secretos solo en KeyVault local; sin telemetria",
+    "Estetica inspirada en ChatGPT/Gemini sin copiar marcas",
+    "Contratos congelados: src/domain/types/**, src/domain/ports/**, createProviderAdapter, runAgent, AppServices, APIs de stores",
+    "Scratch por agente en scratch/agent-<id>/ (gitignored)"
+  ],
+  "tasks": [
+    {
+      "id": "T01",
+      "milestone": "M1",
+      "title": "Scaffold, tooling y dependencias aprobadas",
+      "status": "ACCEPTED",
+      "wave": 1,
+      "assignee": null,
+      "dependencies": [],
+      "estimateHours": 4,
+      "parallelWith": [],
+      "allowedFiles": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "vite.config.ts",
+        "tsconfig.json",
+        "tsconfig.app.json",
+        "tsconfig.node.json",
+        "index.html",
+        "capacitor.config.ts",
+        ".gitignore",
+        "src/vite-env.d.ts",
+        "src/main.tsx",
+        "src/app/App.tsx",
+        "src/styles/index.css",
+        "src/test/setup.ts",
+        "docs/dev-setup.md"
+      ],
+      "definitionOfDone": [
+        "pnpm install OK solo con dependencias aprobadas",
+        "tsc --noEmit limpio con strict, noUncheckedIndexedAccess, noUnusedLocals/Parameters",
+        "Alias @/ configurado; script test = vitest run; pnpm build OK",
+        "Tailwind 4 aplicado en App minimo; capacitor.config.ts con appId app.openher.chat y webDir dist"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "T02",
+      "milestone": "M1",
+      "title": "Design system, tema e i18n",
+      "status": "ACCEPTED",
+      "wave": 2,
+      "assignee": null,
+      "dependencies": [
+        "T01"
+      ],
+      "estimateHours": 5,
+      "parallelWith": [
+        "T03"
+      ],
+      "allowedFiles": [
+        "src/styles/index.css",
+        "src/i18n/**",
+        "src/shared/ui/**",
+        "src/shared/icons/index.ts",
+        "src/shared/hooks/**",
+        "src/shared/utils/{cn,ids}.ts"
+      ],
+      "definitionOfDone": [
+        "Tokens @theme claro/oscuro con contraste AA; applyTheme soporta system",
+        "Primitivas tipadas: Button, Input, TextArea, Select, Switch, Dialog, Toast, Spinner, Skeleton, EmptyState, Badge, Tooltip",
+        "i18n defineDict es/en con paridad en compile-time y test; import.meta.glob; useT con useSyncExternalStore",
+        "Cero strings hardcodeados en primitivas"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "T03",
+      "milestone": "M1",
+      "title": "Dominio: contratos, puertos y logica pura",
+      "status": "ACCEPTED",
+      "wave": 2,
+      "assignee": null,
+      "dependencies": [
+        "T01"
+      ],
+      "estimateHours": 5,
+      "parallelWith": [
+        "T02"
+      ],
+      "allowedFiles": [
+        "src/domain/types/**",
+        "src/domain/ports/**",
+        "src/domain/chat/**",
+        "src/domain/settings/**",
+        "src/domain/providers/**",
+        "src/shared/utils/{Result,json}.ts",
+        "src/shared/utils/Result.test.ts",
+        "src/shared/utils/json.test.ts"
+      ],
+      "definitionOfDone": [
+        "Contratos de tipos y puertos exportados sin any (congelados para el swarm)",
+        "estimateTokens + estimateMessageTokens + estimateToolsTokens",
+        "selectHistoryByBudget con >=12 casos (turnos, mensaje gigante, presupuesto minimo, keepLastTurns)",
+        "buildWireMessages, truncateText, defaults y migrateSettings (nunca lanza) con tests"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "T04",
+      "milestone": "M2",
+      "title": "Persistencia: IndexedDB, settings y KeyVault",
+      "status": "ACCEPTED",
+      "wave": 3,
+      "assignee": null,
+      "dependencies": [
+        "T03"
+      ],
+      "estimateHours": 5,
+      "parallelWith": [
+        "T05"
+      ],
+      "allowedFiles": [
+        "src/adapters/storage/**",
+        "src/test/fakes/MemoryRepos.ts"
+      ],
+      "definitionOfDone": [
+        "IndexedDbConversations cumple ConversationRepository completo (cascada, orden, deleteMessagesFrom)",
+        "LocalSettingsRepository versionado con migrateSettings idempotente",
+        "LocalKeyVault sin logs; test verifica que la config serializada NO contiene la key",
+        "recoverInterrupted convierte streaming a aborted conservando texto; tests con fake-indexeddb"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "T05",
+      "milestone": "M2",
+      "title": "Transportes: HTTP, SSE y fallback Android",
+      "status": "ACCEPTED",
+      "wave": 3,
+      "assignee": null,
+      "dependencies": [
+        "T03"
+      ],
+      "estimateHours": 4,
+      "parallelWith": [
+        "T04"
+      ],
+      "allowedFiles": [
+        "src/adapters/http/**",
+        "src/adapters/providers/{sse,errors}.ts",
+        "src/adapters/providers/sse.test.ts",
+        "src/adapters/providers/errors.test.ts"
+      ],
+      "definitionOfDone": [
+        "FetchHttpClient y CapacitorHttpClient cumplen HttpClient con timeout manual",
+        "parseSse robusto: chunks partidos, CRLF, comentarios, data multilinea, flush final",
+        "resolveTransport con fallback buffered en nativo solo antes del primer byte",
+        "errors.ts con ProviderError y mapHttpStatus a MessageErrorCode; tests >=8 fixtures"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "T06",
+      "milestone": "M3",
+      "title": "Provider OpenAI-compatible + registry",
+      "status": "AWAITING_AUDIT",
+      "wave": 4,
+      "assignee": null,
+      "dependencies": [
+        "T03",
+        "T05"
+      ],
+      "estimateHours": 5,
+      "parallelWith": [
+        "T08"
+      ],
+      "allowedFiles": [
+        "src/adapters/providers/openaiCompatible.ts",
+        "src/adapters/providers/index.ts",
+        "src/adapters/providers/openaiCompatible.test.ts",
+        "src/adapters/providers/__fixtures__/**"
+      ],
+      "definitionOfDone": [
+        "createProviderAdapter para openai-compatible con payload correcto (tools, stream, max_tokens, quirks)",
+        "streamChat emite start/text-deltas/tool-call acumulado/usage/stop mapeado",
+        "parseCompletion buffered; cierre sin [DONE]; abort sin timers vivos",
+        "listModels normaliza {data:[{id}]}; errores mapeados; >=15 asserts con fixtures"
+      ]
+    },
+    {
+      "id": "T07",
+      "milestone": "M3",
+      "title": "Provider Anthropic",
+      "status": "BUILDING",
+      "wave": 5,
+      "assignee": null,
+      "dependencies": [
+        "T06"
+      ],
+      "estimateHours": 4,
+      "parallelWith": [
+        "T14"
+      ],
+      "allowedFiles": [
+        "src/adapters/providers/anthropic.ts",
+        "src/adapters/providers/index.ts",
+        "src/adapters/providers/anthropic.test.ts",
+        "src/adapters/providers/__fixtures__/**",
+        "src/domain/ports/ProviderAdapter.ts",
+        "src/adapters/providers/openaiCompatible.ts"
+      ],
+      "definitionOfDone": [
+        "Payload /v1/messages con system top-level, max_tokens obligatorio, tools input_schema, tool_result en user",
+        "SSE con eventos nombrados: message_start/delta, content_block, input_json_delta acumulado, message_stop, error",
+        "Buffered parsea content[]; listModels con fallback estatico; headers correctos"
+      ]
+    },
+    {
+      "id": "T08",
+      "milestone": "M3",
+      "title": "App shell, navegacion y conversaciones",
+      "status": "BUILDING",
+      "wave": 4,
+      "assignee": null,
+      "dependencies": [
+        "T02",
+        "T04"
+      ],
+      "estimateHours": 6,
+      "parallelWith": [
+        "T06"
+      ],
+      "allowedFiles": [
+        "src/app/{App.tsx,bootstrap.ts,services.tsx,routing.tsx}",
+        "src/app/layout/**",
+        "src/features/conversations/**",
+        "src/i18n/dicts/{app,conversations}.ts"
+      ],
+      "definitionOfDone": [
+        "Routing hash #/chat/:id y #/settings sin dependencias",
+        "services.tsx expone AppServices + useServices; bootstrap carga tema/idioma y recoverInterrupted",
+        "Shell responsive con sidebar/drawer accesible y toggle de tema",
+        "conversationsStore con crear/renombrar/borrar/seleccionar/filtrar + tests de store",
+        "Unificar Theme/Locale con domain/types (hallazgo Critic M1)"
+      ]
+    },
+    {
+      "id": "T09",
+      "milestone": "M4",
+      "title": "Ajustes: proveedores, modelos, preferencias, busqueda, proxy",
+      "status": "BACKLOG",
+      "wave": 6,
+      "assignee": null,
+      "dependencies": [
+        "T02",
+        "T04",
+        "T06",
+        "T07"
+      ],
+      "estimateHours": 6,
+      "parallelWith": [
+        "T13"
+      ],
+      "allowedFiles": [
+        "src/features/settings/**",
+        "src/i18n/dicts/settings.ts",
+        "src/app/routing.tsx"
+      ],
+      "definitionOfDone": [
+        "Seccion proveedores con plantillas, ApiKeyField a KeyVault, refresh de modelos, supportsTools/contextWindow manuales",
+        "Secciones chat, agente (AgentBudget), busqueda (Brave/Tavily/DDG, proxy) y apariencia conectadas",
+        "settingsStore con patch/patchProvider/saveApiKey/refreshModels; validacion de URL http-s",
+        "Tests de validacion, persistencia y migracion"
+      ]
+    },
+    {
+      "id": "T10",
+      "milestone": "M4",
+      "title": "Onboarding de proveedor",
+      "status": "BACKLOG",
+      "wave": 7,
+      "assignee": null,
+      "dependencies": [
+        "T09"
+      ],
+      "estimateHours": 4,
+      "parallelWith": [
+        "T11"
+      ],
+      "allowedFiles": [
+        "src/features/onboarding/**",
+        "src/app/routing.tsx",
+        "src/app/App.tsx",
+        "src/i18n/dicts/onboarding.ts"
+      ],
+      "definitionOfDone": [
+        "Wizard 3 pasos reutilizando ProviderForm/ModelPicker sin duplicar",
+        "Probar conexion = listModels + resultado legible; persiste onboardingCompleted",
+        "Redirect a #/onboarding si no hay proveedor activo; boton Saltar",
+        "Reducer puro testeado + smoke render"
+      ]
+    },
+    {
+      "id": "T11",
+      "milestone": "M4",
+      "title": "Orquestacion de chat (store + runAgent)",
+      "status": "BACKLOG",
+      "wave": 7,
+      "assignee": null,
+      "dependencies": [
+        "T04",
+        "T06",
+        "T07",
+        "T08",
+        "T13"
+      ],
+      "estimateHours": 6,
+      "parallelWith": [
+        "T10"
+      ],
+      "allowedFiles": [
+        "src/features/chat/state/**",
+        "src/features/chat/hooks/useChatController.ts"
+      ],
+      "definitionOfDone": [
+        "chatStore API congelada: load/send/stop/regenerate/editUserMessage/deleteMessage/retryLast",
+        "send persiste user al instante, corre runAgent y actualiza bloques/liveSteps desde AgentEvent",
+        "Checkpoints throttled >=1s y persistencia final con finishReason correcto",
+        "Tests con FakeProviderAdapter: deltas, abort a mitad, 429, regenerate, edit"
+      ]
+    },
+    {
+      "id": "T12",
+      "milestone": "M4",
+      "title": "UI de chat y markdown",
+      "status": "BACKLOG",
+      "wave": 8,
+      "assignee": null,
+      "dependencies": [
+        "T11"
+      ],
+      "estimateHours": 6,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/features/chat/ChatPage.tsx",
+        "src/features/chat/components/**",
+        "src/features/chat/hooks/useAutoScroll.ts",
+        "src/shared/markdown/**",
+        "src/i18n/dicts/chat.ts",
+        "src/app/routing.tsx"
+      ],
+      "definitionOfDone": [
+        "MessageList con markdown GFM + highlight.js + copiar codigo; user texto plano",
+        "MessageActions: copiar, regenerar, editar, borrar; Composer autosize Enter/Shift+Enter",
+        "StreamingIndicator, Stop visible, ErrorBanner con reintentar, EmptyChat",
+        "Auto-scroll solo al fondo; enlaces externos seguros; sin HTML crudo del modelo"
+      ]
+    },
+    {
+      "id": "T13",
+      "milestone": "M4",
+      "title": "Agent loop core",
+      "status": "BACKLOG",
+      "wave": 6,
+      "assignee": null,
+      "dependencies": [
+        "T03",
+        "T06",
+        "T07"
+      ],
+      "estimateHours": 6,
+      "parallelWith": [
+        "T09"
+      ],
+      "allowedFiles": [
+        "src/domain/agent/**"
+      ],
+      "definitionOfDone": [
+        "runAgent cumple pasos, tools en serie con timeout, dedupe, truncado y presupuestos",
+        "Abort en cualquier await; retries pre-delta con backoff+jitter y Retry-After",
+        "context_length reintenta una vez con 50% de historial; JSON invalido devuelve error al modelo",
+        "Tests con FakeProvider/tools: multi-paso, presupuestos, abort, timeout, retry; cobertura >=85%"
+      ]
+    },
+    {
+      "id": "T14",
+      "milestone": "M3",
+      "title": "Tools web: search + open_url + politica por plataforma",
+      "status": "BUILDING",
+      "wave": 5,
+      "assignee": null,
+      "dependencies": [
+        "T03",
+        "T05"
+      ],
+      "estimateHours": 6,
+      "parallelWith": [
+        "T07"
+      ],
+      "allowedFiles": [
+        "src/adapters/tools/**",
+        "docs/search-proxy.md"
+      ],
+      "definitionOfDone": [
+        "createToolRegistry con web_search y open_url (JSON Schema, descripcion en ingles)",
+        "Brave/Tavily/DDG/proxy normalizan a SourceRef con dedupe y cadena de fallback",
+        "urlPolicy con tabla >=15 casos (esquemas, userinfo, privadas IPv4/IPv6, redirects)",
+        "extractArticle titulo+texto+truncado; cero red real en tests; docs del contrato de proxy"
+      ]
+    },
+    {
+      "id": "T15",
+      "milestone": "M5",
+      "title": "Modo investigacion: UI y wiring",
+      "status": "BACKLOG",
+      "wave": 9,
+      "assignee": null,
+      "dependencies": [
+        "T12",
+        "T14"
+      ],
+      "estimateHours": 6,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/features/research/**",
+        "src/features/chat/state/chatStore.ts",
+        "src/features/chat/ChatPage.tsx",
+        "src/features/chat/components/{Composer,ToolCallCard}.tsx",
+        "src/app/services.tsx",
+        "src/i18n/dicts/research.ts"
+      ],
+      "definitionOfDone": [
+        "Toggle Investigacion persistido por conversacion y gobernado por settings.tools",
+        "ResearchPanel con StepsTimeline en vivo, ToolCallCard colapsable, SourcesList y BudgetMeter",
+        "Aviso accionable si falta proveedor de busqueda/proxy; Stop cancela loop y tools",
+        "Tests de selectores de steps y fuentes deduplicadas + smoke render"
+      ]
+    },
+    {
+      "id": "T16",
+      "milestone": "M6",
+      "title": "Packaging Android/PWA, hardening y aceptacion",
+      "status": "BACKLOG",
+      "wave": 10,
+      "assignee": null,
+      "dependencies": [
+        "T10",
+        "T15"
+      ],
+      "estimateHours": 5,
+      "parallelWith": [],
+      "allowedFiles": [
+        "capacitor.config.ts",
+        "package.json",
+        "index.html",
+        "src/main.tsx",
+        "public/**",
+        "android/**",
+        "docs/dev-setup.md",
+        "docs/e2e-smoke.md",
+        "README.md"
+      ],
+      "definitionOfDone": [
+        "cap add android + cap sync OK (o sync + documentacion si falta SDK)",
+        "Iconos/splash propios sin assets de marcas; PWA manifest/sw minimos fuera de Capacitor",
+        "docs/e2e-smoke.md con checklist y resultado; scripts android:sync/open",
+        "tsc y vitest finales verdes; rg console.log/TODO vacio"
+      ]
+    },
+    {
+      "id": "H1",
+      "milestone": "M1",
+      "title": "Hardening M1 (findings del tribunal)",
+      "status": "ACCEPTED",
+      "wave": 3,
+      "assignee": null,
+      "dependencies": [
+        "T01",
+        "T02",
+        "T03"
+      ],
+      "estimateHours": 3,
+      "parallelWith": [
+        "T04",
+        "T05"
+      ],
+      "allowedFiles": [
+        "src/domain/chat/truncateText.ts",
+        "src/domain/chat/truncateText.test.ts",
+        "src/domain/chat/selectHistoryByBudget.ts",
+        "src/domain/chat/selectHistoryByBudget.test.ts",
+        "src/shared/ui/Switch.tsx",
+        "src/shared/ui/Dialog.tsx",
+        "src/shared/ui/Dialog.test.tsx",
+        "src/shared/hooks/theme.ts",
+        "src/shared/hooks/theme.test.ts",
+        "src/i18n/index.ts",
+        "src/i18n/i18n.test.ts",
+        "src/styles/index.css",
+        "vite.config.ts",
+        "docs/dev-setup.md",
+        "src/shared/ui/Switch.test.tsx"
+      ],
+      "definitionOfDone": [
+        "Marcador de truncado en ingles y slicing seguro por code points",
+        "Clamps Number.isFinite en presupuestos de selectHistoryByBudget",
+        "Switch: aria-label no pisa la prop del consumidor",
+        "Dialog: focus trap Tab/Shift+Tab con test",
+        "theme: matchMedia duck-typed y tolerante a fallos",
+        "i18n: claves prototipicas bloqueadas con hasOwnProperty",
+        "Border de controles con contraste no textual >=3:1",
+        "vite.config sin passWithNoTests y scratch/** excluido de vitest",
+        "docs con tsc -b como comando oficial",
+        "tsc -b + vitest + build verdes"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "H2",
+      "milestone": "M2",
+      "title": "Remediacion gate M2 (2 MAJOR + MINOR)",
+      "status": "ACCEPTED",
+      "wave": 3,
+      "assignee": null,
+      "dependencies": [
+        "T04",
+        "T05",
+        "H1"
+      ],
+      "estimateHours": 3,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/adapters/storage/IndexedDbConversations.ts",
+        "src/adapters/storage/IndexedDbConversations.test.ts",
+        "src/adapters/storage/conversationContract.ts",
+        "src/adapters/storage/MemoryRepos.test.ts",
+        "src/test/fakes/MemoryRepos.ts",
+        "src/adapters/providers/sse.ts",
+        "src/adapters/providers/sse.test.ts",
+        "src/adapters/providers/errors.ts",
+        "src/adapters/providers/errors.test.ts",
+        "src/shared/ui/Dialog.tsx",
+        "src/shared/ui/Dialog.test.tsx",
+        "src/shared/hooks/theme.ts",
+        "src/shared/hooks/theme.test.ts",
+        "src/shared/ui/Switch.test.tsx"
+      ],
+      "definitionOfDone": [
+        "deleteMessagesFrom determinista con createdAt empatados (orden createdAt+id, borra target y posteriores)",
+        "parseSseText tolera BOM inicial",
+        "Dialog: filtro de focusables (hidden/disabled/fieldset disabled) y stack para dialogos anidados (Tab/Escape solo el superior)",
+        "theme: cleanup tolerante a removeEventListener ausente (legacy removeListener)",
+        "mapHttpStatus: 4xx restantes invalid_request no retry; 5xx server retry; fuera de rango unknown",
+        "MemoryRepos: clear()/reset aislante entre tests",
+        "Switch: test de regresion aria-label del consumidor",
+        "tsc -b + pnpm test + build verdes"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    }
+  ]
+}
