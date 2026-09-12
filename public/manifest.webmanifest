@@ -1,0 +1,26 @@
+{
+  "name": "OpenHer Chat",
+  "short_name": "OpenHer",
+  "description": "Cliente de chat con proveedores OpenAI-compatible y Anthropic, modo investigación y herramientas web.",
+  "lang": "es",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#2b58d6",
+  "background_color": "#fcfdff",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

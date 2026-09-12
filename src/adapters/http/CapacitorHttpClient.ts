@@ -34,8 +34,15 @@ export interface CapacitorHttpClientOptions {
  * `HttpClient` para Capacitor: en nativo usa `CapacitorHttp.request` (sin CORS
  * del WebView); en web delega en `FetchHttpClient`. Normaliza `{status, data,
  * headers}` a `HttpResponse` (data string si no lo es) y aplica timeout manual.
+ *
+ * `CapacitorHttp` no permite desactivar el seguimiento de redirects, por lo que
+ * el control depende del transporte activo: `false` en nativo (`open_url` directo
+ * se bloquea y exige un proxy de lectura) y `true` en web, donde el fallback
+ * `FetchHttpClient` sí respeta `redirect`.
  */
 export class CapacitorHttpClient implements HttpClient {
+  readonly supportsRedirectControl: boolean;
+
   private readonly isNative: () => boolean;
   private readonly nativeHttp: NativeHttpPlugin;
   private readonly fallback: HttpClient;
@@ -44,6 +51,7 @@ export class CapacitorHttpClient implements HttpClient {
     this.isNative = options.isNative ?? (() => Capacitor.isNativePlatform());
     this.nativeHttp = options.nativeHttp ?? CapacitorHttp;
     this.fallback = options.fallback ?? new FetchHttpClient();
+    this.supportsRedirectControl = !this.isNative();
   }
 
   async request(r: HttpRequest): Promise<HttpResponse> {

@@ -156,9 +156,11 @@ export interface ConversationRepository {
 export interface SettingsRepository { load(): Promise<AppSettings>; save(s: AppSettings): Promise<void>; }
 export interface KeyVault { has(ref: string): Promise<boolean>; get(ref: string): Promise<string | null>; set(ref: string, secret: string): Promise<void>; remove(ref: string): Promise<void>; }
 export class HttpError extends Error { kind!: 'network'|'timeout'|'aborted'; status?: number; }
-export interface HttpRequest { url: string; method: 'GET'|'POST'; headers?: Record<string,string>; body?: unknown; timeoutMs?: number; signal?: AbortSignal; }
+export interface HttpRequest { url: string; method: 'GET'|'POST'; headers?: Record<string,string>; body?: unknown; timeoutMs?: number; signal?: AbortSignal; redirect?: 'follow'|'error'|'manual'; }
 export interface HttpResponse { status: number; headers: Record<string,string>; text: string; }
-export interface HttpClient { request(r: HttpRequest): Promise<HttpResponse>; }
+export interface HttpClient { request(r: HttpRequest): Promise<HttpResponse>; readonly supportsRedirectControl?: boolean; }
+// AMEND (2026-09-11, H3): `redirect` y `supportsRedirectControl` habilitan la politica SSRF de open_url:
+// el modo directo NUNCA sigue redirects (3xx/opaque -> blocked_url); seguirlos es responsabilidad del proxy de lectura.
 export type StreamResult = { mode: 'sse'; stream: ReadableStream<Uint8Array> } | { mode: 'buffered'; status: number; text: string };
 export interface StreamTransport { post(r: { url: string; headers: Record<string,string>; body: unknown; signal: AbortSignal }): Promise<StreamResult>; }
 export interface SearchProvider { readonly id: 'brave'|'tavily'|'duckduckgo'; search(input: { query: string; maxResults: number; freshness: Freshness; signal: AbortSignal }): Promise<SourceRef[]>; }
@@ -208,7 +210,10 @@ export interface RunAgentParams {
   history: ChatMessage[]; userMessage: ChatMessage;
   defaults: { temperature: number; maxOutputTokens: number | null };
   budget: AgentBudget; historyBudget: HistoryBudget; researchMode: boolean; signal: AbortSignal;
+  model?: ModelInfo;
 }
+// AMEND (2026-09-11, Orchestrator): `model?` aditivo. §7 exige el gate `model.supportsTools !== false`
+// y contextWindow para el presupuesto; si se omite, se asume compatible.
 export function runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenerator<AgentEvent, void, void>;
 ```
 

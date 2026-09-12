@@ -21,6 +21,8 @@ export type ToolErrorCode =
   | 'blocked_url'
   | 'no_provider'
   | 'invalid_args'
+  | 'invalid_proxy'
+  | 'missing_proxy'
   | 'http_error'
   | 'parse_error';
 

@@ -1,0 +1,58 @@
+/* Tema de highlight.js basado en los tokens de `styles/index.css` (claro/oscuro). */
+.hljs {
+  color: var(--color-text);
+  background: transparent;
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-built_in,
+.hljs-type,
+.hljs-name,
+.hljs-tag {
+  color: var(--color-primary);
+}
+
+.hljs-string,
+.hljs-attr,
+.hljs-attribute,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-addition {
+  color: var(--color-success);
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-regexp,
+.hljs-meta,
+.hljs-link {
+  color: var(--color-warning);
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: var(--color-danger);
+}
+
+.hljs-deletion {
+  color: var(--color-danger);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 600;
+}

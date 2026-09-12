@@ -66,6 +66,21 @@ describe('FetchHttpClient', () => {
     expect(calls[0]?.body).toBe('hola');
   });
 
+  it('declara soporte de control de redirects y propaga redirect con default follow', async () => {
+    const calls: Array<Parameters<FetchLike>[1]> = [];
+    const client = new FetchHttpClient({
+      fetchImpl: async (_url, init) => {
+        calls.push(init);
+        return fakeResponse();
+      },
+    });
+    expect(client.supportsRedirectControl).toBe(true);
+    await client.request({ url: 'https://api.test/a', method: 'GET' });
+    await client.request({ url: 'https://api.test/a', method: 'GET', redirect: 'manual' });
+    expect(calls[0]?.redirect).toBe('follow');
+    expect(calls[1]?.redirect).toBe('manual');
+  });
+
   it('signal del caller disparado a mitad → HttpError aborted', async () => {
     const client = new FetchHttpClient({ fetchImpl: hangingFetch() });
     const controller = new AbortController();

@@ -20,6 +20,8 @@ export interface FetchInit {
   headers: Record<string, string>;
   body?: string;
   signal: AbortSignal;
+  /** Default `'follow'`; se propaga tal cual cuando el caller lo especifica. */
+  redirect?: 'follow' | 'error' | 'manual';
 }
 
 /** `fetch` en forma inyectable y estructural (real o fake en tests). */
@@ -57,10 +59,13 @@ export interface FetchHttpClientOptions {
 
 /**
  * `HttpClient` sobre `fetch` con timeout manual combinado con el signal del caller.
- * No lanza por status HTTP (devuelve `HttpResponse` con status/text/headers);
- * lanza `HttpError` con `kind` `network`/`timeout`/`aborted`.
+ * Respeta `HttpRequest.redirect` (`supportsRedirectControl = true`). No lanza por
+ * status HTTP (devuelve `HttpResponse` con status/text/headers); lanza `HttpError`
+ * con `kind` `network`/`timeout`/`aborted`.
  */
 export class FetchHttpClient implements HttpClient {
+  readonly supportsRedirectControl = true;
+
   private readonly fetchImpl: FetchLike;
 
   constructor(options: FetchHttpClientOptions = {}) {
@@ -91,6 +96,7 @@ export class FetchHttpClient implements HttpClient {
         headers: buildRequestHeaders(r.headers, bodyText !== undefined),
         body: bodyText,
         signal: controller.signal,
+        redirect: r.redirect ?? 'follow',
       });
       const text = await response.text();
       return { status: response.status, headers: collectHeaders(response.headers), text };

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="OpenHer Chat">
+  <defs>
+    <linearGradient id="openher-bg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3b6cf0" />
+      <stop offset="1" stop-color="#1e3ea8" />
+    </linearGradient>
+    <linearGradient id="openher-spark" x1="204" y1="168" x2="308" y2="272" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2b58d6" />
+      <stop offset="1" stop-color="#1e3ea8" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#openher-bg)" />
+  <path
+    d="M168 128h176a56 56 0 0 1 56 56v88a56 56 0 0 1-56 56H272l-72 64v-64h-32a56 56 0 0 1-56-56v-88a56 56 0 0 1 56-56z"
+    fill="#ffffff"
+  />
+  <path d="M256 168l14 38 38 14-38 14-14 38-14-38-38-14 38-14z" fill="url(#openher-spark)" />
+</svg>

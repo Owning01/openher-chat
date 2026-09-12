@@ -7,15 +7,28 @@ describe('CapacitorHttpClient', () => {
     vi.useRealTimers();
   });
 
-  it('en web delega en el fallback', async () => {
+  it('en nativo declara que no controla redirects (CapacitorHttp los sigue internamente → open_url exige proxy)', () => {
+    const client = new CapacitorHttpClient({ isNative: () => true, nativeHttp: { request: async () => ({ status: 200, data: '' }) } });
+    expect(client.supportsRedirectControl).toBe(false);
+  });
+
+  it('en web delega en el fallback y declara control de redirects', async () => {
     const fallback = { request: vi.fn(async () => ({ status: 200, headers: {}, text: 'web' })) };
     const client = new CapacitorHttpClient({ isNative: () => false, fallback });
+    expect(client.supportsRedirectControl).toBe(true);
     await expect(client.request({ url: 'https://api.test/models', method: 'GET' })).resolves.toEqual({
       status: 200,
       headers: {},
       text: 'web',
     });
     expect(fallback.request).toHaveBeenCalledTimes(1);
+  });
+
+  it('en web propaga redirect manual al fallback fetch', async () => {
+    const fallback = { request: vi.fn(async () => ({ status: 200, headers: {}, text: 'ok' })) };
+    const client = new CapacitorHttpClient({ isNative: () => false, fallback });
+    await client.request({ url: 'https://page.test/article', method: 'GET', redirect: 'manual' });
+    expect(fallback.request).toHaveBeenCalledWith({ url: 'https://page.test/article', method: 'GET', redirect: 'manual' });
   });
 
   it('en nativo normaliza {status, data, headers} y serializa el body', async () => {

@@ -26,4 +26,6 @@ export interface AdapterDeps {
   transport: StreamTransport;
   http: HttpClient;
   now: () => number;
+  /** API key ya resuelta por el llamador (KeyVault); nunca se persiste en `ProviderConfig`. */
+  apiKey?: string;
 }

@@ -537,8 +537,9 @@ describe('createProviderAdapter', () => {
     expect(adapter.capabilities().streaming).toBe(true);
   });
 
-  it('anthropic todavía no está disponible', () => {
-    expect(() => createProviderAdapter(providerConfig({ kind: 'anthropic' }), deps)).toThrowError('anthropic adapter not available yet (T07)');
+  it('despacha anthropic al adapter implementado', () => {
+    const adapter = createProviderAdapter(providerConfig({ kind: 'anthropic' }), deps);
+    expect(adapter.kind).toBe('anthropic');
   });
 
   it('kind desconocido lanza un error claro', () => {

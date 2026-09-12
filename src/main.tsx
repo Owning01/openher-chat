@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -15,3 +16,14 @@ createRoot(rootElement).render(
     <App />
   </StrictMode>,
 );
+
+/** PWA shell solo en web de producción; dentro de Capacitor el WebView sirve los assets locales. */
+function registerServiceWorker(): void {
+  if (!import.meta.env.PROD || Capacitor.isNativePlatform()) return;
+  if (!('serviceWorker' in navigator)) return;
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js').catch(() => undefined);
+  });
+}
+
+registerServiceWorker();

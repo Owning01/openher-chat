@@ -4,6 +4,9 @@ export class HttpError extends Error {
   status?: number;
 }
 
+/** Política de seguimiento de redirects que puede pedir el caller (default `'follow'`). */
+export type RedirectMode = 'follow' | 'error' | 'manual';
+
 export interface HttpRequest {
   url: string;
   method: 'GET' | 'POST';
@@ -11,6 +14,8 @@ export interface HttpRequest {
   body?: unknown;
   timeoutMs?: number;
   signal?: AbortSignal;
+  /** `'manual'` permite inspeccionar 3xx/opaque en vez de seguirlos. Default `'follow'`. */
+  redirect?: RedirectMode;
 }
 
 export interface HttpResponse {
@@ -21,6 +26,11 @@ export interface HttpResponse {
 
 export interface HttpClient {
   request(r: HttpRequest): Promise<HttpResponse>;
+  /**
+   * `true` si el transporte respeta `HttpRequest.redirect`; `false` si sigue
+   * redirects sin control (Capacitor nativo). `undefined` = capacidad no declarada.
+   */
+  readonly supportsRedirectControl?: boolean;
 }
 
 export type StreamResult =

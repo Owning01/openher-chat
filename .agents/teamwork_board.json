@@ -1,7 +1,7 @@
 {
   "project": "OpenHer Chat",
   "repo": "G:\\Proyectos\\openher-chat",
-  "orchestratorState": "EXECUTING",
+  "orchestratorState": "COMPLETED",
   "integrityMode": "development",
   "rules": [
     "Stack fijo: Vite + React 19 + TS estricto + Tailwind 4 + pnpm; Capacitor Android; desktop SPA/PWA",
@@ -170,7 +170,7 @@
       "id": "T06",
       "milestone": "M3",
       "title": "Provider OpenAI-compatible + registry",
-      "status": "AWAITING_AUDIT",
+      "status": "ACCEPTED",
       "wave": 4,
       "assignee": null,
       "dependencies": [
@@ -192,13 +192,14 @@
         "streamChat emite start/text-deltas/tool-call acumulado/usage/stop mapeado",
         "parseCompletion buffered; cierre sin [DONE]; abort sin timers vivos",
         "listModels normaliza {data:[{id}]}; errores mapeados; >=15 asserts con fixtures"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T07",
       "milestone": "M3",
       "title": "Provider Anthropic",
-      "status": "BUILDING",
+      "status": "ACCEPTED",
       "wave": 5,
       "assignee": null,
       "dependencies": [
@@ -214,19 +215,21 @@
         "src/adapters/providers/anthropic.test.ts",
         "src/adapters/providers/__fixtures__/**",
         "src/domain/ports/ProviderAdapter.ts",
-        "src/adapters/providers/openaiCompatible.ts"
+        "src/adapters/providers/openaiCompatible.ts",
+        "src/adapters/providers/openaiCompatible.test.ts"
       ],
       "definitionOfDone": [
         "Payload /v1/messages con system top-level, max_tokens obligatorio, tools input_schema, tool_result en user",
         "SSE con eventos nombrados: message_start/delta, content_block, input_json_delta acumulado, message_stop, error",
         "Buffered parsea content[]; listModels con fallback estatico; headers correctos"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T08",
       "milestone": "M3",
       "title": "App shell, navegacion y conversaciones",
-      "status": "BUILDING",
+      "status": "ACCEPTED",
       "wave": 4,
       "assignee": null,
       "dependencies": [
@@ -241,7 +244,9 @@
         "src/app/{App.tsx,bootstrap.ts,services.tsx,routing.tsx}",
         "src/app/layout/**",
         "src/features/conversations/**",
-        "src/i18n/dicts/{app,conversations}.ts"
+        "src/i18n/dicts/{app,conversations}.ts",
+        "src/app/*.test.ts",
+        "src/app/*.test.tsx"
       ],
       "definitionOfDone": [
         "Routing hash #/chat/:id y #/settings sin dependencias",
@@ -249,13 +254,14 @@
         "Shell responsive con sidebar/drawer accesible y toggle de tema",
         "conversationsStore con crear/renombrar/borrar/seleccionar/filtrar + tests de store",
         "Unificar Theme/Locale con domain/types (hallazgo Critic M1)"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T09",
       "milestone": "M4",
       "title": "Ajustes: proveedores, modelos, preferencias, busqueda, proxy",
-      "status": "BACKLOG",
+      "status": "ACCEPTED",
       "wave": 6,
       "assignee": null,
       "dependencies": [
@@ -278,13 +284,14 @@
         "Secciones chat, agente (AgentBudget), busqueda (Brave/Tavily/DDG, proxy) y apariencia conectadas",
         "settingsStore con patch/patchProvider/saveApiKey/refreshModels; validacion de URL http-s",
         "Tests de validacion, persistencia y migracion"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T10",
       "milestone": "M4",
       "title": "Onboarding de proveedor",
-      "status": "BACKLOG",
+      "status": "ACCEPTED",
       "wave": 7,
       "assignee": null,
       "dependencies": [
@@ -298,20 +305,22 @@
         "src/features/onboarding/**",
         "src/app/routing.tsx",
         "src/app/App.tsx",
-        "src/i18n/dicts/onboarding.ts"
+        "src/i18n/dicts/onboarding.ts",
+        "src/app/routing.test.tsx"
       ],
       "definitionOfDone": [
         "Wizard 3 pasos reutilizando ProviderForm/ModelPicker sin duplicar",
         "Probar conexion = listModels + resultado legible; persiste onboardingCompleted",
         "Redirect a #/onboarding si no hay proveedor activo; boton Saltar",
         "Reducer puro testeado + smoke render"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T11",
       "milestone": "M4",
       "title": "Orquestacion de chat (store + runAgent)",
-      "status": "BACKLOG",
+      "status": "ACCEPTED",
       "wave": 7,
       "assignee": null,
       "dependencies": [
@@ -334,13 +343,14 @@
         "send persiste user al instante, corre runAgent y actualiza bloques/liveSteps desde AgentEvent",
         "Checkpoints throttled >=1s y persistencia final con finishReason correcto",
         "Tests con FakeProviderAdapter: deltas, abort a mitad, 429, regenerate, edit"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T12",
       "milestone": "M4",
       "title": "UI de chat y markdown",
-      "status": "BACKLOG",
+      "status": "ACCEPTED",
       "wave": 8,
       "assignee": null,
       "dependencies": [
@@ -354,20 +364,23 @@
         "src/features/chat/hooks/useAutoScroll.ts",
         "src/shared/markdown/**",
         "src/i18n/dicts/chat.ts",
-        "src/app/routing.tsx"
+        "src/app/routing.tsx",
+        "src/features/chat/ChatPage.test.tsx",
+        "src/features/chat/hooks/useAutoScroll.test.ts"
       ],
       "definitionOfDone": [
         "MessageList con markdown GFM + highlight.js + copiar codigo; user texto plano",
         "MessageActions: copiar, regenerar, editar, borrar; Composer autosize Enter/Shift+Enter",
         "StreamingIndicator, Stop visible, ErrorBanner con reintentar, EmptyChat",
         "Auto-scroll solo al fondo; enlaces externos seguros; sin HTML crudo del modelo"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T13",
       "milestone": "M4",
       "title": "Agent loop core",
-      "status": "BACKLOG",
+      "status": "ACCEPTED",
       "wave": 6,
       "assignee": null,
       "dependencies": [
@@ -387,13 +400,14 @@
         "Abort en cualquier await; retries pre-delta con backoff+jitter y Retry-After",
         "context_length reintenta una vez con 50% de historial; JSON invalido devuelve error al modelo",
         "Tests con FakeProvider/tools: multi-paso, presupuestos, abort, timeout, retry; cobertura >=85%"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T14",
       "milestone": "M3",
       "title": "Tools web: search + open_url + politica por plataforma",
-      "status": "BUILDING",
+      "status": "ACCEPTED",
       "wave": 5,
       "assignee": null,
       "dependencies": [
@@ -413,13 +427,14 @@
         "Brave/Tavily/DDG/proxy normalizan a SourceRef con dedupe y cadena de fallback",
         "urlPolicy con tabla >=15 casos (esquemas, userinfo, privadas IPv4/IPv6, redirects)",
         "extractArticle titulo+texto+truncado; cero red real en tests; docs del contrato de proxy"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T15",
       "milestone": "M5",
       "title": "Modo investigacion: UI y wiring",
-      "status": "BACKLOG",
+      "status": "ACCEPTED",
       "wave": 9,
       "assignee": null,
       "dependencies": [
@@ -441,13 +456,14 @@
         "ResearchPanel con StepsTimeline en vivo, ToolCallCard colapsable, SourcesList y BudgetMeter",
         "Aviso accionable si falta proveedor de busqueda/proxy; Stop cancela loop y tools",
         "Tests de selectores de steps y fuentes deduplicadas + smoke render"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "T16",
       "milestone": "M6",
       "title": "Packaging Android/PWA, hardening y aceptacion",
-      "status": "BACKLOG",
+      "status": "ACCEPTED",
       "wave": 10,
       "assignee": null,
       "dependencies": [
@@ -465,14 +481,42 @@
         "android/**",
         "docs/dev-setup.md",
         "docs/e2e-smoke.md",
-        "README.md"
+        "README.md",
+        "src/features/chat/state/chatStore.ts",
+        "src/features/chat/state/chatStore.test.ts",
+        "src/features/chat/components/Composer.tsx",
+        "src/features/conversations/state/conversationsStore.ts",
+        "src/features/conversations/state/conversationsStore.test.ts",
+        "src/features/settings/components/ProviderList.tsx",
+        "src/features/settings/state/settingsStore.ts",
+        "src/features/settings/state/settingsStore.test.ts",
+        "src/features/research/selectors.ts",
+        "src/adapters/tools/index.ts",
+        "src/i18n/dicts/common.ts",
+        "src/app/routing.tsx",
+        "src/app/App.tsx",
+        "src/features/chat/state/__fixtures__/chatTestHarness.ts",
+        "src/features/chat/components/Composer.test.tsx",
+        "src/features/chat/ChatPage.test.tsx",
+        "src/features/conversations/state/ConversationsStoreContext.tsx",
+        "src/features/research/selectors.test.ts",
+        "src/features/research/chatStoreResearch.test.ts",
+        "src/features/settings/SettingsPage.test.tsx",
+        "src/i18n/dicts/settings.ts",
+        "src/adapters/tools/index.test.ts",
+        "src/adapters/tools/proxy.ts",
+        "src/adapters/tools/webSearch/index.ts",
+        "src/adapters/tools/webSearch/index.test.ts",
+        "src/domain/types/chat.ts",
+        "src/domain/agent/runAgent.ts"
       ],
       "definitionOfDone": [
         "cap add android + cap sync OK (o sync + documentacion si falta SDK)",
         "Iconos/splash propios sin assets de marcas; PWA manifest/sw minimos fuera de Capacitor",
         "docs/e2e-smoke.md con checklist y resultado; scripts android:sync/open",
         "tsc y vitest finales verdes; rg console.log/TODO vacio"
-      ]
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     },
     {
       "id": "H1",
@@ -563,6 +607,178 @@
         "tsc -b + pnpm test + build verdes"
       ],
       "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "H3",
+      "milestone": "M3",
+      "title": "Remediacion gate M3 (SSRF redirects + cliente nativo + MINOR)",
+      "status": "ACCEPTED",
+      "wave": 5,
+      "assignee": null,
+      "dependencies": [
+        "T07",
+        "T08",
+        "T14"
+      ],
+      "estimateHours": 4,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/domain/ports/HttpClient.ts",
+        "src/adapters/http/FetchHttpClient.ts",
+        "src/adapters/http/FetchHttpClient.test.ts",
+        "src/adapters/http/CapacitorHttpClient.ts",
+        "src/adapters/http/CapacitorHttpClient.test.ts",
+        "src/adapters/tools/openUrl/index.ts",
+        "src/adapters/tools/openUrl/index.test.ts",
+        "src/adapters/tools/openUrl/extractArticle.ts",
+        "src/adapters/tools/openUrl/extractArticle.test.ts",
+        "src/adapters/tools/values.ts",
+        "src/adapters/tools/urlPolicy.ts",
+        "src/adapters/tools/urlPolicy.test.ts",
+        "src/adapters/tools/index.ts",
+        "src/app/services.tsx",
+        "src/app/services.test.ts",
+        "src/app/layout/MobileDrawer.tsx",
+        "src/app/layout/MobileDrawer.test.tsx",
+        "docs/search-proxy.md"
+      ],
+      "definitionOfDone": [
+        "HttpRequest.redirect (follow|error|manual) y HttpClient.supportsRedirectControl",
+        "open_url JAMAS sigue redirects en directo: 3xx/opaque -> blocked_url accionable; sin control de redirects (nativo) exige proxy",
+        "createServices usa CapacitorHttpClient (fallback interno a Fetch en web)",
+        "extractArticle no pega palabras al quitar script/style",
+        "values.ts sin codigo muerto; cap de 2MB medido en bytes UTF-8 + content-length",
+        "urlPolicy bloquea NAT64 64:ff9b::/96",
+        "MobileDrawer con focus trap Tab/Shift+Tab + test",
+        "docs/search-proxy.md documenta la politica de redirects",
+        "tsc -b + pnpm test + build verdes"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "H3b",
+      "milestone": "M3",
+      "title": "Micro-fix flag supportsRedirectControl en web",
+      "status": "ACCEPTED",
+      "wave": 5,
+      "assignee": null,
+      "dependencies": [
+        "H3"
+      ],
+      "estimateHours": 1,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/adapters/http/CapacitorHttpClient.ts",
+        "src/adapters/http/CapacitorHttpClient.test.ts"
+      ],
+      "definitionOfDone": [
+        "supportsRedirectControl = !isNative()",
+        "web propaga redirect manual al fallback fetch",
+        "nativo sigue false (proxy obligatorio)",
+        "tsc -b + tests http + build verdes"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "H4",
+      "milestone": "M4",
+      "title": "Remediacion gate M4 (doble-send + refresh historial + MINOR del tribunal)",
+      "status": "ACCEPTED",
+      "wave": 8,
+      "assignee": null,
+      "dependencies": [
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13"
+      ],
+      "estimateHours": 5,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/features/chat/state/chatStore.ts",
+        "src/features/chat/state/chatStore.test.ts",
+        "src/features/chat/ChatPage.tsx",
+        "src/features/chat/ChatPage.test.tsx",
+        "src/features/chat/hooks/useChatController.ts",
+        "src/domain/agent/runAgent.ts",
+        "src/domain/agent/runAgent.test.ts",
+        "src/domain/agent/budget.ts",
+        "src/domain/agent/budget.test.ts",
+        "src/features/settings/state/settingsStore.ts",
+        "src/features/settings/state/settingsStore.test.ts",
+        "src/features/settings/components/SearchSection.tsx",
+        "src/features/onboarding/session.ts",
+        "src/features/onboarding/session.test.ts",
+        "src/i18n/dicts/app.ts",
+        "src/app/layout/ChatRoutePlaceholder.tsx",
+        "src/app/layout/SettingsRoutePlaceholder.tsx",
+        "src/app/routing.test.tsx"
+      ],
+      "definitionOfDone": [
+        "send sin carrera: guard sincrono antes de cualquier await (1 request, 1 user, 1 conversacion por doble click)",
+        "la conversacion creada y sus mutaciones refrescan conversationsStore (item visible sin recargar)",
+        "abort del run al desmontar ChatPage",
+        "tool timeout = min(def.timeoutMs, budget.toolTimeoutMs); throw sincrono convertido a ToolResult de error",
+        "usage no finito ignorado; dedupe canonico por claves ordenadas; reloj monotonico; tools.list()/get() que lanzan -> run-end error",
+        "patch con NaN/Infinity conserva el valor previo; saveApiKey comunica exito/fracaso (sin toast verde en fallo)",
+        "needsOnboarding no re-redirige si hay activeProviderId; addProvider deduplica plantilla existente",
+        "placeholders muertos y claves i18n huerfanas eliminados",
+        "tsc -b + pnpm test + build verdes"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "H5",
+      "milestone": "M5",
+      "title": "Remediacion gate M5 (SourceChip segura + prompt tools + MINOR)",
+      "status": "ACCEPTED",
+      "wave": 9,
+      "assignee": null,
+      "dependencies": [
+        "T15"
+      ],
+      "estimateHours": 4,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/features/research/SourceChip.tsx",
+        "src/features/research/SourcesList.tsx",
+        "src/features/research/selectors.ts",
+        "src/features/research/selectors.test.ts",
+        "src/features/research/BudgetMeter.tsx",
+        "src/features/research/StepsTimeline.tsx",
+        "src/features/research/ResearchPanel.tsx",
+        "src/features/research/ResearchPanel.test.tsx",
+        "src/features/research/SourceChip.test.tsx",
+        "src/features/chat/state/chatStore.ts",
+        "src/features/chat/state/chatStore.test.ts",
+        "src/features/chat/components/ToolCallCard.tsx",
+        "src/features/chat/components/Composer.tsx",
+        "src/features/chat/ChatPage.tsx",
+        "src/domain/agent/runAgent.ts",
+        "src/domain/agent/runAgent.test.ts",
+        "src/i18n/dicts/research.ts",
+        "src/features/research/messages.ts",
+        "src/features/research/chatStoreResearch.test.ts",
+        "src/features/research/ChatPageResearch.test.tsx",
+        "src/features/chat/components/ToolCallCard.test.tsx",
+        "src/features/research/BudgetMeter.test.tsx",
+        "src/features/research/StepsTimeline.test.tsx",
+        "src/features/research/SourceChip.test.tsx"
+      ],
+      "definitionOfDone": [
+        "SourceChip solo enlaza http/https; otros esquemas -> span sin <a> + test javascript:/data:",
+        "chatStore activa researchMode/prompt SOLO si capabilities.toolCalling && model.supportsTools !== false && webSearchEnabled",
+        "setResearchMode no persiste true si webSearchEnabled false (o el run lo ignora coherente)",
+        "sourcesFromMessages tolera sources null/no-array; researchWarning valida URL de proxy (invalida -> aviso, sin bypass)",
+        "BudgetMeter sin NaN en ARIA/texto; StepsTimeline key estable; ToolCallCard duracion finita",
+        "truncado de tool result respeta el cap exacto (marcador incluido)",
+        "chatStore usa el reducer unico de steps (selectors.applyAgentEvent) sin duplicar",
+        "hint de investigacion solo visible con toggle activo",
+        "tsc -b + pnpm test + build verdes"
+      ],
+      "evaluatorVerdict": "ACCEPTED"
     }
-  ]
+  ],
+  "phase": "DONE"
 }

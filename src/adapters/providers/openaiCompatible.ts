@@ -15,17 +15,16 @@ import { ProviderError, mapHttpStatus } from './errors';
 import { parseSseStream, parseSseText } from './sse';
 
 /**
- * `AdapterDeps` + la API key ya resuelta por el llamador (AMEND spec §6).
- * La key solo se usa aquí; nunca se persiste en `ProviderConfig`.
+ * Alias retrocompatible del contrato de dominio: `apiKey` ya viaja dentro de
+ * `AdapterDeps` (AMEND spec §6). La key solo se usa aquí; nunca se persiste en
+ * `ProviderConfig`.
  */
-export interface ProviderAdapterDeps extends AdapterDeps {
-  apiKey?: string;
-}
+export type ProviderAdapterDeps = AdapterDeps;
 
 const LIST_MODELS_TIMEOUT_MS = 10_000;
 const DONE_SENTINEL = '[DONE]';
 
-export function createOpenAICompatibleAdapter(config: ProviderConfig, deps: ProviderAdapterDeps): ProviderAdapter {
+export function createOpenAICompatibleAdapter(config: ProviderConfig, deps: AdapterDeps): ProviderAdapter {
   const baseUrl = config.baseUrl.replace(/\/+$/, '');
 
   async function listModels(signal?: AbortSignal): Promise<ModelInfo[]> {
