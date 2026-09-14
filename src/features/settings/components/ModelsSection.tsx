@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 
-import type { ModelInfo, ProviderConfig } from '@/domain/types/provider';
+import type { ModelApi, ModelInfo, ProviderConfig } from '@/domain/types/provider';
 import { useT } from '@/i18n/useT';
 import { Plus, RefreshCw, Trash } from '@/shared/icons';
 import { Badge, Button, IconButton, Input, Select, Switch, useToast } from '@/shared/ui';
@@ -28,6 +28,13 @@ export function ModelsSection({ provider }: ModelsSectionProps) {
   const modelOptions = [
     { value: '', label: t('common.none') },
     ...provider.models.map((model) => ({ value: model.id, label: model.label })),
+  ];
+
+  const routeOptions = [
+    { value: '', label: t('settings.modelsRouteAuto') },
+    { value: 'chat-completions', label: t('settings.modelsRouteChat') },
+    { value: 'messages', label: t('settings.modelsRouteMessages') },
+    { value: 'responses', label: t('settings.modelsRouteResponses') },
   ];
 
   const refresh = async (): Promise<void> => {
@@ -126,6 +133,26 @@ export function ModelsSection({ provider }: ModelsSectionProps) {
                   />
                 </div>
               </div>
+              {provider.kind === 'opencode' ? (
+                <div className="mt-3 space-y-1.5">
+                  <label
+                    htmlFor={`${defaultSelectId}-route-${model.id}`}
+                    className="block text-sm font-medium text-text"
+                  >
+                    {t('settings.modelsRoute')}
+                  </label>
+                  <Select
+                    id={`${defaultSelectId}-route-${model.id}`}
+                    value={model.api ?? ''}
+                    options={routeOptions}
+                    onChange={(event) =>
+                      patchModel(model.id, {
+                        api: event.target.value === '' ? undefined : (event.target.value as ModelApi),
+                      })
+                    }
+                  />
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>

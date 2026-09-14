@@ -18,12 +18,15 @@ afterEach(() => {
   setLocale('es');
 });
 
-function renderPage(keys: MemoryKeyVault = new MemoryKeyVault()) {
+function renderPage(keys: MemoryKeyVault = new MemoryKeyVault(), options: { manifest?: string } = {}) {
   const settingsRepo = new MemorySettingsRepository();
   const requests: string[] = [];
   const http: HttpClient = {
     async request(request) {
       requests.push(request.url);
+      if (options.manifest !== undefined && request.url.includes('version.json')) {
+        return { status: 200, headers: {}, text: options.manifest };
+      }
       return { status: 200, headers: {}, text: '{"data":[{"id":"model-a","name":"Model A"}]}' };
     },
   };
@@ -70,7 +73,7 @@ class FailingRemoveVault extends MemoryKeyVault {
 }
 
 describe('SettingsPage', () => {
-  it('muestra las cinco secciones de ajustes', async () => {
+  it('muestra las seis secciones de ajustes', async () => {
     renderPage();
 
     expect(await screen.findByText(t('settings.sectionProviders'))).toBeInTheDocument();
@@ -78,6 +81,33 @@ describe('SettingsPage', () => {
     expect(screen.getByText(t('settings.sectionAgent'))).toBeInTheDocument();
     expect(screen.getByText(t('settings.sectionSearch'))).toBeInTheDocument();
     expect(screen.getByText(t('settings.sectionAppearance'))).toBeInTheDocument();
+    expect(screen.getByText(t('updates.title'))).toBeInTheDocument();
+  });
+
+  it('detecta y ofrece descargar una versión nueva', async () => {
+    renderPage(new MemoryKeyVault(), {
+      manifest: JSON.stringify({ version: '9.0.0', apkUrl: 'https://example.com/app.apk', sha256: 'abc' }),
+    });
+
+    fireEvent.click(await screen.findByRole('button', { name: t('updates.check') }));
+
+    expect(await screen.findByText(t('updates.availableTitle', { version: '9.0.0' }))).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: t('updates.download') })).toHaveAttribute(
+      'href',
+      'https://example.com/app.apk',
+    );
+  });
+
+  it('persiste el auto-chequeo de actualizaciones', async () => {
+    const { settingsRepo } = renderPage();
+    const toggle = await screen.findByRole('switch', { name: t('updates.autoCheck') });
+    expect(toggle).toBeChecked();
+
+    fireEvent.click(toggle);
+
+    await waitFor(async () => {
+      expect((await settingsRepo.load()).ui.autoCheckUpdates).toBe(false);
+    });
   });
 
   it('agrega un proveedor manual, lo muestra y lo persiste como activo', async () => {

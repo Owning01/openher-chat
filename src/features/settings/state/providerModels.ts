@@ -24,9 +24,13 @@ export function mergeApiModels(existing: readonly ModelInfo[], api: readonly Mod
     const contextWindow = model.contextWindow ?? previous?.contextWindow;
     const supportsTools = model.supportsTools ?? previous?.supportsTools;
     const supportsStreaming = model.supportsStreaming ?? previous?.supportsStreaming;
+    // El override manual del usuario sobrevive al refresco; el clasificador solo
+    // aplica a modelos nuevos (sin `api` previa).
+    const resolvedApi = previous?.api ?? model.api;
     if (contextWindow !== undefined) next.contextWindow = contextWindow;
     if (supportsTools !== undefined) next.supportsTools = supportsTools;
     if (supportsStreaming !== undefined) next.supportsStreaming = supportsStreaming;
+    if (resolvedApi !== undefined) next.api = resolvedApi;
     merged.push(next);
   }
 

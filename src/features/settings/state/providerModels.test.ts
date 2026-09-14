@@ -52,3 +52,27 @@ describe('normalizeDefaultModelId', () => {
     expect(normalizeDefaultModelId('a', [])).toBeNull();
   });
 });
+
+describe('mergeApiModels adversarial', () => {
+  it('hereda la api previa si el modelo de la API no la trae', () => {
+    const existing: ModelInfo[] = [{ id: 'a', label: 'A', source: 'api', api: 'responses' }];
+    const api: ModelInfo[] = [{ id: 'a', label: 'A', source: 'api' }];
+    expect(mergeApiModels(existing, api)).toEqual([{ id: 'a', label: 'A', source: 'api', api: 'responses' }]);
+  });
+
+  it('conserva la api previa (override del usuario) sobre la de la API', () => {
+    const existing: ModelInfo[] = [{ id: 'a', label: 'A', source: 'api', api: 'responses' }];
+    const api: ModelInfo[] = [{ id: 'a', label: 'A', source: 'api', api: 'messages' }];
+    expect(mergeApiModels(existing, api)).toEqual([{ id: 'a', label: 'A', source: 'api', api: 'responses' }]);
+  });
+
+  it('conserva la api de un modelo manual ausente en la API', () => {
+    const existing: ModelInfo[] = [{ id: 'm', label: 'M', source: 'manual', api: 'messages' }];
+    expect(mergeApiModels(existing, [])).toEqual([{ id: 'm', label: 'M', source: 'manual', api: 'messages' }]);
+  });
+
+  it('no envenena el prototipo con un id __proto__', () => {
+    const merged = mergeApiModels([], [{ id: '__proto__', label: 'P', source: 'api' }]);
+    expect(merged[0]?.id).toBe('__proto__');
+  });
+});

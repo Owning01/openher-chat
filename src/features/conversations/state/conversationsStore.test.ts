@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
+import { parseConversationArchive } from '@/domain/chat/serializeConversation';
 import type { Conversation } from '@/domain/types/conversation';
 import { MemoryConversationRepository } from '@/test/fakes/MemoryRepos';
 
-import { createConversationsStore, filterConversations, sortConversationsByUpdatedAt } from './conversationsStore';
+import {
+  INVALID_IMPORT_ERROR,
+  createConversationsStore,
+  filterConversations,
+  sortConversationsByUpdatedAt,
+} from './conversationsStore';
 
 function makeConversation(id: string, updatedAt: number, createdAt = updatedAt): Conversation {
   return {
@@ -211,6 +217,107 @@ describe('conversationsStore', () => {
     expect(store.getState().items.map((conversation) => conversation.id).sort()).toEqual(
       [created.id, second.id].sort(),
     );
+  });
+
+  it('exporta a Markdown y JSON la conversación indicada', async () => {
+    const { repo, store, advance } = createHarness();
+    const created = await repo.create({ title: 'Con fuentes' });
+    await repo.appendMessage({
+      id: 'm1',
+      conversationId: created.id,
+      role: 'user',
+      status: 'complete',
+      content: [{ type: 'text', text: 'hola' }],
+      createdAt: 1,
+      updatedAt: 1,
+    });
+    advance(10);
+    await store.getState().load();
+
+    const markdown = await store.getState().exportMarkdown(created.id);
+    expect(markdown).toContain('# Con fuentes');
+    expect(markdown).toContain('hola');
+
+    const json = await store.getState().exportJson(created.id);
+    expect(parseConversationArchive(json ?? '')).not.toBeNull();
+    expect(await store.getState().exportMarkdown('nope')).toBeNull();
+  });
+
+  it('importa un JSON portable con conversación nueva y mensajes remapeados', async () => {
+    const { repo, store } = createHarness();
+    const archive = JSON.stringify({
+      version: 1,
+      exportedAt: 1,
+      conversation: {
+        title: 'Importada',
+        providerId: null,
+        modelId: null,
+        systemPromptOverride: null,
+        researchMode: true,
+      },
+      messages: [
+        {
+          id: 'x1',
+          conversationId: 'old',
+          role: 'user',
+          status: 'complete',
+          content: [{ type: 'text', text: 'pregunta' }],
+          createdAt: 1,
+          updatedAt: 1,
+        },
+        {
+          id: 'x2',
+          conversationId: 'old',
+          role: 'assistant',
+          status: 'complete',
+          content: [{ type: 'text', text: 'respuesta' }],
+          createdAt: 2,
+          updatedAt: 2,
+        },
+      ],
+    });
+
+    const imported = await store.getState().importConversation(archive);
+
+    expect(imported).not.toBeNull();
+    if (imported === null) return;
+    expect(store.getState().activeId).toBe(imported.id);
+    expect(imported.title).toBe('Importada');
+    expect(imported.researchMode).toBe(true);
+    expect(imported.messageCount).toBe(2);
+    const messages = await repo.listMessages(imported.id);
+    expect(messages.map((message) => message.role)).toEqual(['user', 'assistant']);
+    expect(messages[0]?.conversationId).toBe(imported.id);
+    expect(messages[0]?.id).not.toBe('x1');
+  });
+
+  it('rechaza un archivo inválido con error accionable', async () => {
+    const { store } = createHarness();
+
+    const imported = await store.getState().importConversation('no-json');
+
+    expect(imported).toBeNull();
+    expect(store.getState().error).toBe(INVALID_IMPORT_ERROR);
+  });
+
+  it('busca en el contenido de los mensajes y limpia con query corta', async () => {
+    const { repo, store } = createHarness();
+    const created = await repo.create({ title: 'Chat' });
+    await repo.appendMessage({
+      id: 'm1',
+      conversationId: created.id,
+      role: 'user',
+      status: 'complete',
+      content: [{ type: 'text', text: 'La polémica de Amodei' }],
+      createdAt: 1,
+      updatedAt: 1,
+    });
+
+    await store.getState().searchMessages('amodei');
+    expect(store.getState().messageHits.map((hit) => hit.messageId)).toEqual(['m1']);
+
+    await store.getState().searchMessages('a');
+    expect(store.getState().messageHits).toEqual([]);
   });
 });
 

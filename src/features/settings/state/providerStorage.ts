@@ -1,4 +1,4 @@
-import type { ModelInfo, ProviderConfig, ProviderKind, ProviderQuirks } from '@/domain/types/provider';
+import type { ModelApi, ModelInfo, ProviderConfig, ProviderKind, ProviderQuirks } from '@/domain/types/provider';
 
 import { isHttpUrl, isProviderKind } from './validation';
 
@@ -112,6 +112,8 @@ export function sanitizeModelInfos(raw: unknown): ModelInfo[] {
     if (contextWindow !== null) model.contextWindow = contextWindow;
     if (typeof record.supportsTools === 'boolean') model.supportsTools = record.supportsTools;
     if (typeof record.supportsStreaming === 'boolean') model.supportsStreaming = record.supportsStreaming;
+    const api = readModelApi(record.api);
+    if (api !== null) model.api = api;
     models.push(model);
   }
   return models;
@@ -156,6 +158,8 @@ function sanitizeQuirks(value: unknown): ProviderQuirks | undefined {
   const quirks: ProviderQuirks = {};
   if (typeof record.includeUsage === 'boolean') quirks.includeUsage = record.includeUsage;
   if (typeof record.sendToolChoice === 'boolean') quirks.sendToolChoice = record.sendToolChoice;
+  if (typeof record.promptCache === 'boolean') quirks.promptCache = record.promptCache;
+  if (typeof record.cacheControl === 'boolean') quirks.cacheControl = record.cacheControl;
   return Object.keys(quirks).length > 0 ? quirks : undefined;
 }
 
@@ -178,6 +182,12 @@ function readTimestamp(value: unknown, fallback: number): number {
 function readPositiveInt(value: unknown): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
   return Math.round(value);
+}
+
+const MODEL_APIS: readonly ModelApi[] = ['chat-completions', 'messages', 'responses'];
+
+function readModelApi(value: unknown): ModelApi | null {
+  return typeof value === 'string' && (MODEL_APIS as readonly string[]).includes(value) ? (value as ModelApi) : null;
 }
 
 function readRaw(): string | null {

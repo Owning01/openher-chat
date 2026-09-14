@@ -1,5 +1,8 @@
 /** Familia de transporte de un proveedor. */
-export type ProviderKind = 'openai-compatible' | 'anthropic';
+export type ProviderKind = 'openai-compatible' | 'anthropic' | 'openai-responses' | 'opencode';
+
+/** Transporte concreto de un modelo dentro de un proveedor que enruta por endpoint (OpenCode Zen). */
+export type ModelApi = 'chat-completions' | 'messages' | 'responses';
 
 /** Modelo expuesto por un proveedor (descubierto por API o agregado a mano). */
 export interface ModelInfo {
@@ -8,6 +11,8 @@ export interface ModelInfo {
   contextWindow?: number;
   supportsTools?: boolean;
   supportsStreaming?: boolean;
+  /** Override de transporte para proveedores heterogéneos; si falta se infiere del id/kind. */
+  api?: ModelApi;
   source: 'api' | 'manual';
 }
 
@@ -15,6 +20,10 @@ export interface ModelInfo {
 export interface ProviderQuirks {
   includeUsage?: boolean;
   sendToolChoice?: boolean;
+  /** Añade `prompt_cache_key` (+ retención) al payload de `/chat/completions`. */
+  promptCache?: boolean;
+  /** Añade marcadores `cache_control` a los mensajes (gateways Anthropic-shaped). */
+  cacheControl?: boolean;
 }
 
 /** Configuración persistida de un proveedor. La API key nunca vive aquí (ver KeyVault). */

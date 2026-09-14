@@ -7,6 +7,12 @@
  * cualquier 3xx (u opaca, status 0) en `blocked_url` accionable. En plataformas
  * que no controlan redirects (Capacitor nativo) exige un proxy de lectura. El
  * proxy `/v1/fetch` es quien sigue redirects, revalidando cada salto server-side.
+ *
+ * En navegador, la mayoría de sitios no emiten CORS y el fetch directo es
+ * imposible. Si `readerFallback` está activo (navegador sin proxy), un fallo del
+ * fetch directo reintenta contra un lector público con CORS (`r.jina.ai`), que
+ * descarga la página server-side y devuelve markdown. La URL inicial ya pasó
+ * `isUrlAllowed`, así que el redirect lo resuelve el lector, no la red del usuario.
  */
 
 import type { HttpClient, HttpResponse } from '@/domain/ports/HttpClient';
@@ -21,6 +27,8 @@ import type { ExtractedArticle } from './extractArticle';
 
 export const OPEN_URL_TIMEOUT_MS = 15_000;
 export const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
+/** Lector público con CORS: `GET {endpoint}{url}` → markdown en texto plano. */
+export const JINA_READER_ENDPOINT = 'https://r.jina.ai/';
 
 const REDIRECT_BLOCKED_MESSAGE =
   'The URL redirects to another address, and direct reads never follow redirects (they could reach private networks). Configure a reading proxy in Settings to open redirected pages safely.';
@@ -32,6 +40,8 @@ export interface OpenUrlDeps {
   now: () => number;
   /** Base ya normalizada del proxy (`null`/`undefined` = fetch directo). */
   proxyBaseUrl?: string | null;
+  /** Solo navegador sin proxy: reintenta con un lector público con CORS si el fetch directo falla. */
+  readerFallback?: boolean;
 }
 
 export async function openUrl(
@@ -56,6 +66,14 @@ export async function openUrl(
       : await fetchThroughProxy(url, context, deps, proxyBaseUrl);
     return buildSuccess(url, article, startedAt, deps.now());
   } catch (error) {
+    if (deps.readerFallback === true && proxyBaseUrl === null) {
+      try {
+        const article = await fetchViaReader(url, context, deps);
+        return buildSuccess(url, article, startedAt, deps.now());
+      } catch {
+        // El error original (CORS) es más accionable que el del lector: se propaga.
+      }
+    }
     const mapped = mapTransportError(error, { browser: isBrowserEnvironment(), proxied: proxyBaseUrl !== null });
     return failure(mapped.code, mapped.message, startedAt, deps.now());
   }
@@ -133,6 +151,51 @@ async function fetchThroughProxy(
     description: '',
     text: capped.text,
     truncated: payload.truncated || capped.truncated,
+  };
+}
+
+/** Descarga vía lector público con CORS; la respuesta es texto plano con preámbulo + markdown. */
+async function fetchViaReader(url: string, context: ToolExecutionContext, deps: OpenUrlDeps): Promise<ExtractedArticle> {
+  const response = await deps.http.request({
+    url: `${JINA_READER_ENDPOINT}${url}`,
+    method: 'GET',
+    headers: { Accept: 'text/plain' },
+    timeoutMs: OPEN_URL_TIMEOUT_MS,
+    signal: context.signal,
+  });
+  if (response.status < 200 || response.status >= 300) {
+    throw new ToolExecutionError('http_error', `The reading service responded with HTTP ${response.status}.`);
+  }
+  assertWithinSizeLimit(response);
+  return parseReaderText(response.text, url);
+}
+
+/**
+ * El lector devuelve un preámbulo (`Title:`, `Published Time:`…) y el cuerpo tras
+ * `Markdown Content:`. Si no hay marcador, se usa todo el texto.
+ */
+export function parseReaderText(text: string, fallbackTitle: string): ExtractedArticle {
+  const lines = text.split('\n');
+  let title = '';
+  let bodyStart = -1;
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index] ?? '';
+    if (line.startsWith('Title:')) {
+      title = line.slice('Title:'.length).trim();
+      continue;
+    }
+    if (line.startsWith('Markdown Content:')) {
+      bodyStart = index + 1;
+      break;
+    }
+  }
+  const body = bodyStart >= 0 ? lines.slice(bodyStart).join('\n') : text;
+  const capped = capArticleText(body.trim(), ARTICLE_TEXT_LIMIT);
+  return {
+    title: title !== '' ? title : fallbackTitle,
+    description: '',
+    text: capped.text,
+    truncated: capped.truncated,
   };
 }
 

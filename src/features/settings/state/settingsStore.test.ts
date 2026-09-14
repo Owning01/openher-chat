@@ -9,6 +9,7 @@ import { MemoryKeyVault, MemorySettingsRepository } from '@/test/fakes/MemoryRep
 import { LocalProviderConfigRepository, PROVIDERS_STORAGE_KEY } from './providerStorage';
 import type { ProviderConfigRepository } from './providerStorage';
 import { SEARCH_KEY_REFS, createSettingsStore } from './settingsStore';
+import type { ImportedProvider } from './settingsStore';
 
 const NOW = 1_700_000_000_000;
 
@@ -92,6 +93,14 @@ class FailingProviderRepository extends LocalProviderConfigRepository {
   override async save(): Promise<void> {
     throw new Error('sin espacio');
   }
+}
+
+function imported(
+  id: string,
+  baseUrl: string,
+  kind: ImportedProvider['kind'] = 'openai-compatible',
+): ImportedProvider {
+  return { id, label: id, kind, baseUrl, requiresKey: true, models: [] };
 }
 
 describe('settingsStore', () => {
@@ -525,5 +534,62 @@ describe('settingsStore', () => {
     expect(store.getState().search().maxResults).toBe(5);
     expect(store.getState().proxy()).toEqual({ mode: 'direct', baseUrl: null });
     expect(store.getState().appearance()).toEqual({ theme: 'system', locale: 'es' });
+  });
+
+  it('importProviders con catálogo vacío no toca storage ni falla', async () => {
+    const { store } = createHarness({ providers: new FailingProviderRepository(() => NOW) });
+    await store.getState().load();
+
+    const result = await store.getState().importProviders([]);
+
+    expect(result).toEqual({ added: 0, skipped: 0 });
+  });
+
+  it('importProviders deduplica por kind+baseUrl dentro del mismo catálogo', async () => {
+    const { store } = createHarness();
+    await store.getState().load();
+
+    const result = await store.getState().importProviders([
+      imported('a', 'https://api.dup/v1'),
+      imported('b', 'https://api.dup/v1/'),
+    ]);
+
+    expect(result).toEqual({ added: 1, skipped: 1 });
+  });
+
+  it('importProviders genera sufijo cuando el id colisiona con distinto baseUrl', async () => {
+    const { store } = createHarness();
+    await store.getState().load();
+    await store.getState().addProvider({
+      type: 'manual',
+      label: 'Local',
+      kind: 'openai-compatible',
+      baseUrl: 'https://api.test/v1',
+      requiresKey: false,
+    });
+
+    await store.getState().importProviders([imported('p1', 'https://api.otro/v1')]);
+
+    expect(store.getState().providers.map((provider) => provider.id)).toEqual(['p1', 'p1-2']);
+  });
+
+  it('importProviders revierte el estado si falla la persistencia de settings', async () => {
+    const { store } = createHarness({ settings: new FailingSettingsRepository({ now: () => NOW }) });
+    await store.getState().load();
+
+    await store.getState().importProviders([imported('p1', 'https://api.test/v1')]);
+
+    expect(store.getState().providers).toEqual([]);
+  });
+
+  it('importProviders no deja proveedores persistidos si falla settings (regresión atomicidad)', async () => {
+    const { store, providerRepo } = createHarness({ settings: new FailingSettingsRepository({ now: () => NOW }) });
+    await store.getState().load();
+
+    const result = await store.getState().importProviders([imported('p1', 'https://api.atomic/v1')]);
+
+    expect(result).toEqual({ added: 0, skipped: 0 });
+    expect(store.getState().providers).toEqual([]);
+    await expect(providerRepo.load()).resolves.toEqual([]);
   });
 });

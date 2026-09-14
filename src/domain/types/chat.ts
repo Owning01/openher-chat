@@ -24,7 +24,8 @@ export type ToolErrorCode =
   | 'invalid_proxy'
   | 'missing_proxy'
   | 'http_error'
-  | 'parse_error';
+  | 'parse_error'
+  | 'denied';
 
 export interface ToolResult {
   ok: boolean;
@@ -60,6 +61,10 @@ export interface TokenUsage {
   promptTokens?: number;
   completionTokens?: number;
   totalTokens?: number;
+  /** Tokens de prompt servidos desde la caché del proveedor (lectura con descuento). */
+  cachedPromptTokens?: number;
+  /** Tokens de prompt escritos en la caché del proveedor (Anthropic; coste 1.25x). */
+  cacheWritePromptTokens?: number;
 }
 
 export type MessageContent =
@@ -80,5 +85,7 @@ export interface ChatMessage {
   modelId?: string;
   usage?: TokenUsage;
   finishReason?: MessageFinishReason;
+  /** El proveedor cortó por `max_tokens`: la respuesta puede reanudarse. */
+  truncated?: boolean;
   error?: MessageError;
 }

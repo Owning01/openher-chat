@@ -103,3 +103,61 @@ describe('Composer', () => {
     }
   });
 });
+
+describe('Composer — dictado por voz', () => {
+  class FakeRecognition {
+    static instances: FakeRecognition[] = [];
+    lang = '';
+    continuous = false;
+    interimResults = false;
+    maxAlternatives = 1;
+    onresult: ((event: unknown) => void) | null = null;
+    onend: (() => void) | null = null;
+    onerror: ((event: { error: string }) => void) | null = null;
+    start = vi.fn();
+    stop = vi.fn();
+    abort = vi.fn();
+    constructor() {
+      FakeRecognition.instances.push(this);
+    }
+  }
+
+  beforeEach(() => {
+    FakeRecognition.instances = [];
+    (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition = FakeRecognition;
+  });
+
+  afterEach(() => {
+    delete (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition;
+  });
+
+  it('añade el dictado sin borrar el texto escrito', async () => {
+    render(<Composer status="idle" onSend={vi.fn()} onStop={vi.fn()} />);
+
+    const textarea = screen.getByRole('textbox', { name: 'Escribe un mensaje…' });
+    fireEvent.change(textarea, { target: { value: 'Hola' } });
+
+    const mic = await screen.findByRole('button', { name: 'Dictar por voz' });
+    await act(async () => {
+      fireEvent.click(mic);
+    });
+
+    const rec = FakeRecognition.instances[0];
+    act(() => {
+      rec?.onresult?.({ results: { length: 1, 0: { isFinal: true, length: 1, 0: { transcript: 'mundo' } } } });
+    });
+
+    expect(textarea).toHaveValue('Hola mundo');
+  });
+
+  it('el micrófono alterna a "Detener dictado" mientras escucha', async () => {
+    render(<Composer status="idle" onSend={vi.fn()} onStop={vi.fn()} />);
+
+    const mic = await screen.findByRole('button', { name: 'Dictar por voz' });
+    await act(async () => {
+      fireEvent.click(mic);
+    });
+
+    expect(screen.getByRole('button', { name: 'Detener dictado' })).toBeInTheDocument();
+  });
+});

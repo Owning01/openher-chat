@@ -10,17 +10,23 @@ import { researchWarning } from '@/features/research/selectors';
 import { useResearchSettings } from '@/features/research/useResearchSettings';
 import { useT } from '@/i18n/useT';
 import type { Translate } from '@/i18n/useT';
-import { ChevronDown } from '@/shared/icons';
-import { Badge } from '@/shared/ui';
+import { ChevronDown, PanelRightOpen } from '@/shared/icons';
+import { Badge, IconButton } from '@/shared/ui';
 
 import { Composer } from './components/Composer';
 import { EmptyChat } from './components/EmptyChat';
 import { ErrorBanner } from './components/ErrorBanner';
 import { MessageList } from './components/MessageList';
+import { ModelPicker } from './components/ModelPicker';
+import { ConversationUsage } from './components/MessageUsage';
 import { StreamingIndicator } from './components/StreamingIndicator';
+import { ToolApprovalDialog } from './components/ToolApprovalDialog';
 import { useAutoScroll } from './hooks/useAutoScroll';
 import { useChatController } from './hooks/useChatController';
-import { ChatStoreProvider, createChatStore, useChatStore } from './state/chatStore';
+import { useChatShortcuts } from './hooks/useChatShortcuts';
+import { useProviderCatalog } from './hooks/useProviderCatalog';
+import { ChatStoreProvider, createChatStore, resolveModelTarget, useChatStore } from './state/chatStore';
+import type { ModelTarget } from './state/chatStore';
 
 /** Página de chat: une el store de T11 con el router, markdown y el composer. */
 export function ChatPage() {
@@ -30,6 +36,8 @@ export function ChatPage() {
     createChatStore({
       services,
       conversations: services.conversations,
+      autoTitle: true,
+      compaction: true,
       onConversationUpdated: (conversation) => conversationsStore.getState().merge(conversation),
     }),
   );
@@ -53,9 +61,13 @@ function ChatPageContent() {
   const storeConversationId = useChatStore((state) => state.conversationId);
   const researchMode = useChatStore((state) => state.researchMode);
   const setResearchMode = useChatStore((state) => state.setResearchMode);
+  const setModel = useChatStore((state) => state.setModel);
   const controller = useChatController();
   const services = useServices();
-  const { settings: appSettings, keyPresence, browser } = useResearchSettings(services);
+  const providers = useProviderCatalog();
+  const { settings: appSettings, keyPresence, browser, setResearchPanelVisible } = useResearchSettings(services);
+  // Selección optimista del selector de modelo: se limpia al cambiar de conversación.
+  const [pendingTarget, setPendingTarget] = useState<ModelTarget | null>(null);
 
   const warning =
     appSettings === null
@@ -98,10 +110,24 @@ function ChatPageContent() {
 
   const lastMessage = controller.messages[controller.messages.length - 1];
   const scrollRevision = `${controller.messages.length}:${lastMessage?.updatedAt ?? 0}:${controller.runStatus}`;
-  const { scrollRef, isAtBottom, onScroll, scrollToBottom } = useAutoScroll<HTMLDivElement>(scrollRevision);
+  const { scrollRef, isAtBottom, onScroll, scrollToBottom } = useAutoScroll<HTMLDivElement>(scrollRevision, {
+    enabled: controller.messages.length > 0,
+  });
 
   const modelId = conversation?.modelId ?? findLastModelId(controller.messages);
   const busy = controller.runStatus !== 'idle';
+  const researchPanelVisible = appSettings?.ui.researchPanelVisible ?? true;
+
+  useEffect(() => {
+    setPendingTarget(null);
+  }, [conversationId]);
+
+  const modelTarget = useMemo(
+    () => pendingTarget ?? (appSettings === null ? null : resolveModelTarget(conversation ?? null, appSettings, providers)),
+    [pendingTarget, appSettings, conversation, providers],
+  );
+
+  useChatShortcuts({ running: busy, onStop: controller.stop });
 
   return (
     <section
@@ -113,7 +139,30 @@ function ChatPageContent() {
         <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-text">
           {resolveTitle(conversation?.title, conversationId, t)}
         </h2>
-        {modelId !== null ? (
+        {researchMode && !researchPanelVisible ? (
+          <IconButton
+            data-testid="research-panel-show"
+            label={t('research.showPanel')}
+            size="sm"
+            icon={<PanelRightOpen aria-hidden="true" className="size-4" />}
+            onClick={() => setResearchPanelVisible(true)}
+            className="shrink-0"
+          />
+        ) : null}
+        {modelTarget !== null ? (
+          <ModelPicker
+            providers={providers}
+            providerId={modelTarget.providerId}
+            modelId={modelTarget.modelId}
+            label={t('chat.selectModel')}
+            placeholder={t('chat.selectModel')}
+            onSelect={(nextProviderId, nextModelId) => {
+              setPendingTarget({ providerId: nextProviderId, modelId: nextModelId });
+              void setModel(nextProviderId, nextModelId);
+            }}
+            className="w-28 shrink-0 sm:w-44"
+          />
+        ) : modelId !== null ? (
           <Badge
             variant="neutral"
             title={t('chat.modelLabel', { model: modelId })}
@@ -122,6 +171,12 @@ function ChatPageContent() {
             {modelId}
           </Badge>
         ) : null}
+        {conversation?.summary !== undefined && conversation.summary.trim() !== '' ? (
+          <Badge variant="neutral" title={t('chat.compacted')} className="hidden sm:inline-flex">
+            {t('chat.compacted')}
+          </Badge>
+        ) : null}
+        <ConversationUsage messages={controller.messages} />
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
@@ -135,6 +190,7 @@ function ChatPageContent() {
                   messages={controller.messages}
                   runStatus={controller.runStatus}
                   onRegenerate={(messageId) => void controller.regenerate(messageId)}
+                  onContinue={(messageId) => void controller.continueGeneration(messageId)}
                   onEdit={(messageId, text) => void controller.editUserMessage(messageId, text)}
                   onDelete={(messageId) => {
                     void controller.deleteMessage(messageId).then(() => loadConversations());
@@ -157,14 +213,15 @@ function ChatPageContent() {
             </button>
           )}
         </div>
-        {researchMode ? (
+        {researchMode && researchPanelVisible ? (
           <ResearchPanel
             steps={controller.liveSteps}
             messages={controller.messages}
             settings={appSettings}
             keyPresence={keyPresence}
             browser={browser}
-            className="max-h-72 shrink-0 border-t border-border lg:max-h-none lg:w-80 lg:border-l lg:border-t-0"
+            onHide={() => setResearchPanelVisible(false)}
+            className="h-[42dvh] max-h-96 min-h-80 shrink-0 border-t border-border lg:h-auto lg:max-h-none lg:w-80 lg:border-l lg:border-t-0"
           />
         ) : null}
       </div>
@@ -189,6 +246,13 @@ function ChatPageContent() {
           />
         </div>
       </footer>
+      {controller.pendingApproval !== null ? (
+        <ToolApprovalDialog
+          request={controller.pendingApproval}
+          onApprove={controller.approveTool}
+          onDeny={controller.denyTool}
+        />
+      ) : null}
     </section>
   );
 }

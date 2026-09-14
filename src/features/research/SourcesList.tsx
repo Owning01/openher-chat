@@ -12,10 +12,12 @@ export interface SourcesListProps {
   sources: SourceRef[];
   title?: string;
   className?: string;
+  /** Clases del área de items: permite fijar su altura y darle scroll propio. */
+  listClassName?: string;
 }
 
 /** Fuentes deduplicadas por URL; numeradas para mapear las citas `[n]` del modelo. */
-export function SourcesList({ sources, title, className }: SourcesListProps) {
+export function SourcesList({ sources, title, className, listClassName }: SourcesListProps) {
   const t = useT();
   const unique = useMemo(() => dedupeSources(sources), [sources]);
 
@@ -29,17 +31,19 @@ export function SourcesList({ sources, title, className }: SourcesListProps) {
           <Badge variant="neutral">{t('research.sourceCount', { count: unique.length })}</Badge>
         </h3>
       ) : null}
-      {unique.length === 0 ? (
-        <p className="text-xs text-muted">{t('research.sourcesEmpty')}</p>
-      ) : (
-        <ul className="flex flex-col gap-1.5">
-          {unique.map((source, index) => (
-            <li key={canonicalSourceKey(source.url)} className="min-w-0">
-              <SourceChip source={source} index={index + 1} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className={cn(listClassName)}>
+        {unique.length === 0 ? (
+          <p className="text-xs text-muted">{t('research.sourcesEmpty')}</p>
+        ) : (
+          <ul className="flex flex-col gap-1.5">
+            {unique.map((source, index) => (
+              <li key={canonicalSourceKey(source.url)} className="min-w-0">
+                <SourceChip source={source} index={index + 1} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }

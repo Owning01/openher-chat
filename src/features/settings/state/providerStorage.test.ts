@@ -131,3 +131,20 @@ describe('sanitizeModelInfos', () => {
     expect(sanitizeModelInfos('nope')).toEqual([]);
   });
 });
+
+describe('sanitizeModelInfos adversarial', () => {
+  it('preserva una api válida', () => {
+    expect(sanitizeModelInfos([{ id: 'm', api: 'responses' }])).toEqual([
+      { id: 'm', label: 'm', source: 'manual', api: 'responses' },
+    ]);
+  });
+
+  it('descarta una api desconocida', () => {
+    expect(sanitizeModelInfos([{ id: 'm', api: 'bogus' }])).toEqual([{ id: 'm', label: 'm', source: 'manual' }]);
+  });
+
+  it('acepta un id __proto__ como dato sin romper', () => {
+    const models = sanitizeModelInfos([{ id: '__proto__' }]);
+    expect(models[0]?.id).toBe('__proto__');
+  });
+});

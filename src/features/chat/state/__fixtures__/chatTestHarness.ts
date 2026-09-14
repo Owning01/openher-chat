@@ -97,6 +97,8 @@ export interface ChatHarness {
 export interface ChatHarnessOptions {
   agent?: Partial<AgentBudget>;
   providers?: ProviderConfig[];
+  autoTitle?: boolean;
+  compaction?: boolean;
   onConversationUpdated?: (conversation: Conversation) => void;
 }
 
@@ -139,6 +141,8 @@ export function createChatHarness(options: ChatHarnessOptions = {}): ChatHarness
     providers: { load: async () => providerConfigs },
     clock: () => state.now,
     newId: () => nextId('m'),
+    autoTitle: options.autoTitle,
+    compaction: options.compaction,
     onConversationUpdated: options.onConversationUpdated,
   });
 

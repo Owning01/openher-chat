@@ -10,6 +10,7 @@ import type {
   SearchSettings,
   ThemeMode,
   ToolSettings,
+  UiSettings,
 } from '../types/settings';
 import { createDefaultSettings, SETTINGS_SCHEMA_VERSION } from './defaults';
 
@@ -17,7 +18,7 @@ type UnknownRecord = Record<string, unknown>;
 
 const LOCALES: readonly Locale[] = ['es', 'en'];
 const THEMES: readonly ThemeMode[] = ['light', 'dark', 'system'];
-const SEARCH_MODES: readonly SearchMode[] = ['auto', 'brave', 'tavily', 'duckduckgo'];
+const SEARCH_MODES: readonly SearchMode[] = ['auto', 'brave', 'tavily', 'duckduckgo', 'exa'];
 const FRESHNESS: readonly Freshness[] = ['any', 'day', 'week', 'month', 'year'];
 
 /**
@@ -48,6 +49,7 @@ function buildSettings(raw: unknown, now: number): AppSettings {
     tools: migrateTools(source['tools'], base.tools),
     search: migrateSearch(source['search'], base.search),
     proxy: migrateProxy(source['proxy'], base.proxy),
+    ui: migrateUi(source['ui'], base.ui),
     onboardingCompleted: readBoolean(source, 'onboardingCompleted', base.onboardingCompleted),
     updatedAt: readTimestamp(source['updatedAt'], now),
   };
@@ -91,6 +93,7 @@ function migrateTools(value: unknown, fallback: ToolSettings): ToolSettings {
   return {
     webSearchEnabled: readBoolean(source, 'webSearchEnabled', fallback.webSearchEnabled),
     openUrlEnabled: readBoolean(source, 'openUrlEnabled', fallback.openUrlEnabled),
+    requireApproval: readBoolean(source, 'requireApproval', fallback.requireApproval),
   };
 }
 
@@ -109,6 +112,14 @@ function migrateProxy(value: unknown, fallback: ProxySettings): ProxySettings {
   return {
     mode: readEnum(source, 'mode', ['direct', 'custom'] as const, fallback.mode),
     baseUrl: readNullableId(source['baseUrl']),
+  };
+}
+
+function migrateUi(value: unknown, fallback: UiSettings): UiSettings {
+  const source = asRecord(value);
+  return {
+    researchPanelVisible: readBoolean(source, 'researchPanelVisible', fallback.researchPanelVisible),
+    autoCheckUpdates: readBoolean(source, 'autoCheckUpdates', fallback.autoCheckUpdates),
   };
 }
 

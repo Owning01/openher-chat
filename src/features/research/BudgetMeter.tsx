@@ -15,35 +15,37 @@ export function BudgetMeter({ usage, className }: BudgetMeterProps) {
   const safe = sanitizeUsage(usage);
 
   return (
-    <section data-testid="research-budget" className={cn('space-y-2', className)}>
+    <section data-testid="research-budget" className={cn('space-y-1.5', className)}>
       <h3 className="text-xs font-medium text-muted">{t('research.budgetTitle')}</h3>
-      <Meter
-        label={t('research.budgetSteps')}
-        value={t('research.budgetValue', { used: safe.steps, max: safe.maxSteps })}
-        used={safe.steps}
-        max={safe.maxSteps}
-      />
-      <Meter
-        label={t('research.budgetToolCalls')}
-        value={t('research.budgetValue', { used: safe.toolCalls, max: safe.maxToolCalls })}
-        used={safe.toolCalls}
-        max={safe.maxToolCalls}
-      />
-      <Meter
-        label={t('research.budgetTokens')}
-        value={t('research.budgetValue', { used: safe.tokens, max: safe.maxTotalTokens })}
-        used={safe.tokens}
-        max={safe.maxTotalTokens}
-      />
-      <Meter
-        label={t('research.budgetWallClock')}
-        value={t('research.budgetValue', {
-          used: formatClock(t, safe.wallClockMs),
-          max: formatClock(t, safe.maxWallClockMs),
-        })}
-        used={safe.wallClockMs}
-        max={safe.maxWallClockMs}
-      />
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+        <Meter
+          label={t('research.budgetSteps')}
+          value={t('research.budgetValue', { used: safe.steps, max: safe.maxSteps })}
+          used={safe.steps}
+          max={safe.maxSteps}
+        />
+        <Meter
+          label={t('research.budgetToolCalls')}
+          value={t('research.budgetValue', { used: safe.toolCalls, max: safe.maxToolCalls })}
+          used={safe.toolCalls}
+          max={safe.maxToolCalls}
+        />
+        <Meter
+          label={t('research.budgetTokens')}
+          value={t('research.budgetValue', { used: safe.tokens, max: safe.maxTotalTokens })}
+          used={safe.tokens}
+          max={safe.maxTotalTokens}
+        />
+        <Meter
+          label={t('research.budgetWallClock')}
+          value={t('research.budgetValue', {
+            used: formatClock(t, safe.wallClockMs),
+            max: formatClock(t, safe.maxWallClockMs),
+          })}
+          used={safe.wallClockMs}
+          max={safe.maxWallClockMs}
+        />
+      </div>
     </section>
   );
 }
@@ -82,7 +84,7 @@ function Meter({ label, value, used, max }: MeterProps) {
   return (
     <div>
       <div className="flex items-center justify-between gap-2 text-xs">
-        <span className="text-muted">{label}</span>
+        <span className="min-w-0 truncate text-muted">{label}</span>
         <span className="shrink-0 font-mono text-text">{value}</span>
       </div>
       <div

@@ -4,7 +4,7 @@ import { fakeResponse } from '@/adapters/http/testUtils';
 import { FIXED_NOW, fakeHttp, httpError, jsonResponse, textResponse, toolContext } from '../__fixtures__/fakes';
 import type { FakeHttpClient, HttpResponder } from '../__fixtures__/fakes';
 import { ARTICLE_HTML } from '../__fixtures__/searchData';
-import { MAX_RESPONSE_BYTES, OPEN_URL_TIMEOUT_MS, openUrl } from './index';
+import { MAX_RESPONSE_BYTES, OPEN_URL_TIMEOUT_MS, openUrl, parseReaderText } from './index';
 
 const NOW = (): number => FIXED_NOW;
 
@@ -219,5 +219,63 @@ describe('openUrl — proxy', () => {
     });
     expect(result.ok).toBe(false);
     expect(result.error?.code).toBe('parse_error');
+  });
+});
+
+describe('openUrl — fallback de lector (navegador sin CORS)', () => {
+  it('si el fetch directo falla, reintenta con el lector y extrae el markdown', async () => {
+    const http = fakeHttp((request) => {
+      if (request.url.startsWith('https://r.jina.ai/')) {
+        return textResponse(
+          'Title: Reader Title\nURL Source: https://example.com/post\nPublished Time: 2026-01-01T00:00:00Z\n\nMarkdown Content:\n# Heading\n\nCuerpo del articulo.',
+          200,
+          { 'Content-Type': 'text/plain; charset=utf-8' },
+        );
+      }
+      throw httpError('network', 'failed to fetch');
+    });
+    const result = await openUrl({ url: 'https://example.com/post' }, toolContext(), {
+      http,
+      now: NOW,
+      readerFallback: true,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.content).toContain('Title: Reader Title');
+    expect(result.content).toContain('Cuerpo del articulo.');
+    expect(result.sources?.[0]?.title).toBe('Reader Title');
+    expect(http.requests[1]?.url).toBe('https://r.jina.ai/https://example.com/post');
+    expect(http.requests[1]?.headers?.Accept).toBe('text/plain');
+  });
+
+  it('sin readerFallback conserva el error cors_blocked accionable', async () => {
+    const http = fakeHttp(() => {
+      throw httpError('network', 'failed to fetch');
+    });
+    const result = await openUrl({ url: 'https://example.com/post' }, toolContext(), { http, now: NOW });
+    expect(result.ok).toBe(false);
+    expect(result.error?.code).toBe('cors_blocked');
+  });
+
+  it('con proxy configurado no consulta al lector', async () => {
+    const http = fakeHttp((request) => {
+      expect(request.url.startsWith('https://r.jina.ai/')).toBe(false);
+      return jsonResponse({ title: 'Proxy Title', text: 'Proxy body', contentType: 'text/html', truncated: false });
+    });
+    const result = await openUrl({ url: 'https://example.com/post' }, toolContext(), {
+      http,
+      now: NOW,
+      proxyBaseUrl: 'https://proxy.example.com',
+      readerFallback: true,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.content).toContain('Proxy body');
+    expect(http.requests).toHaveLength(1);
+  });
+
+  it('parseReaderText cae al texto completo sin marcador de markdown', () => {
+    const parsed = parseReaderText('solo texto', 'https://fallback.example');
+    expect(parsed.title).toBe('https://fallback.example');
+    expect(parsed.text).toBe('solo texto');
   });
 });

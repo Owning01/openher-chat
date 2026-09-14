@@ -1,3 +1,5 @@
+import { searchMessages as searchInMessages } from '@/domain/chat/messageSearch';
+import type { MessageSearchHit } from '@/domain/chat/messageSearch';
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
 import type { KeyVault } from '@/domain/ports/KeyVault';
 import type { SettingsRepository } from '@/domain/ports/SettingsRepository';
@@ -113,6 +115,10 @@ export class MemoryConversationRepository implements ConversationRepository {
       }
     }
     return Array.from(affected);
+  }
+
+  async searchMessages(query: string, limit: number): Promise<MessageSearchHit[]> {
+    return searchInMessages([...this.messages.values()], query, limit);
   }
 
   /** Vacía conversaciones y mensajes para aislar tests del arnés. */

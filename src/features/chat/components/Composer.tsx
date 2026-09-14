@@ -1,11 +1,20 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import { useT } from '@/i18n/useT';
-import { Send, Square, TriangleAlert } from '@/shared/icons';
+import { matchCommands, expandSlashInput } from '@/domain/prompts/commands';
+import type { SlashCommand } from '@/domain/prompts/commands';
+import { Mic, Send, Square, TriangleAlert } from '@/shared/icons';
 import { Button, Switch, TextArea, Tooltip } from '@/shared/ui';
 
+import { CommandMenu } from './CommandMenu';
+import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import type { ChatRunStatus } from '../state/chatStore';
+
+/** Errores de micrófono que conviene explicar como permiso, no como "no disponible". */
+function isPermissionError(value: string): boolean {
+  return /denied|permission|not-allowed|denegado|permiso/i.test(value);
+}
 
 /**
  * Ventana de gracia tras un envío: el segundo click de un doble click cae sobre
@@ -34,6 +43,21 @@ export function Composer({ status, onSend, onStop, research }: ComposerProps) {
   const canSend = text.trim() !== '' && !busy;
   const wasBusy = useRef(busy);
   const [stopReady, setStopReady] = useState(true);
+  const speech = useSpeechRecognition();
+  const speechPrefix = useRef('');
+  const [voiceNotice, setVoiceNotice] = useState<string | null>(null);
+  const [highlighted, setHighlighted] = useState(0);
+
+  // La paleta `/` solo está activa mientras se teclea el nombre del comando.
+  const slashQuery =
+    text.startsWith('/') && !text.includes(' ') && !text.includes('\n') ? text.slice(1) : null;
+  const commands = slashQuery === null ? [] : matchCommands(slashQuery);
+  const highlightedIndex = Math.min(highlighted, Math.max(0, commands.length - 1));
+
+  const selectCommand = (command: SlashCommand): void => {
+    setText(`/${command.name} `);
+    setHighlighted(0);
+  };
 
   // Solo bloquea el Stop si el turno arrancó estando montado (evita el click del doble envío);
   // un run que ya venía corriendo al montar deja detener de inmediato.
@@ -50,17 +74,66 @@ export function Composer({ status, onSend, onStop, research }: ComposerProps) {
   }, [busy]);
 
   const submit = (): void => {
+    if (speech.isListening) speech.stop();
     if (!canSend) return;
-    onSend(text.trim());
+    onSend(expandSlashInput(text));
     setText('');
+    setHighlighted(0);
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>): void => {
-    if (event.key !== 'Enter' || event.shiftKey) return;
     if (event.nativeEvent.isComposing) return;
+
+    if (commands.length > 0) {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setHighlighted((current) => (current + 1) % commands.length);
+        return;
+      }
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        setHighlighted((current) => (current - 1 + commands.length) % commands.length);
+        return;
+      }
+      if (event.key === 'Tab' || (event.key === 'Enter' && !event.shiftKey)) {
+        event.preventDefault();
+        const command = commands[highlightedIndex];
+        if (command !== undefined) selectCommand(command);
+        return;
+      }
+    }
+
+    if (event.key !== 'Enter' || event.shiftKey) return;
     event.preventDefault();
     submit();
   };
+
+  const toggleDictation = useCallback((): void => {
+    setVoiceNotice(null);
+    if (speech.isListening) {
+      speech.stop();
+      return;
+    }
+    if (!speech.supported) {
+      setVoiceNotice(t('chat.voiceUnavailable'));
+      return;
+    }
+    // Conserva lo escrito: el dictado se añade después del prefijo actual.
+    speechPrefix.current = text;
+    void speech
+      .start(
+        (transcript) => {
+          const prefix = speechPrefix.current;
+          setText(prefix + (prefix !== '' && transcript !== '' ? ' ' : '') + transcript);
+        },
+        (code) => setVoiceNotice(isPermissionError(code) ? t('chat.voicePermissionDenied') : t('chat.voiceUnavailable')),
+      )
+      .catch((error: unknown) => {
+        speech.stop();
+        const message = error instanceof Error ? error.message : '';
+        setVoiceNotice(isPermissionError(message) ? t('chat.voicePermissionDenied') : t('chat.voiceUnavailable'));
+      });
+  }, [speech, text, t]);
 
   return (
     <form
@@ -93,7 +166,20 @@ export function Composer({ status, onSend, onStop, research }: ComposerProps) {
           ) : null}
         </div>
       ) : null}
-      <div className="flex w-full items-end gap-2">
+      {voiceNotice !== null ? (
+        <p role="status" className="text-xs text-warning">
+          {voiceNotice}
+        </p>
+      ) : null}
+      <div className="relative flex w-full items-end gap-2">
+        {commands.length > 0 ? (
+          <CommandMenu
+            commands={commands}
+            highlighted={highlightedIndex}
+            onSelect={selectCommand}
+            onHighlight={setHighlighted}
+          />
+        ) : null}
         <TextArea
           autoResize
           rows={1}
@@ -105,6 +191,19 @@ export function Composer({ status, onSend, onStop, research }: ComposerProps) {
           onChange={(event) => setText(event.target.value)}
           onKeyDown={handleKeyDown}
         />
+        {speech.supported ? (
+          <Button
+            type="button"
+            variant={speech.isListening ? 'primary' : 'secondary'}
+            iconOnly
+            disabled={busy}
+            aria-label={speech.isListening ? t('chat.voiceListening') : t('chat.voiceInput')}
+            aria-pressed={speech.isListening}
+            title={speech.isListening ? t('chat.voiceListening') : t('chat.voiceInput')}
+            icon={<Mic aria-hidden="true" className="size-4" />}
+            onClick={toggleDictation}
+          />
+        ) : null}
         {busy ? (
           <Button
             type="button"

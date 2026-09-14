@@ -70,6 +70,7 @@ export interface FinalizeMessagePatch {
   status: MessageStatus;
   finishReason?: MessageFinishReason;
   usage?: TokenUsage;
+  truncated?: boolean;
   error?: MessageError;
   /** Timestamp inyectado; si se omite se conserva el `updatedAt` previo. */
   now?: number;
@@ -83,6 +84,7 @@ export function finalizeMessage(message: ChatMessage, patch: FinalizeMessagePatc
   const finalized: ChatMessage = { ...message, status: patch.status, updatedAt: patch.now ?? message.updatedAt };
   if (patch.finishReason !== undefined) finalized.finishReason = patch.finishReason;
   if (patch.usage !== undefined) finalized.usage = patch.usage;
+  if (patch.truncated === true) finalized.truncated = true;
   if (patch.error !== undefined) finalized.error = patch.error;
   return finalized;
 }

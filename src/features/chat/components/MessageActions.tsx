@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import type { Role } from '@/domain/types/chat';
 import { useT } from '@/i18n/useT';
-import { Pencil, RefreshCw, Trash } from '@/shared/icons';
+import { Pencil, Play, RefreshCw, Trash } from '@/shared/icons';
 import { CopyButton } from '@/shared/markdown/CopyButton';
 import { Button, IconButton, TextArea } from '@/shared/ui';
 
@@ -11,6 +11,8 @@ export interface MessageActionsProps {
   role: Role;
   text: string;
   canRegenerate: boolean;
+  /** Presente solo cuando la respuesta se truncó y puede reanudarse. */
+  onContinue?: (messageId: string) => void;
   disabled: boolean;
   onRegenerate: (messageId: string) => void;
   onEditStart: (messageId: string) => void;
@@ -22,6 +24,7 @@ export function MessageActions({
   role,
   text,
   canRegenerate,
+  onContinue,
   disabled,
   onRegenerate,
   onEditStart,
@@ -32,6 +35,15 @@ export function MessageActions({
   return (
     <div className="flex items-center gap-0.5">
       <CopyButton text={text} label={t('chat.copy')} copiedLabel={t('chat.copied')} />
+      {role === 'assistant' && onContinue !== undefined ? (
+        <IconButton
+          size="sm"
+          disabled={disabled}
+          label={t('chat.continue')}
+          icon={<Play aria-hidden="true" className="size-4" />}
+          onClick={() => onContinue(messageId)}
+        />
+      ) : null}
       {role === 'assistant' && canRegenerate ? (
         <IconButton
           size="sm"

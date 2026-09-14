@@ -20,11 +20,11 @@ export function AppShell({ children }: AppShellProps) {
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
 
   return (
-    <div className="min-h-dvh bg-background text-text">
+    <div className="flex h-dvh flex-col overflow-hidden bg-background pt-[var(--safe-area-inset-top)] pb-[var(--safe-area-inset-bottom)] text-text">
       {isDesktop ? <Sidebar className="fixed inset-y-0 left-0 z-30" /> : null}
-      <div className={cn('flex min-h-dvh flex-col', isDesktop && 'lg:pl-72')}>
+      <div className={cn('flex min-h-0 flex-1 flex-col', isDesktop && 'lg:pl-72')}>
         <TopBar onOpenMenu={openDrawer} />
-        <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+        <main className="flex min-h-0 flex-1 flex-col overflow-y-auto">{children}</main>
       </div>
       {isDesktop ? null : <MobileDrawer open={drawerOpen} onClose={closeDrawer} />}
       <ToastViewport />

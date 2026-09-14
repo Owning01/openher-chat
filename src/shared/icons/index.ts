@@ -7,6 +7,7 @@ export {
   CircleCheck,
   CircleStop,
   Copy,
+  Download,
   Ellipsis,
   ExternalLink,
   Globe,
@@ -16,8 +17,11 @@ export {
   MessageSquare,
   Mic,
   Moon,
+  PanelRightClose,
+  PanelRightOpen,
   Paperclip,
   Pencil,
+  Play,
   Plus,
   RefreshCw,
   Search,
@@ -28,6 +32,7 @@ export {
   Sun,
   Trash,
   TriangleAlert,
+  Upload,
   X,
 } from 'lucide-react';
 

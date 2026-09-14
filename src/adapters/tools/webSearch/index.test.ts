@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { SearchSettings } from '@/domain/types/settings';
-import { BRAVE_DUPLICATE_PAYLOAD, BRAVE_PAYLOAD, DDG_HTML, PROXY_SEARCH_PAYLOAD, TAVILY_PAYLOAD } from '../__fixtures__/searchData';
+import {
+  BRAVE_DUPLICATE_PAYLOAD,
+  BRAVE_PAYLOAD,
+  DDG_HTML,
+  EXA_SSE,
+  PROXY_SEARCH_PAYLOAD,
+  TAVILY_PAYLOAD,
+} from '../__fixtures__/searchData';
 import { FIXED_NOW, fakeHttp, httpError, jsonResponse, keyVaultWith, textResponse } from '../__fixtures__/fakes';
 import { ToolExecutionError } from '../errors';
 import { BRAVE_KEY_REF } from './brave';
@@ -43,10 +50,11 @@ describe('createSearchService — cadena de fallback', () => {
     expect(outcome.provider).toBe('tavily');
   });
 
-  it('auto: Brave y Tavily fallan → DuckDuckGo HTML', async () => {
+  it('auto: Brave, Tavily y Exa fallan → DuckDuckGo HTML', async () => {
     const http = fakeHttp((request) => {
       if (request.url.startsWith('https://api.search.brave.com')) return jsonResponse({}, 500);
       if (request.url.startsWith('https://api.tavily.com')) return jsonResponse({}, 500);
+      if (request.url.startsWith('https://mcp.exa.ai')) return jsonResponse({}, 500);
       return textResponse(DDG_HTML);
     });
     const service = createSearchService(searchSettings(), KEYS, http, { now: () => FIXED_NOW, isBrowser: true });
@@ -55,11 +63,27 @@ describe('createSearchService — cadena de fallback', () => {
     expect(outcome.results).toHaveLength(2);
   });
 
-  it('auto sin keys usa DuckDuckGo directo', async () => {
-    const http = fakeHttp(() => textResponse(DDG_HTML));
+  it('auto sin keys usa Exa (MCP keyless) directo', async () => {
+    const http = fakeHttp((request) => {
+      if (request.url.startsWith('https://mcp.exa.ai')) return textResponse(EXA_SSE);
+      return textResponse(DDG_HTML);
+    });
     const service = createSearchService(searchSettings(), keyVaultWith({}), http, { now: () => FIXED_NOW, isBrowser: true });
     const outcome = await service.search(input());
-    expect(outcome.provider).toBe('duckduckgo');
+    expect(outcome.provider).toBe('exa');
+    expect(outcome.results.map((result) => result.url)).toEqual(['https://exa.example/one', 'https://exa.example/two']);
+    expect(http.requests).toHaveLength(1);
+    expect(http.requests[0]?.url.startsWith('https://mcp.exa.ai')).toBe(true);
+  });
+
+  it('explícito Exa sin key no consulta Brave ni Tavily', async () => {
+    const http = fakeHttp(() => textResponse(EXA_SSE));
+    const service = createSearchService(searchSettings({ mode: 'exa' }), keyVaultWith({}), http, {
+      now: () => FIXED_NOW,
+      isBrowser: true,
+    });
+    const outcome = await service.search(input());
+    expect(outcome.provider).toBe('exa');
     expect(http.requests).toHaveLength(1);
   });
 

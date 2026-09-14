@@ -1,9 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BRAVE_DUPLICATE_PAYLOAD, BRAVE_PAYLOAD, DDG_HTML, TAVILY_PAYLOAD } from '../__fixtures__/searchData';
+import {
+  BRAVE_DUPLICATE_PAYLOAD,
+  BRAVE_PAYLOAD,
+  DDG_HTML,
+  EXA_RESULT_TEXT,
+  EXA_SSE,
+  TAVILY_PAYLOAD,
+} from '../__fixtures__/searchData';
 import { FIXED_NOW, fakeHttp, jsonResponse, textResponse } from '../__fixtures__/fakes';
 import { ToolExecutionError } from '../errors';
 import { createBraveProvider, parseBraveResults } from './brave';
 import { createDuckDuckGoProvider, parseDuckDuckGoResults, resolveDuckDuckGoUrl } from './duckduckgo';
+import { createExaProvider, extractMcpText, parseExaResults } from './exa';
 import { createTavilyProvider, parseTavilyResults } from './tavily';
 
 const signal = (): AbortSignal => new AbortController().signal;
@@ -123,6 +131,61 @@ describe('DuckDuckGo', () => {
     expect(resolveDuckDuckGoUrl('/l/?uddg=https%3A%2F%2Fexample.com%2Fc')).toBe('https://example.com/c');
     expect(resolveDuckDuckGoUrl('javascript:alert(1)')).toBeNull();
     expect(resolveDuckDuckGoUrl(null)).toBeNull();
+  });
+});
+
+describe('Exa (MCP, keyless)', () => {
+  it('hace JSON-RPC tools/call y parsea los bloques del texto', async () => {
+    const http = fakeHttp(() => textResponse(EXA_SSE));
+    const provider = createExaProvider({ http, now: () => FIXED_NOW });
+    const results = await provider.search({ query: 'mcp', maxResults: 5, freshness: 'any', signal: signal() });
+
+    expect(results).toEqual([
+      {
+        url: 'https://exa.example/one',
+        title: 'First Exa Hit',
+        snippet: 'First highlight line with more detail',
+        accessedAt: FIXED_NOW,
+      },
+      { url: 'https://exa.example/two', title: 'Second Exa Hit', snippet: 'Second highlight line', accessedAt: FIXED_NOW },
+    ]);
+    const request = http.requests[0];
+    expect(request?.method).toBe('POST');
+    expect(request?.url).toBe('https://mcp.exa.ai/mcp');
+    expect(request?.headers?.['Content-Type']).toBe('application/json');
+    expect(request?.body).toMatchObject({
+      jsonrpc: '2.0',
+      method: 'tools/call',
+      params: { name: 'web_search_exa', arguments: { query: 'mcp', numResults: 5 } },
+    });
+  });
+
+  it('acepta JSON directo (sin SSE) y limita a maxResults', async () => {
+    const http = fakeHttp(() => jsonResponse({ result: { content: [{ type: 'text', text: EXA_RESULT_TEXT }] } }));
+    const provider = createExaProvider({ http, now: () => FIXED_NOW });
+    const results = await provider.search({ query: 'x', maxResults: 1, freshness: 'any', signal: signal() });
+    expect(results).toHaveLength(1);
+    expect(results[0]?.url).toBe('https://exa.example/one');
+  });
+
+  it('extrae el texto del frame SSE y descarta cuerpos ajenos', () => {
+    expect(extractMcpText(EXA_SSE)).toContain('First Exa Hit');
+    expect(extractMcpText('nope')).toBeNull();
+    expect(extractMcpText('{"result":{"content":[]}}')).toBeNull();
+  });
+
+  it('ignora bloques sin URL http(s)', () => {
+    expect(parseExaResults('Title: No URL\nHighlights:\nfoo', FIXED_NOW)).toEqual([]);
+  });
+
+  it('propaga status HTTP como http_error', async () => {
+    const http = fakeHttp(() => textResponse('boom', 500));
+    const provider = createExaProvider({ http, now: () => FIXED_NOW });
+    const error = await provider
+      .search({ query: 'x', maxResults: 5, freshness: 'any', signal: signal() })
+      .catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(ToolExecutionError);
+    expect((error as ToolExecutionError).code).toBe('http_error');
   });
 });
 

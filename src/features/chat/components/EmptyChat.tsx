@@ -17,7 +17,7 @@ export function EmptyChat({ onSuggestion }: EmptyChatProps) {
   const t = useT();
 
   return (
-    <section data-testid="chat-empty" className="flex flex-col items-center gap-6 py-12 text-center">
+    <section data-testid="chat-empty" className="flex flex-col items-center gap-5 py-8 text-center sm:py-12">
       <div className="grid size-12 place-items-center rounded-full bg-primary-soft text-primary">
         <Sparkles aria-hidden="true" className="size-6" />
       </div>

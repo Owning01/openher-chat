@@ -539,3 +539,78 @@ describe('createProviderAdapter', () => {
     expect(adapter.capabilities().images).toBe(true);
   });
 });
+
+describe('extraHeaders por request', () => {
+  it('las aplica sobre las del provider', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('hi')));
+    const adapter = createAnthropicAdapter(anthropicConfig(), makeDeps(transport, fakeHttp(() => jsonResponse({}))));
+
+    await collect(adapter.streamChat(chatRequest({ extraHeaders: { 'x-opencode-session': 'conv-1' } })));
+
+    const post = transport.posts[0];
+    if (post === undefined) throw new Error('expected a recorded transport post');
+    expect(post.headers).toMatchObject({ 'x-opencode-session': 'conv-1' });
+  });
+});
+
+describe('caché de prompt', () => {
+  it('marca el system y el último mensaje con cache_control', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('hi')));
+    const adapter = createAnthropicAdapter(anthropicConfig(), makeDeps(transport, fakeHttp(() => jsonResponse({}))));
+
+    await collect(adapter.streamChat(chatRequest({ cache: { cacheControl: true } })));
+
+    const post = transport.posts[0];
+    if (post === undefined) throw new Error('expected a recorded transport post');
+    const body = post.body as {
+      system?: unknown;
+      messages: { role: string; content: { cache_control?: unknown }[] }[];
+    };
+    expect(body.system).toEqual([{ type: 'text', text: 'You are helpful.', cache_control: { type: 'ephemeral' } }]);
+    const last = body.messages[body.messages.length - 1];
+    expect(last?.content[0]?.cache_control).toEqual({ type: 'ephemeral' });
+  });
+
+  it('no marca nada sin el hint de caché', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('hi')));
+    const adapter = createAnthropicAdapter(anthropicConfig(), makeDeps(transport, fakeHttp(() => jsonResponse({}))));
+
+    await collect(adapter.streamChat(chatRequest()));
+
+    const post = transport.posts[0];
+    if (post === undefined) throw new Error('expected a recorded transport post');
+    expect(typeof (post.body as { system?: unknown }).system).toBe('string');
+  });
+
+  it('suma input + cache_read + cache_creation en el prompt real', async () => {
+    const raw =
+      'event: message_start\ndata: {"type":"message_start","message":{"usage":{"input_tokens":10,"cache_read_input_tokens":90,"cache_creation_input_tokens":5,"output_tokens":1}}}\n\n' +
+      'event: message_stop\ndata: {"type":"message_stop"}\n\n';
+    const adapter = createAnthropicAdapter(
+      anthropicConfig(),
+      makeDeps(fakeTransport(() => sseResult(raw)), fakeHttp(() => jsonResponse({}))),
+    );
+
+    const events = await collect(adapter.streamChat(chatRequest()));
+
+    expect(events).toContainEqual({
+      type: 'usage',
+      usage: { promptTokens: 105, cachedPromptTokens: 90, cacheWritePromptTokens: 5 },
+    });
+  });
+
+  it('recupera el prompt desde message_delta si message_start no trae usage', async () => {
+    const raw =
+      'event: message_delta\ndata: {"type":"message_delta","delta":{"stop_reason":"end_turn"},"usage":{"input_tokens":12,"cache_read_input_tokens":88,"output_tokens":7}}\n\n' +
+      'event: message_stop\ndata: {"type":"message_stop"}\n\n';
+    const adapter = createAnthropicAdapter(
+      anthropicConfig(),
+      makeDeps(fakeTransport(() => sseResult(raw)), fakeHttp(() => jsonResponse({}))),
+    );
+
+    const events = await collect(adapter.streamChat(chatRequest()));
+
+    expect(events).toContainEqual({ type: 'usage', usage: { promptTokens: 100, cachedPromptTokens: 88 } });
+    expect(events).toContainEqual({ type: 'usage', usage: { completionTokens: 7 } });
+  });
+});

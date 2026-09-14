@@ -1,6 +1,6 @@
 import { useT } from '@/i18n/useT';
 import type { Conversation } from '@/domain/types/conversation';
-import { Pencil, Trash } from '@/shared/icons';
+import { Download, Pencil, Trash } from '@/shared/icons';
 import { IconButton } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 
@@ -10,9 +10,10 @@ export interface ConversationItemProps {
   onSelect: (id: string) => void;
   onRename: (conversation: Conversation) => void;
   onDelete: (conversation: Conversation) => void;
+  onExport: (conversation: Conversation) => void;
 }
 
-export function ConversationItem({ conversation, active, onSelect, onRename, onDelete }: ConversationItemProps) {
+export function ConversationItem({ conversation, active, onSelect, onRename, onDelete, onExport }: ConversationItemProps) {
   const t = useT();
   const title = conversation.title.trim() === '' ? t('conversations.untitled') : conversation.title;
   const preview = conversation.lastMessagePreview.trim() === '' ? t('conversations.previewEmpty') : conversation.lastMessagePreview;
@@ -35,6 +36,12 @@ export function ConversationItem({ conversation, active, onSelect, onRename, onD
         <span className="truncate text-xs text-muted">{preview}</span>
       </button>
       <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100 max-lg:opacity-100">
+        <IconButton
+          size="sm"
+          label={t('conversations.export')}
+          icon={<Download aria-hidden="true" className="size-4" />}
+          onClick={() => onExport(conversation)}
+        />
         <IconButton
           size="sm"
           label={t('conversations.rename')}

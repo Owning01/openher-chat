@@ -14,7 +14,10 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
   return (
     <aside
       aria-label={t('app.sidebarLabel')}
-      className={cn('flex w-72 flex-col border-r border-border bg-surface', className)}
+      className={cn(
+        'flex w-72 flex-col border-r border-border bg-surface pt-[var(--safe-area-inset-top)] pb-[var(--safe-area-inset-bottom)]',
+        className,
+      )}
     >
       <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
         <Sparkles aria-hidden="true" className="size-5 shrink-0 text-primary" />

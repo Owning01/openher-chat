@@ -7,6 +7,7 @@ import {
   useConversationsStore,
 } from '@/features/conversations/state/conversationsStore';
 import { isOnboardingResolvedThisSession, needsOnboarding } from '@/features/onboarding/session';
+import { UpdateNotice } from '@/features/updates/UpdateNotice';
 import { useT } from '@/i18n/useT';
 import { Sparkles } from '@/shared/icons';
 import { Button, Spinner } from '@/shared/ui';
@@ -97,6 +98,7 @@ function BootedApp({ services, settings, storageError }: BootedAppProps) {
               ) : null}
             </div>
           ) : null}
+          <UpdateNotice enabled={settings.ui.autoCheckUpdates} />
           <AppRoutes />
         </AppShell>
       </ConversationsStoreProvider>

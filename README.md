@@ -2,7 +2,9 @@
 
 Cliente de chat multi-proveedor con modo investigación. Corre 100% local en el dispositivo (sin backend): las conversaciones viven en IndexedDB y las API keys en un vault local; solo se envía tráfico al proveedor de modelos y a las herramientas web que el usuario configure.
 
-- Proveedores OpenAI-compatible y Anthropic, con streaming SSE y tool calling.
+- Proveedores OpenAI-compatible, Anthropic y OpenAI Responses, con streaming SSE y tool calling.
+- OpenCode Zen y Go: un solo proveedor por gateway que descubre todos sus modelos y enruta cada uno al endpoint correcto (`chat/completions`, `messages` o `responses`).
+- Descubrimiento automático de modelos al conectar un proveedor (sin tipear modelo por modelo) e importación opcional del catálogo de un `opencode serve` local.
 - Agente con presupuestos (pasos, tools, tokens, tiempo), reintentos y modo investigación.
 - Herramientas web `web_search` (Brave / Tavily / DuckDuckGo, con fallback) y `open_url` con política anti-SSRF.
 - Ajustes de tema, idioma, proxy de búsqueda y presupuestos; wizard de onboarding.
@@ -27,7 +29,7 @@ pnpm android:sync     # cap sync android (copia dist/ al proyecto nativo)
 pnpm android:open     # cap open android (requiere Android Studio + JDK 21)
 ```
 
-Checklist de smoke manual: `docs/e2e-smoke.md`. Setup detallado: `docs/dev-setup.md`. Contrato del proxy de búsqueda: `docs/search-proxy.md`.
+Checklist de smoke manual: `docs/e2e-smoke.md`. Setup detallado: `docs/dev-setup.md`. Contrato del proxy de búsqueda: `docs/search-proxy.md`. Estándar de proveedores y OpenCode: `docs/provider-standard.md`.
 
 ## Arquitectura
 

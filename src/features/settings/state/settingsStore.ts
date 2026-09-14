@@ -9,7 +9,7 @@ import type { ProviderTemplate } from '@/domain/providers/catalog';
 import { createDefaultSettings } from '@/domain/settings/defaults';
 import { migrateSettings } from '@/domain/settings/migrate';
 import type { AgentBudget } from '@/domain/types/agent';
-import type { ModelInfo, ProviderConfig, ProviderKind } from '@/domain/types/provider';
+import type { ModelInfo, ProviderConfig, ProviderKind, ProviderQuirks } from '@/domain/types/provider';
 import type {
   AppSettings,
   ChatDefaults,
@@ -19,6 +19,7 @@ import type {
   SearchSettings,
   ThemeMode,
   ToolSettings,
+  UiSettings,
 } from '@/domain/types/settings';
 import { newId as defaultNewId } from '@/shared/utils/ids';
 
@@ -43,6 +44,22 @@ export type ProviderPatch = Partial<
   >
 >;
 
+/** Proveedor descubierto en una fuente externa (p. ej. `opencode serve`) listo para importar. */
+export interface ImportedProvider {
+  id: string;
+  label: string;
+  kind: ProviderKind;
+  baseUrl: string;
+  requiresKey: boolean;
+  models: ModelInfo[];
+  quirks?: ProviderQuirks;
+}
+
+export interface ImportedProviderResult {
+  added: number;
+  skipped: number;
+}
+
 export type SettingsPatch = Partial<
   Pick<AppSettings, 'locale' | 'theme' | 'activeProviderId' | 'lastModelByProvider' | 'onboardingCompleted'>
 > & {
@@ -52,6 +69,7 @@ export type SettingsPatch = Partial<
   tools?: Partial<ToolSettings>;
   search?: Partial<SearchSettings>;
   proxy?: Partial<ProxySettings>;
+  ui?: Partial<UiSettings>;
 };
 
 /** Dependencias del store: `AppServices` es estructuralmente asignable. */
@@ -83,6 +101,7 @@ export interface SettingsState {
   removeProvider(id: string): Promise<boolean>;
   saveApiKey(ref: string, secret: string): Promise<boolean>;
   refreshModels(providerId: string): Promise<ModelInfo[] | null>;
+  importProviders(providers: readonly ImportedProvider[]): Promise<ImportedProviderResult>;
   setActiveProvider(id: string | null): Promise<void>;
   setModelForProvider(providerId: string, modelId: string | null): Promise<void>;
   dismissError(): void;
@@ -286,6 +305,61 @@ export function createSettingsStore(services: SettingsStoreServices, options: Se
       }
     },
 
+    async importProviders(catalog) {
+      if (catalog.length === 0) return { added: 0, skipped: 0 };
+
+      const previousProviders = get().providers;
+      const previousSettings = get().settings;
+      const previousKeyPresence = get().keyPresence;
+      const timestamp = now();
+      const nextProviders = [...previousProviders];
+      const nextKeyPresence = { ...previousKeyPresence };
+      const lastModelByProvider = { ...previousSettings.lastModelByProvider };
+      let activeProviderId = previousSettings.activeProviderId;
+      let added = 0;
+      let skipped = 0;
+
+      for (const entry of catalog) {
+        if (findProviderByKindAndBaseUrl(nextProviders, entry) !== undefined) {
+          skipped += 1;
+          continue;
+        }
+        const config = providerFromImported(entry, { providers: nextProviders, now: timestamp, newId: generateId });
+        nextProviders.push(config);
+        if (config.keyRef !== null) nextKeyPresence[config.keyRef] = false;
+        if (config.defaultModelId !== null) lastModelByProvider[config.id] = config.defaultModelId;
+        activeProviderId = activeProviderId ?? config.id;
+        added += 1;
+      }
+
+      if (added === 0) return { added: 0, skipped };
+
+      const nextSettings = migrateSettings(
+        { ...previousSettings, activeProviderId, lastModelByProvider, updatedAt: timestamp },
+        timestamp,
+      );
+      set({ providers: nextProviders, settings: nextSettings, keyPresence: nextKeyPresence, error: null });
+      try {
+        // Orden: primero settings; si falla, aún no se escribió ningún proveedor.
+        await settingsRepo.save(nextSettings);
+        await providerRepo.save(nextProviders);
+        return { added, skipped };
+      } catch (error) {
+        // Revierte también lo ya persistido para no dejar estado y almacenamiento divergentes.
+        await Promise.allSettled([
+          settingsRepo.save(previousSettings),
+          providerRepo.save(previousProviders),
+        ]);
+        set({
+          providers: previousProviders,
+          settings: previousSettings,
+          keyPresence: previousKeyPresence,
+          error: toErrorMessage(error),
+        });
+        return { added: 0, skipped };
+      }
+    },
+
     async setActiveProvider(id) {
       if (id !== null && !get().providers.some((provider) => provider.id === id)) return;
       await get().patch({ activeProviderId: id });
@@ -375,6 +449,26 @@ function providerFromTemplate(template: ProviderTemplate, context: BuildProvider
   return config;
 }
 
+/** Convierte un proveedor descubierto externamente en `ProviderConfig` (con modelos y default). */
+function providerFromImported(entry: ImportedProvider, context: BuildProviderContext): ProviderConfig {
+  const id = uniqueProviderId(entry.id, context.providers);
+  const models = sanitizeModelInfos(entry.models);
+  const config: ProviderConfig = {
+    id,
+    label: entry.label.trim() === '' ? id : entry.label.trim(),
+    kind: entry.kind,
+    baseUrl: normalizeBaseUrl(entry.baseUrl),
+    requiresKey: entry.requiresKey,
+    keyRef: entry.requiresKey ? `provider:${id}` : null,
+    models,
+    defaultModelId: models[0]?.id ?? null,
+    createdAt: context.now,
+    updatedAt: context.now,
+  };
+  if (entry.quirks !== undefined) config.quirks = { ...entry.quirks };
+  return config;
+}
+
 function uniqueProviderId(base: string, providers: readonly ProviderConfig[]): string {
   const existing = new Set(providers.map((provider) => provider.id));
   if (!existing.has(base)) return base;
@@ -427,6 +521,7 @@ function mergeSettings(current: AppSettings, patch: SettingsPatch, timestamp: nu
     tools: patch.tools === undefined ? current.tools : mergeSection(current.tools, patch.tools),
     search: patch.search === undefined ? current.search : mergeSection(current.search, patch.search),
     proxy: patch.proxy === undefined ? current.proxy : mergeSection(current.proxy, patch.proxy),
+    ui: patch.ui === undefined ? current.ui : mergeSection(current.ui, patch.ui),
     updatedAt: timestamp,
   };
 }

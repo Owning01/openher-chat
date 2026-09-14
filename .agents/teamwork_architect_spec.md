@@ -254,3 +254,21 @@ Reglas: máx `maxSteps`; contexto reconstruido por paso con `selectHistoryByBudg
 3. Presupuesto de tokens heurístico: reserva 35%, calibración con usage, reintento único ante context_length.
 4. IndexedDB puede ser desalojada: `navigator.storage.persist()` + recoverInterrupted.
 5. Desktop nativo se decide al final (Tauri/Electron vs PWA).
+
+## 12. AMEND (2026-09-12) — Estándar de proveedores y OpenCode
+
+Cambios aprobados sobre los contratos congelados de §4/§6, documentados en
+`docs/provider-standard.md` y con tests propios:
+
+- `ProviderKind` se amplía: `'openai-compatible' | 'anthropic' | 'openai-responses' | 'opencode'`.
+- Nuevo `ModelApi = 'chat-completions' | 'messages' | 'responses'` y `ModelInfo.api?`.
+  Ruteo por modelo para proveedores heterogéneos; el override manual del usuario
+  sobrevive al refresco del catálogo.
+- Nuevos adapters: `openaiResponses.ts` (OpenAI Responses API) y `opencode.ts`
+  (router de OpenCode Zen con `OpenCodeDelegates` inyectados). `createProviderAdapter`
+  despacha también `openai-responses` y `opencode`.
+- Plantilla `opencode-zen` (`https://opencode.ai/zen/v1`) y fuente de catálogo local
+  `features/settings/state/opencodeServer.ts` (`opencode serve`, solo lectura de catálogo;
+  no proxya el agente ni transfiere API keys).
+- `vite.config.ts`: `testTimeout: 15_000` (la suite creció a 80 archivos / 772 tests).
+

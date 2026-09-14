@@ -334,24 +334,28 @@ describe('runAgent - multi-paso con tools', () => {
 });
 
 describe('runAgent - presupuestos', () => {
-  it('agota pasos y conserva el parcial con budget_exceeded', async () => {
+  it('al agotar los pasos, reserva un paso final sin tools y responde', async () => {
     const h = createHarness({
       params: { researchMode: true, budget: agentBudget({ maxSteps: 1, maxToolCalls: 5 }) },
     });
     h.tools.add(makeTool('web_search', async () => okResult('r')));
-    h.provider.scripts.push({
-      events: [{ type: 'text-delta', delta: 'primer paso' }, TOOL_CALL_SEARCH, { type: 'stop', reason: 'tool_use' }],
-    });
+    h.provider.scripts.push(
+      { events: [{ type: 'text-delta', delta: 'primer paso' }, TOOL_CALL_SEARCH, { type: 'stop', reason: 'tool_use' }] },
+      { events: [{ type: 'text-delta', delta: 'respuesta final' }, { type: 'stop', reason: 'end_turn' }] },
+    );
 
     const events = await collect(runAgent(h.params, h.deps));
     const end = runEnd(events);
 
-    expect(end.status).toBe('budget_exceeded');
-    expect(end.message.finishReason).toBe('budget_exceeded');
-    expect(end.message.content.map((block) => block.type)).toEqual(['text', 'tool-call', 'tool-result']);
-    expect(h.provider.requests).toHaveLength(1);
-    expect(eventsOfType(events, 'step-start')).toHaveLength(1);
-    expect(eventsOfType(events, 'step-end')).toHaveLength(1);
+    expect(end.status).toBe('complete');
+    expect(end.message.finishReason).toBe('complete');
+    expect(end.message.content.map((block) => block.type)).toEqual(['text', 'tool-call', 'tool-result', 'text']);
+    expect(h.provider.requests).toHaveLength(2);
+    // El paso final va sin tools: el modelo no puede seguir buscando.
+    expect(h.provider.requests[1]?.tools).toBeUndefined();
+    expect(h.provider.requests[1]?.toolChoice).toBeUndefined();
+    expect(eventsOfType(events, 'step-start')).toHaveLength(2);
+    expect(eventsOfType(events, 'step-end')).toHaveLength(2);
   });
 
   it('agota tokens antes de arrancar si el estimado ya supera el tope', async () => {
@@ -986,25 +990,29 @@ describe('runAgent - casos límite', () => {
     expect(end.message.content.map((block) => block.type)).toEqual(['tool-call']);
   });
 
-  it('agota el presupuesto de tool calls a mitad de batch', async () => {
+  it('al agotar tool-calls a mitad de batch, reserva una respuesta final sin tools', async () => {
     const h = createHarness({
       params: { researchMode: true, budget: agentBudget({ maxToolCalls: 1 }) },
     });
     h.tools.add(makeTool('web_search', async () => okResult('r')));
-    h.provider.scripts.push({
-      events: [
-        { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{"query":"a"}' } },
-        { type: 'tool-call', toolCall: { id: 'c2', name: 'web_search', argumentsText: '{"query":"b"}' } },
-        { type: 'stop', reason: 'tool_use' },
-      ],
-    });
+    h.provider.scripts.push(
+      {
+        events: [
+          { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{"query":"a"}' } },
+          { type: 'tool-call', toolCall: { id: 'c2', name: 'web_search', argumentsText: '{"query":"b"}' } },
+          { type: 'stop', reason: 'tool_use' },
+        ],
+      },
+      { events: [{ type: 'text-delta', delta: 'síntesis' }, { type: 'stop', reason: 'end_turn' }] },
+    );
 
     const events = await collect(runAgent(h.params, h.deps));
     const end = runEnd(events);
 
-    expect(end.status).toBe('budget_exceeded');
+    expect(end.status).toBe('complete');
     expect(eventsOfType(events, 'tool-start')).toHaveLength(1);
-    expect(end.message.content.map((block) => block.type)).toEqual(['tool-call', 'tool-call', 'tool-result']);
+    expect(end.message.content.map((block) => block.type)).toEqual(['tool-call', 'tool-call', 'tool-result', 'text']);
+    expect(h.provider.requests[1]?.tools).toBeUndefined();
   });
 
   it('convierte 2 fallos de timeout consecutivos en run-end error timeout', async () => {
@@ -1191,5 +1199,89 @@ describe('runAgent - casos límite', () => {
     const end = runEnd(await collect(runAgent(h.params, deps)));
 
     expect(end.status).toBe('aborted');
+  });
+});
+
+describe('sessionId', () => {
+  it('propaga el id de la conversación como sessionId de la request', async () => {
+    const h = createHarness({ params: { conversationId: 'conv-xyz' } });
+    h.provider.scripts.push({ events: [{ type: 'text-delta', delta: 'hi' }, { type: 'stop', reason: 'end_turn' }] });
+
+    await collect(runAgent(h.params, h.deps));
+
+    expect(h.provider.requests).toHaveLength(1);
+    expect(h.provider.requests[0]?.sessionId).toBe('conv-xyz');
+  });
+});
+
+describe('truncado', () => {
+  it('marca truncated cuando el stream corta por max_tokens', async () => {
+    const h = createHarness();
+    h.provider.scripts.push({
+      events: [{ type: 'text-delta', delta: 'parcial' }, { type: 'stop', reason: 'max_tokens' }],
+    });
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+
+    expect(end.status).toBe('complete');
+    expect(end.message.truncated).toBe(true);
+  });
+
+  it('no marca truncated en un cierre normal', async () => {
+    const h = createHarness();
+    h.provider.scripts.push({ events: [{ type: 'text-delta', delta: 'ok' }, { type: 'stop', reason: 'end_turn' }] });
+
+    const events = await collect(runAgent(h.params, h.deps));
+
+    expect(runEnd(events).message.truncated).toBeUndefined();
+  });
+});
+
+describe('runAgent - aprobación de tools', () => {
+  it('no ejecuta la tool si el gate no autoriza y devuelve `denied`', async () => {
+    const h = createHarness({ params: { researchMode: true } });
+    let executed = false;
+    h.tools.add(
+      makeTool('web_search', async () => {
+        executed = true;
+        return okResult('resultado');
+      }),
+    );
+    h.deps.permissions = { request: async () => false };
+    h.provider.scripts.push({ events: [TOOL_CALL_SEARCH, { type: 'stop', reason: 'tool_use' }] });
+    h.provider.scripts.push({ events: [{ type: 'text-delta', delta: 'listo' }, { type: 'stop', reason: 'end_turn' }] });
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const [toolEnd] = eventsOfType(events, 'tool-end');
+
+    expect(executed).toBe(false);
+    expect(toolEnd?.result.ok).toBe(false);
+    expect(toolEnd?.result.error?.code).toBe('denied');
+  });
+
+  it('ejecuta la tool cuando el gate autoriza', async () => {
+    const h = createHarness({ params: { researchMode: true } });
+    let executed = false;
+    const requested: string[] = [];
+    h.tools.add(
+      makeTool('web_search', async () => {
+        executed = true;
+        return okResult('resultado');
+      }),
+    );
+    h.deps.permissions = {
+      request: async ({ tool }) => {
+        requested.push(tool);
+        return true;
+      },
+    };
+    h.provider.scripts.push({ events: [TOOL_CALL_SEARCH, { type: 'stop', reason: 'tool_use' }] });
+    h.provider.scripts.push({ events: [{ type: 'text-delta', delta: 'listo' }, { type: 'stop', reason: 'end_turn' }] });
+
+    await collect(runAgent(h.params, h.deps));
+
+    expect(executed).toBe(true);
+    expect(requested).toEqual(['web_search']);
   });
 });

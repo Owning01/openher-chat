@@ -52,7 +52,7 @@ export function createOpenAICompatibleAdapter(config: ProviderConfig, deps: Adap
     try {
       result = await deps.transport.post({
         url: `${baseUrl}/chat/completions`,
-        headers: buildHeaders(config, deps.apiKey, 'text/event-stream'),
+        headers: buildHeaders(config, deps.apiKey, 'text/event-stream', request.extraHeaders),
         body: buildChatPayload(config, request),
         signal,
       });
@@ -98,8 +98,13 @@ export function createOpenAICompatibleAdapter(config: ProviderConfig, deps: Adap
 // Headers
 // ---------------------------------------------------------------------------
 
-function buildHeaders(config: ProviderConfig, apiKey: string | undefined, accept: string): Record<string, string> {
-  const headers: Record<string, string> = { ...config.extraHeaders };
+function buildHeaders(
+  config: ProviderConfig,
+  apiKey: string | undefined,
+  accept: string,
+  extraHeaders?: Record<string, string>,
+): Record<string, string> {
+  const headers: Record<string, string> = { ...config.extraHeaders, ...extraHeaders };
   removeHeader(headers, 'accept');
   headers.Accept = accept;
   if (config.requiresKey && apiKey !== undefined && apiKey !== '') {
@@ -162,9 +167,17 @@ interface OpenAIToolCallPayload {
   function: { name: string; arguments: string };
 }
 
+interface OpenAITextPart {
+  type: 'text';
+  text: string;
+  cache_control?: { type: 'ephemeral' };
+}
+
+type OpenAIMessageContent = string | null | OpenAITextPart[];
+
 interface OpenAIMessagePayload {
   role: 'system' | 'user' | 'assistant' | 'tool';
-  content: string | null;
+  content: OpenAIMessageContent;
   tool_calls?: OpenAIToolCallPayload[];
   tool_call_id?: string;
 }
@@ -183,14 +196,27 @@ interface OpenAIChatPayload {
   max_tokens?: number;
   tools?: OpenAIToolPayload[];
   tool_choice?: 'auto';
+  prompt_cache_key?: string;
+  prompt_cache_retention?: '24h';
 }
 
 function buildChatPayload(config: ProviderConfig, request: ChatCompletionRequest): OpenAIChatPayload {
+  const wantsCache = request.cache?.cacheControl === true;
+  const markMessages = wantsCache && config.quirks?.cacheControl === true;
+  const breakpoints = markMessages ? cacheBreakpoints(request.messages) : EMPTY_BREAKPOINTS;
+  const cacheKey =
+    wantsCache && config.quirks?.promptCache === true && request.sessionId !== undefined && request.sessionId !== ''
+      ? request.sessionId
+      : undefined;
   const payload: OpenAIChatPayload = {
     model: request.modelId,
-    messages: request.messages.map(toOpenAIMessage),
+    messages: request.messages.map((message, index) => toOpenAIMessage(message, breakpoints.has(index))),
     stream: true,
   };
+  if (cacheKey !== undefined) {
+    payload.prompt_cache_key = cacheKey;
+    if (request.cache?.retention !== undefined) payload.prompt_cache_retention = request.cache.retention;
+  }
   if (config.quirks?.includeUsage === true) payload.stream_options = { include_usage: true };
   if (request.temperature !== undefined) payload.temperature = request.temperature;
   if (request.maxOutputTokens !== undefined && request.maxOutputTokens !== null) payload.max_tokens = request.maxOutputTokens;
@@ -202,16 +228,44 @@ function buildChatPayload(config: ProviderConfig, request: ChatCompletionRequest
   return payload;
 }
 
-function toOpenAIMessage(message: WireMessage): OpenAIMessagePayload {
+const EMPTY_BREAKPOINTS: ReadonlySet<number> = new Set<number>();
+
+/**
+ * Breakpoints de caché estilo OpenCode: los mensajes de sistema (hasta 2) y los
+ * 2 últimos mensajes. Los marcadores son metadatos de control, así que
+ * reposicionarlos entre turnos no invalida el contenido cacheable.
+ */
+function cacheBreakpoints(messages: readonly WireMessage[]): ReadonlySet<number> {
+  const indices = new Set<number>();
+  let systemMarked = 0;
+  for (let index = 0; index < messages.length && systemMarked < 2; index += 1) {
+    if (messages[index]?.role === 'system') {
+      indices.add(index);
+      systemMarked += 1;
+    }
+  }
+  for (let index = Math.max(0, messages.length - 2); index < messages.length; index += 1) {
+    indices.add(index);
+  }
+  return indices;
+}
+
+/** Envuelve el texto en una parte con `cache_control` solo cuando toca marcarlo. */
+function markText(text: string, mark: boolean): OpenAIMessageContent {
+  if (!mark) return text;
+  return [{ type: 'text', text, cache_control: { type: 'ephemeral' } }];
+}
+
+function toOpenAIMessage(message: WireMessage, mark: boolean): OpenAIMessagePayload {
   switch (message.role) {
     case 'system':
-      return { role: 'system', content: message.content };
+      return { role: 'system', content: markText(message.content, mark) };
     case 'user':
-      return { role: 'user', content: message.content };
+      return { role: 'user', content: markText(message.content, mark) };
     case 'assistant': {
       const payload: OpenAIMessagePayload = {
         role: 'assistant',
-        content: message.content.length > 0 ? message.content : null,
+        content: message.content.length > 0 ? markText(message.content, mark) : null,
       };
       if (message.toolCalls !== undefined && message.toolCalls.length > 0) {
         payload.tool_calls = message.toolCalls.map((call) => ({
@@ -223,7 +277,7 @@ function toOpenAIMessage(message: WireMessage): OpenAIMessagePayload {
       return payload;
     }
     case 'tool':
-      return { role: 'tool', content: message.content, tool_call_id: message.toolCallId };
+      return { role: 'tool', content: markText(message.content, mark), tool_call_id: message.toolCallId };
   }
 }
 
@@ -480,6 +534,14 @@ function mapUsage(usage: Record<string, unknown> | null): TokenUsage | null {
   if (typeof usage.prompt_tokens === 'number') mapped.promptTokens = usage.prompt_tokens;
   if (typeof usage.completion_tokens === 'number') mapped.completionTokens = usage.completion_tokens;
   if (typeof usage.total_tokens === 'number') mapped.totalTokens = usage.total_tokens;
+  // `prompt_tokens` ya incluye los cacheados; aquí solo se exponen aparte.
+  const details = asRecord(usage.prompt_tokens_details);
+  if (details !== null && typeof details.cached_tokens === 'number') {
+    mapped.cachedPromptTokens = details.cached_tokens;
+  } else if (typeof usage.prompt_cache_hit_tokens === 'number') {
+    // DeepSeek usa contadores de nivel raíz (`prompt_cache_hit_tokens`).
+    mapped.cachedPromptTokens = usage.prompt_cache_hit_tokens;
+  }
   return Object.keys(mapped).length === 0 ? null : mapped;
 }
 

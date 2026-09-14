@@ -8,6 +8,17 @@ Proxy **opcional** para las tools web (`web_search`, `open_url`). Sirve para dos
 En Android nativo (Capacitor) las requests directas funcionan y el proxy no hace falta.
 Se configura en la app con `ProxySettings`: `{ mode: 'custom', baseUrl: 'https://openher-proxy.<cuenta>.workers.dev' }`.
 
+> **Exa no usa el proxy.** `web_search` incluye un proveedor **Exa** (MCP keyless,
+> `https://mcp.exa.ai/mcp`) que emite `Access-Control-Allow-Origin: *` y responde el
+> preflight `OPTIONS` (204), así que funciona **directo desde el navegador** y va siempre
+> directo aunque haya proxy. Por eso el contrato de este documento cubre solo
+> `brave`/`tavily`/`duckduckgo`.
+>
+> **`open_url` en navegador sin proxy.** Los sitios web no emiten CORS, así que el fetch
+> directo falla; `open_url` reintenta con un lector público con CORS
+> (`GET https://r.jina.ai/<url>`) que descarga la página server-side y devuelve markdown.
+> Con proxy configurado se usa su `/v1/fetch` y el lector **no** se consulta.
+
 ## Superficie HTTP
 
 ### `POST {baseUrl}/v1/search`
@@ -26,7 +37,7 @@ Body:
 { "provider": "brave", "query": "rust 2026", "count": 5, "freshness": "week" }
 ```
 
-- `provider`: `"brave" | "tavily" | "duckduckgo"`.
+- `provider`: `"brave" | "tavily" | "duckduckgo"` (Exa no pasa por el proxy).
 - `count`: entero 1–10.
 - `freshness`: `"any" | "day" | "week" | "month" | "year"`.
 
@@ -226,7 +237,9 @@ function json(body, status = 200) {
 | --- | --- |
 | Sin proxy, red bloqueada en navegador | `cors_blocked` con mensaje que sugiere configurar el proxy |
 | Sin proxy, `web_search` en Android nativo | request directa |
-| Sin proxy, `open_url` con redirect (`3xx`/opaco) | `blocked_url`: nunca se siguen redirects en modo directo |
+| Sin proxy, `web_search` en navegador (modo `auto`/`exa`) | **Exa MCP responde 200 directo sin key** (CORS `*`); no requiere proxy |
+| Sin proxy, `open_url` en navegador con CORS bloqueado | Reintenta con lector público con CORS (`r.jina.ai`); si también falla → `cors_blocked` |
+| Sin proxy, `open_url` con redirect (`3xx`/opaco) | `blocked_url`: nunca se siguen redirects en modo directo (el lector sí puede resolver la página) |
 | Sin proxy, `open_url` en Android nativo | `blocked_url`: el transporte no puede verificar redirects, exige proxy |
 | Proxy configurado, proveedor ok | `SourceRef[]` deduplicados, `provider` informado |
 | Proxy caído | `network`/`cors_blocked` con mensaje sobre el proxy |

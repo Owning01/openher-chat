@@ -1,3 +1,5 @@
+import { searchMessages as searchInMessages } from '@/domain/chat/messageSearch';
+import type { MessageSearchHit } from '@/domain/chat/messageSearch';
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
 import type { ChatMessage } from '@/domain/types/chat';
 import type { Conversation } from '@/domain/types/conversation';
@@ -136,6 +138,12 @@ export class IndexedDbConversations implements ConversationRepository {
     }
     await tx.done;
     return Array.from(affected);
+  }
+
+  async searchMessages(query: string, limit: number): Promise<MessageSearchHit[]> {
+    const db = await getDb();
+    const messages = await db.getAll('messages');
+    return searchInMessages(messages, query, limit);
   }
 }
 

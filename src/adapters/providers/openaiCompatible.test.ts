@@ -542,8 +542,121 @@ describe('createProviderAdapter', () => {
     expect(adapter.kind).toBe('anthropic');
   });
 
+  it('despacha openai-responses al adapter implementado', () => {
+    const adapter = createProviderAdapter(providerConfig({ kind: 'openai-responses' }), deps);
+    expect(adapter.kind).toBe('openai-responses');
+  });
+
+  it('despacha opencode al router con los tres delegates', () => {
+    const adapter = createProviderAdapter(providerConfig({ kind: 'opencode' }), deps);
+    expect(adapter.kind).toBe('opencode');
+    expect(adapter.capabilities()).toEqual({
+      streaming: true,
+      toolCalling: true,
+      systemPrompt: true,
+      listModels: true,
+      images: false,
+    });
+  });
+
   it('kind desconocido lanza un error claro', () => {
     const invalidKind = 'gemini' as ProviderKind;
     expect(() => createProviderAdapter(providerConfig({ kind: invalidKind }), deps)).toThrowError(/unsupported provider kind/);
+  });
+});
+
+describe('extraHeaders por request', () => {
+  it('las aplica sobre las del provider sin pisar Authorization', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('hi')));
+    const adapter = createOpenAICompatibleAdapter(providerConfig(), makeDeps(transport, fakeHttp(() => jsonResponse({}))));
+
+    await collect(adapter.streamChat(chatRequest({ extraHeaders: { 'x-opencode-session': 'conv-1' } })));
+
+    const post = requirePost(transport);
+    expect(post.headers).toEqual({
+      Accept: 'text/event-stream',
+      Authorization: `Bearer ${TEST_API_KEY}`,
+      'x-opencode-session': 'conv-1',
+    });
+  });
+});
+
+describe('caché de prompt', () => {
+  const body = (transport: FakeTransport): Record<string, unknown> => requirePost(transport).body as Record<string, unknown>;
+
+  it('añade prompt_cache_key y marcadores cuando el provider los declara', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('hi')));
+    const config = providerConfig({ quirks: { promptCache: true, cacheControl: true } });
+    const adapter = createOpenAICompatibleAdapter(config, makeDeps(transport, fakeHttp(() => jsonResponse({}))));
+
+    await collect(adapter.streamChat(chatRequest({ sessionId: 'conv-1', cache: { cacheControl: true, retention: '24h' } })));
+
+    const payload = body(transport);
+    expect(payload.prompt_cache_key).toBe('conv-1');
+    expect(payload.prompt_cache_retention).toBe('24h');
+    const messages = payload.messages as { content: unknown }[];
+    expect(messages[0]?.content).toEqual([
+      { type: 'text', text: 'You are helpful.', cache_control: { type: 'ephemeral' } },
+    ]);
+  });
+
+  it('no emite campos de caché sin el hint del runner', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('hi')));
+    const config = providerConfig({ quirks: { promptCache: true, cacheControl: true } });
+    const adapter = createOpenAICompatibleAdapter(config, makeDeps(transport, fakeHttp(() => jsonResponse({}))));
+
+    await collect(adapter.streamChat(chatRequest({ sessionId: 'conv-1' })));
+
+    const payload = body(transport);
+    expect(payload).not.toHaveProperty('prompt_cache_key');
+    expect(payload).not.toHaveProperty('prompt_cache_retention');
+    expect(payload.messages).toEqual([
+      { role: 'system', content: 'You are helpful.' },
+      { role: 'user', content: 'Hi' },
+    ]);
+  });
+
+  it('expone los cached_tokens del usage sin duplicarlos en prompt_tokens', async () => {
+    const chunk =
+      `data: ${JSON.stringify({
+        choices: [],
+        usage: { prompt_tokens: 100, completion_tokens: 5, total_tokens: 105, prompt_tokens_details: { cached_tokens: 80 } },
+      })}\n\n` + 'data: [DONE]\n\n';
+    const adapter = createOpenAICompatibleAdapter(
+      providerConfig(),
+      makeDeps(fakeTransport(() => sseResult(chunk)), fakeHttp(() => jsonResponse({}))),
+    );
+
+    const events = await collect(adapter.streamChat(chatRequest()));
+
+    expect(events).toContainEqual({
+      type: 'usage',
+      usage: { promptTokens: 100, completionTokens: 5, totalTokens: 105, cachedPromptTokens: 80 },
+    });
+  });
+
+  it('lee el hit de caché de DeepSeek (prompt_cache_hit_tokens de nivel raíz)', async () => {
+    const chunk =
+      `data: ${JSON.stringify({
+        choices: [],
+        usage: {
+          prompt_tokens: 12000,
+          completion_tokens: 20,
+          total_tokens: 12020,
+          prompt_cache_hit_tokens: 11000,
+          prompt_cache_miss_tokens: 1000,
+        },
+      })}\n\n` + 'data: [DONE]\n\n';
+    const adapter = createOpenAICompatibleAdapter(
+      providerConfig(),
+      makeDeps(fakeTransport(() => sseResult(chunk)), fakeHttp(() => jsonResponse({}))),
+    );
+
+    const events = await collect(adapter.streamChat(chatRequest()));
+
+    expect(events).toContainEqual({
+      type: 'usage',
+      usage: { promptTokens: 12000, completionTokens: 20, totalTokens: 12020, cachedPromptTokens: 11000 },
+    });
   });
 });

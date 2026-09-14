@@ -4,6 +4,7 @@ import { createAssistantMessage, finalizeMessage } from '../chat/messageFactory'
 import { selectHistoryByBudget } from '../chat/selectHistoryByBudget';
 import { truncateText } from '../chat/truncateText';
 import type { ChatCompletionRequest, ProviderAdapter } from '../ports/ProviderAdapter';
+import type { ToolPermissionGate } from '../ports/ToolPermission';
 import type { AgentBudget, AgentEvent, AgentRunStatus } from '../types/agent';
 import type {
   ChatMessage,
@@ -37,6 +38,8 @@ export interface RunAgentDeps {
   tools: ToolRegistry;
   clock: () => number;
   newId: () => string;
+  /** Si existe, cada tool pide aprobación antes de ejecutarse (permisos). */
+  permissions?: ToolPermissionGate;
 }
 
 export interface RunAgentParams {
@@ -129,6 +132,11 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
   let finalStatus: AgentRunStatus = 'complete';
   let finalError: MessageError | undefined;
   let stepIndex = 0;
+  // Cuando se agota el presupuesto blando (pasos o tool-calls) se reserva un paso
+  // final SIN tools para que el modelo sintetice en vez de terminar en blanco.
+  let answerForced = false;
+  /** Algún paso cortó por `max_tokens`: la respuesta puede reanudarse. */
+  let truncated = false;
 
   try {
     const capabilities = d.provider.capabilities();
@@ -156,10 +164,23 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
           budget: p.historyBudget,
           contextWindow: p.model?.contextWindow,
         });
+        const stepTools = answerForced ? undefined : requestTools;
         estimatedPromptTokens =
-          selection.estimatedPromptTokens + (requestTools === undefined ? 0 : estimateToolsTokens(requestTools));
+          selection.estimatedPromptTokens + (stepTools === undefined ? 0 : estimateToolsTokens(stepTools));
 
-        if (findBudgetLimit(budgetState, p.budget, d.clock(), estimatedPromptTokens, toolsEnabled) !== null) {
+        const limit = findBudgetLimit(
+          budgetState,
+          p.budget,
+          d.clock(),
+          estimatedPromptTokens,
+          toolsEnabled && !answerForced,
+          answerForced,
+        );
+        if (limit !== null) {
+          if (!answerForced && toolsEnabled && (limit === 'toolCalls' || limit === 'steps')) {
+            answerForced = true;
+            continue attempts;
+          }
           finalStatus = 'budget_exceeded';
           break steps;
         }
@@ -173,11 +194,13 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
           modelId: p.modelId,
           system: p.systemPrompt !== '' ? p.systemPrompt : undefined,
           messages: buildWireMessages({ system: p.systemPrompt, history: selection.messages, userMessage: p.userMessage }),
-          tools: requestTools,
-          toolChoice: requestTools === undefined ? undefined : 'auto',
+          tools: stepTools,
+          toolChoice: stepTools === undefined ? undefined : 'auto',
           temperature: p.defaults.temperature,
           maxOutputTokens: p.defaults.maxOutputTokens,
           signal: p.signal,
+          sessionId: p.conversationId,
+          cache: { cacheControl: true },
         };
 
         attempt = createAttempt();
@@ -209,6 +232,7 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
               attempt.usage = accumulateUsage(attempt.usage, event.usage);
             } else if (event.type === 'stop') {
               attempt.stopReason = event.reason;
+              if (event.reason === 'max_tokens') truncated = true;
               if (event.reason === 'aborted') {
                 attempt.aborted = true;
                 break;
@@ -267,7 +291,7 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
       const stepRunStart = runBlocks.length;
       runBlocks.push(...attempt.blocks);
 
-      const shouldRunTools = toolsEnabled && attempt.toolCalls.length > 0;
+      const shouldRunTools = !answerForced && toolsEnabled && attempt.toolCalls.length > 0;
       let abortedDuringTools = false;
       let budgetDuringTools = false;
       let failedTwice = false;
@@ -333,8 +357,8 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
         break;
       }
       if (budgetDuringTools) {
-        finalStatus = 'budget_exceeded';
-        break;
+        // Se cortó el batch de tools: reserva el paso final sin tools para sintetizar.
+        answerForced = true;
       }
       if (failedTwice) {
         finalStatus = 'error';
@@ -389,6 +413,7 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
       status: messageStatusFor(finalStatus),
       finishReason: finalStatus,
       usage: runUsage,
+      truncated,
       error: finalError,
       now: d.clock(),
     },
@@ -458,6 +483,22 @@ async function executePreparedTool(
   const { def, args } = prepared;
   const startedAt = d.clock();
   const timeoutMs = effectiveToolTimeout(def, p.budget.toolTimeoutMs);
+
+  if (d.permissions !== undefined) {
+    const allowed = await d.permissions.request({ tool: def.name, arguments: args });
+    if (p.signal.aborted) return { kind: 'aborted' };
+    if (!allowed) {
+      return {
+        kind: 'result',
+        result: errorResult(
+          'denied',
+          `The user denied execution of the "${def.name}" tool. Do not retry it; continue without it.`,
+          Math.max(0, d.clock() - startedAt),
+        ),
+      };
+    }
+  }
+
   const outcome = await withTimeout(
     (signal) => def.execute(args, { signal, conversationId: p.conversationId }),
     timeoutMs,
@@ -527,6 +568,7 @@ const TOOL_FAILURE_MESSAGE_CODES: Record<ToolErrorCode, MessageErrorCode> = {
   missing_proxy: 'unknown',
   http_error: 'unknown',
   parse_error: 'unknown',
+  denied: 'unknown',
 };
 
 function toolFailureToMessageError(result: ToolResult | undefined): MessageError {

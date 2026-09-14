@@ -4,6 +4,7 @@ import { PROVIDER_TEMPLATES } from '@/domain/providers/catalog';
 import { ProviderForm } from '@/features/settings/components/ProviderForm';
 import type { ProviderFormValue } from '@/features/settings/components/ProviderForm';
 import { SectionCard } from '@/features/settings/components/SectionCard';
+import { providerKindLabel } from '@/features/settings/components/providerKindLabel';
 import { useT } from '@/i18n/useT';
 import { Badge, Button } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
@@ -63,11 +64,7 @@ export function ProviderStep({
                 </span>
                 <span className="truncate font-mono text-xs text-muted">{template.baseUrl}</span>
                 <span className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="neutral">
-                    {template.kind === 'anthropic'
-                      ? t('settings.providerKindAnthropic')
-                      : t('settings.providerKindOpenai')}
-                  </Badge>
+                  <Badge variant="neutral">{providerKindLabel(template.kind, t)}</Badge>
                   <Badge variant={template.requiresKey ? 'neutral' : 'success'}>
                     {template.requiresKey ? t('onboarding.keyRequired') : t('onboarding.keyNotRequired')}
                   </Badge>

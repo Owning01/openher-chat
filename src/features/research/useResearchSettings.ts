@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { AppServices } from '@/app/services';
 import { isBrowserEnvironment } from '@/adapters/tools/platform';
@@ -13,6 +13,11 @@ export interface ResearchSettingsSnapshot {
   browser: boolean;
 }
 
+export interface ResearchSettingsResult extends ResearchSettingsSnapshot {
+  /** Muestra u oculta el panel de investigación (persistido en `settings.ui`). */
+  setResearchPanelVisible(visible: boolean): void;
+}
+
 const INITIAL_SNAPSHOT: ResearchSettingsSnapshot = {
   settings: null,
   keyPresence: { brave: false, tavily: false },
@@ -20,8 +25,10 @@ const INITIAL_SNAPSHOT: ResearchSettingsSnapshot = {
 };
 
 /** Carga settings y presencia de keys de búsqueda para gobernar el modo investigación. */
-export function useResearchSettings(services: AppServices): ResearchSettingsSnapshot {
+export function useResearchSettings(services: AppServices): ResearchSettingsResult {
   const [snapshot, setSnapshot] = useState<ResearchSettingsSnapshot>(INITIAL_SNAPSHOT);
+  // Última versión de settings: evita guardar sobre un snapshot ya reemplazado.
+  const latest = useRef<AppSettings | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -32,6 +39,7 @@ export function useResearchSettings(services: AppServices): ResearchSettingsSnap
     ])
       .then(([settings, brave, tavily]) => {
         if (!active) return;
+        latest.current = settings;
         setSnapshot({ settings, keyPresence: { brave, tavily }, browser: isBrowserEnvironment() });
       })
       .catch(() => undefined);
@@ -40,5 +48,24 @@ export function useResearchSettings(services: AppServices): ResearchSettingsSnap
     };
   }, [services]);
 
-  return snapshot;
+  const setResearchPanelVisible = useCallback(
+    (visible: boolean) => {
+      const persist = async (): Promise<void> => {
+        // Si se interactúa antes de que carguen los settings, se cargan al vuelo.
+        const current = latest.current ?? (await services.settings.load());
+        const next: AppSettings = {
+          ...current,
+          ui: { ...current.ui, researchPanelVisible: visible },
+          updatedAt: Date.now(),
+        };
+        latest.current = next;
+        setSnapshot((previous) => ({ ...previous, settings: next }));
+        await services.settings.save(next);
+      };
+      void persist().catch(() => undefined);
+    },
+    [services],
+  );
+
+  return { ...snapshot, setResearchPanelVisible };
 }

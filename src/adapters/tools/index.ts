@@ -133,7 +133,11 @@ function createOpenUrlTool(
         if (url === null) {
           throw new ToolExecutionError('invalid_args', 'The "url" argument is required and must be a non-empty string.');
         }
-        const result = await openUrl({ url }, context, { http: deps.http, now, proxyBaseUrl: proxy.baseUrl });
+        const result = await openUrl(
+          { url },
+          context,
+          { http: deps.http, now, proxyBaseUrl: proxy.baseUrl, readerFallback: browser && proxy.baseUrl === null },
+        );
         return withLimit(result, OPEN_URL_MAX_RESULT_CHARS);
       } catch (error) {
         const mapped = mapTransportError(error, { browser, proxied: proxy.baseUrl !== null });

@@ -7,6 +7,7 @@ import {
   DEFAULT_SETTINGS,
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_TOOL_SETTINGS,
+  DEFAULT_UI_SETTINGS,
   SETTINGS_SCHEMA_VERSION,
   createDefaultSettings,
 } from './defaults';
@@ -51,6 +52,10 @@ describe('defaults de settings', () => {
     expect(DEFAULT_SETTINGS.tools).toEqual(DEFAULT_TOOL_SETTINGS);
   });
 
+  it('DEFAULT_UI_SETTINGS arranca con panel visible y chequeo de updates activo', () => {
+    expect(DEFAULT_UI_SETTINGS).toEqual({ researchPanelVisible: true, autoCheckUpdates: true });
+  });
+
   it('createDefaultSettings inyecta now y no comparte objetos anidados', () => {
     const first = createDefaultSettings(1234);
     const second = createDefaultSettings(5678);
@@ -69,5 +74,6 @@ describe('defaults de settings', () => {
     expect(first.agent).not.toBe(second.agent);
     expect(first.search).not.toBe(second.search);
     expect(first.lastModelByProvider).not.toBe(second.lastModelByProvider);
+    expect(first.ui).not.toBe(second.ui);
   });
 });

@@ -10,4 +10,8 @@ export interface Conversation {
   messageCount: number;
   lastMessagePreview: string;
   status: 'active' | 'archived';
+  /** Resumen anclado de los turnos antiguos (compactación de contexto). */
+  summary?: string;
+  /** Id del último mensaje incluido en `summary`; el contexto enviado empieza después. */
+  summaryThroughMessageId?: string;
 }

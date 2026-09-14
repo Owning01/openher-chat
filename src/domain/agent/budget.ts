@@ -59,11 +59,25 @@ export function accumulateUsage(total: TokenUsage | undefined, usage: TokenUsage
   const prompt = finiteNumber(usage.promptTokens);
   const completion = finiteNumber(usage.completionTokens);
   const totalTokens = finiteNumber(usage.totalTokens);
-  if (prompt === undefined && completion === undefined && totalTokens === undefined) return total;
+  const cachedPrompt = finiteNumber(usage.cachedPromptTokens);
+  const cacheWritePrompt = finiteNumber(usage.cacheWritePromptTokens);
+  if (
+    prompt === undefined &&
+    completion === undefined &&
+    totalTokens === undefined &&
+    cachedPrompt === undefined &&
+    cacheWritePrompt === undefined
+  ) {
+    return total;
+  }
 
   const next: TokenUsage = { ...total };
   if (prompt !== undefined) next.promptTokens = (total?.promptTokens ?? 0) + prompt;
   if (completion !== undefined) next.completionTokens = (total?.completionTokens ?? 0) + completion;
+  if (cachedPrompt !== undefined) next.cachedPromptTokens = (total?.cachedPromptTokens ?? 0) + cachedPrompt;
+  if (cacheWritePrompt !== undefined) {
+    next.cacheWritePromptTokens = (total?.cacheWritePromptTokens ?? 0) + cacheWritePrompt;
+  }
   if (totalTokens !== undefined) {
     next.totalTokens = (total?.totalTokens ?? 0) + totalTokens;
   } else if (prompt !== undefined && completion !== undefined) {
@@ -112,6 +126,10 @@ export function elapsedWallClock(state: BudgetState, now: number): number {
 /**
  * Primer límite agotado para iniciar (o reintentar) un paso. Se evalúa ANTES de
  * cada paso; `toolsEnabled` evita que el tope de tool calls bloquee runs sin tools.
+ *
+ * `allowFinalStep` reserva una última llamada SIN tools para que el modelo
+ * sintetice la evidencia recogida en lugar de terminar con el mensaje en blanco:
+ * omite el tope de pasos, pero mantiene los topes duros de tokens y wall-clock.
  */
 export function findBudgetLimit(
   state: BudgetState,
@@ -119,8 +137,9 @@ export function findBudgetLimit(
   now: number,
   estimatedPromptTokens: number,
   toolsEnabled: boolean,
+  allowFinalStep = false,
 ): BudgetLimit | null {
-  if (!(state.steps < budget.maxSteps)) return 'steps';
+  if (!allowFinalStep && !(state.steps < budget.maxSteps)) return 'steps';
   if (toolsEnabled && !(state.toolCalls < budget.maxToolCalls)) return 'toolCalls';
   if (projectedTokens(state, estimatedPromptTokens) > budget.maxTotalTokens) return 'tokens';
   if (elapsedWallClock(state, now) >= budget.maxWallClockMs) return 'wallClock';

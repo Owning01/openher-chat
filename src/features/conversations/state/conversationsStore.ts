@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 import type { StoreApi, UseBoundStore } from 'zustand';
 
+import type { MessageSearchHit } from '@/domain/chat/messageSearch';
+import { conversationToJson, conversationToMarkdown, parseConversationArchive } from '@/domain/chat/serializeConversation';
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
 import type { Conversation } from '@/domain/types/conversation';
+import { newId as defaultNewId } from '@/shared/utils/ids';
 
 export interface NewConversationInput {
   title?: string;
@@ -16,6 +19,8 @@ export interface ConversationsState {
   items: Conversation[];
   activeId: string | null;
   query: string;
+  /** Coincidencias full-text en el contenido de los mensajes de la query actual. */
+  messageHits: MessageSearchHit[];
   status: ConversationsStatus;
   error: string | null;
   load: () => Promise<void>;
@@ -24,11 +29,27 @@ export interface ConversationsState {
   remove: (id: string) => Promise<boolean>;
   select: (id: string | null) => void;
   setQuery: (query: string) => void;
+  /** Busca en el contenido de los mensajes (mínimo 2 caracteres); vacío limpia. */
+  searchMessages: (query: string) => Promise<void>;
   visible: () => Conversation[];
   dismissError: () => void;
   /** Refleja un cambio puntual de conversación (preview, contador, título) sin recargar la lista. */
   merge: (conversation: Conversation) => void;
+  /** Exporta a Markdown legible (o `null` si la conversación no existe). */
+  exportMarkdown: (id: string) => Promise<string | null>;
+  /** Exporta a JSON portable round-trip (o `null` si no existe). */
+  exportJson: (id: string) => Promise<string | null>;
+  /** Importa un JSON portable creando una conversación nueva. Devuelve `null` si es inválido. */
+  importConversation: (text: string) => Promise<Conversation | null>;
 }
+
+export interface ConversationsStoreDeps {
+  newId?: () => string;
+  now?: () => number;
+}
+
+/** Marca interna de error de importación para que la UI muestre un mensaje traducido. */
+export const INVALID_IMPORT_ERROR = 'invalid-import';
 
 export type ConversationsStore = UseBoundStore<StoreApi<ConversationsState>>;
 
@@ -49,7 +70,12 @@ export function filterConversations(items: readonly Conversation[], query: strin
   return items.filter((conversation) => conversation.title.toLocaleLowerCase().includes(needle));
 }
 
-export function createConversationsStore(repo: ConversationRepository): ConversationsStore {
+export function createConversationsStore(
+  repo: ConversationRepository,
+  deps: ConversationsStoreDeps = {},
+): ConversationsStore {
+  const newId = deps.newId ?? (() => defaultNewId());
+  const now = deps.now ?? (() => Date.now());
   // Token de versión: un snapshot obsoleto de `list()` no debe pisar mutaciones locales.
   let loadSeq = 0;
 
@@ -57,6 +83,7 @@ export function createConversationsStore(repo: ConversationRepository): Conversa
     items: [],
     activeId: null,
     query: '',
+    messageHits: [],
     status: 'idle',
     error: null,
 
@@ -137,6 +164,20 @@ export function createConversationsStore(repo: ConversationRepository): Conversa
     select: (id) => set({ activeId: id }),
     setQuery: (query) => set({ query }),
     visible: () => filterConversations(get().items, get().query),
+
+    async searchMessages(query) {
+      const needle = query.trim();
+      if (needle.length < 2) {
+        set({ messageHits: [] });
+        return;
+      }
+      try {
+        const messageHits = await repo.searchMessages(needle, 20);
+        set({ messageHits });
+      } catch {
+        set({ messageHits: [] });
+      }
+    },
     dismissError: () => set({ error: null }),
 
     merge(conversation) {
@@ -151,6 +192,64 @@ export function createConversationsStore(repo: ConversationRepository): Conversa
           status: state.status === 'loading' ? 'ready' : state.status,
         };
       });
+    },
+
+    async exportMarkdown(id) {
+      const conversation = await repo.get(id);
+      if (conversation === null) return null;
+      const messages = await repo.listMessages(id);
+      return conversationToMarkdown(conversation, messages);
+    },
+
+    async exportJson(id) {
+      const conversation = await repo.get(id);
+      if (conversation === null) return null;
+      const messages = await repo.listMessages(id);
+      return conversationToJson(conversation, messages, now());
+    },
+
+    async importConversation(text) {
+      set({ error: null });
+      const archive = parseConversationArchive(text);
+      if (archive === null) {
+        set({ error: INVALID_IMPORT_ERROR });
+        return null;
+      }
+      try {
+        const created = await repo.create({
+          title: archive.conversation.title,
+          providerId: archive.conversation.providerId,
+          modelId: archive.conversation.modelId,
+        });
+        for (let index = 0; index < archive.messages.length; index += 1) {
+          const source = archive.messages[index];
+          if (source === undefined) continue;
+          const timestamp = now() + index;
+          await repo.appendMessage({
+            ...source,
+            id: newId(),
+            conversationId: created.id,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          });
+        }
+        const updated = await repo.update(created.id, {
+          researchMode: archive.conversation.researchMode,
+          systemPromptOverride: archive.conversation.systemPromptOverride,
+          messageCount: archive.messages.length,
+        });
+        loadSeq += 1;
+        set((state) => ({
+          items: sortConversationsByUpdatedAt([updated, ...state.items]),
+          activeId: updated.id,
+          query: '',
+          status: state.status === 'loading' ? 'ready' : state.status,
+        }));
+        return updated;
+      } catch (error) {
+        set({ error: toErrorMessage(error) });
+        return null;
+      }
     },
   }));
 }

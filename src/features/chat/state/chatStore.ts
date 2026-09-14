@@ -3,12 +3,17 @@ import type { StoreApi, UseBoundStore } from 'zustand';
 
 import { createToolRegistry } from '@/adapters/tools';
 import type { AppServices } from '@/app/services';
+import { generateTitle } from '@/domain/agent/generateTitle';
+import { compactMessages, preserveRecentBudget, shouldCompact } from '@/domain/agent/compaction';
 import { runAgent } from '@/domain/agent/runAgent';
 import type { RunAgentParams } from '@/domain/agent/runAgent';
 import { buildSystemPrompt } from '@/domain/agent/systemPrompt';
 import { createAssistantMessage, createUserMessage, finalizeMessage } from '@/domain/chat/messageFactory';
+import { messagePlainText } from '@/domain/chat/messageSearch';
 import { resolveCapabilities } from '@/domain/providers/capabilities';
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
+import type { ProviderAdapter } from '@/domain/ports/ProviderAdapter';
+import type { ToolPermissionGate } from '@/domain/ports/ToolPermission';
 import type { AgentEvent, AgentRunStatus, AgentStep } from '@/domain/types/agent';
 import type { ChatMessage, MessageContent, MessageError, MessageErrorCode } from '@/domain/types/chat';
 import type { Conversation } from '@/domain/types/conversation';
@@ -21,8 +26,21 @@ import { newId as defaultNewId } from '@/shared/utils/ids';
 
 export type ChatRunStatus = 'idle' | 'running' | 'stopping';
 
+/** Tool pendiente de autorización del usuario (gate de permisos). */
+export interface ToolApprovalRequest {
+  tool: string;
+  argumentsText: string;
+}
+
 /** Longitud del título derivado del primer mensaje de usuario (spec §9). */
 export const TITLE_MAX_LENGTH = 48;
+
+/**
+ * Instrucción (solo wire) para reanudar una respuesta truncada. No se persiste
+ * como mensaje de usuario: el historial ya termina en el assistant parcial.
+ */
+export const CONTINUATION_INSTRUCTION =
+  'Continue exactly where the previous answer was cut off. Do not repeat what you already wrote; output only the continuation.';
 
 /** Intervalo mínimo entre checkpoints de streaming persistidos (spec §9). */
 export const CHECKPOINT_INTERVAL_MS = 1000;
@@ -43,6 +61,10 @@ export interface ChatStoreDeps {
   providers?: ProviderConfigSource;
   clock?: () => number;
   newId?: () => string;
+  /** Genera un título con el modelo tras el primer intercambio (default: desactivado). */
+  autoTitle?: boolean;
+  /** Compacta el contexto con un resumen anclado al acercarse a la ventana (default: desactivado). */
+  compaction?: boolean;
   /** Notifica cambios de resumen (preview, contador, título, research) para la lista. */
   onConversationUpdated?: (conversation: Conversation) => void;
 }
@@ -54,14 +76,24 @@ export interface ChatState {
   liveSteps: AgentStep[];
   lastError: MessageError | null;
   researchMode: boolean;
+  /** Tool que espera autorización (null si no hay ninguna pendiente). */
+  pendingApproval: ToolApprovalRequest | null;
   load(conversationId: string): Promise<void>;
   send(text: string): Promise<void>;
   stop(): void;
+  /** Autoriza la tool pendiente; `always` la recuerda para toda la sesión. */
+  approveTool(always: boolean): void;
+  /** Deniega la tool pendiente: el agente continúa sin ejecutarla. */
+  denyTool(): void;
+  /** Reanuda la última respuesta truncada (`finishReason: max_tokens`) sin repetirla. */
+  continueGeneration(assistantMessageId: string): Promise<void>;
   regenerate(assistantMessageId: string): Promise<void>;
   editUserMessage(userMessageId: string, text: string): Promise<void>;
   deleteMessage(messageId: string): Promise<void>;
   retryLast(): Promise<void>;
   setResearchMode(enabled: boolean): Promise<void>;
+  /** Fija proveedor/modelo de la conversación (y el último usado) desde el chat. */
+  setModel(providerId: string, modelId: string): Promise<void>;
 }
 
 export type ChatStore = UseBoundStore<StoreApi<ChatState>>;
@@ -148,6 +180,36 @@ function clampPreview(text: string): string {
   return `${codePoints.slice(0, PREVIEW_MAX_LENGTH - 1).join('')}…`;
 }
 
+/** Id sintético del mensaje que porta el resumen de compactación (no se persiste). */
+export const COMPACTION_ANCHOR_ID = '__compaction_summary__';
+
+/**
+ * Reinyecta el resumen anclado al frente del historial y descarta los mensajes
+ * ya resumidos (todo hasta `summaryThroughMessageId`, inclusive).
+ */
+export function applyCompaction(history: readonly ChatMessage[], conversation: Conversation): ChatMessage[] {
+  const summary = conversation.summary;
+  if (summary === undefined || summary.trim() === '') return [...history];
+
+  let rest = [...history];
+  const through = conversation.summaryThroughMessageId;
+  if (through !== undefined) {
+    const index = history.findIndex((message) => message.id === through);
+    if (index >= 0) rest = history.slice(index + 1);
+  }
+
+  const anchor: ChatMessage = {
+    id: COMPACTION_ANCHOR_ID,
+    conversationId: conversation.id,
+    role: 'user',
+    status: 'complete',
+    content: [{ type: 'text', text: `[Summary of earlier conversation]\n\n${summary}` }],
+    createdAt: 0,
+    updatedAt: 0,
+  };
+  return [anchor, ...rest];
+}
+
 /**
  * Orquesta una conversación: persiste cada turno en el repo, consume `runAgent`,
  * refleja bloques/steps en vivo y sella el mensaje final con `finishReason`.
@@ -161,6 +223,8 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
   const generateId = deps.newId ?? ((): string => defaultNewId('msg'));
 
   let controller: AbortController | null = null;
+  let titleController: AbortController | null = null;
+  let compactionController: AbortController | null = null;
   let generation = 0;
   let toggleSeq = 0;
   const publishConversation = deps.onConversationUpdated;
@@ -168,7 +232,37 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
   return create<ChatState>((set, get) => {
     const isCurrent = (token: number): boolean => token === generation;
 
+    /** Tools aprobadas con "siempre": no vuelven a preguntar en esta sesión. */
+    const alwaysApproved = new Set<string>();
+    let approvalResolver: ((allowed: boolean) => void) | null = null;
+
+    function cancelApproval(): void {
+      const resolver = approvalResolver;
+      if (resolver === null) return;
+      approvalResolver = null;
+      set({ pendingApproval: null });
+      resolver(false);
+    }
+
+    /** Gate de permisos: suspende la tool hasta que la UI resuelve la aprobación. */
+    function createPermissionGate(): ToolPermissionGate {
+      return {
+        request: ({ tool, arguments: args }) => {
+          if (alwaysApproved.has(tool)) return Promise.resolve(true);
+          return new Promise<boolean>((resolve) => {
+            approvalResolver = resolve;
+            set({ pendingApproval: { tool, argumentsText: describeArguments(args) } });
+          });
+        },
+      };
+    }
+
     function abortRun(): void {
+      cancelApproval();
+      titleController?.abort();
+      titleController = null;
+      compactionController?.abort();
+      compactionController = null;
       controller?.abort();
       controller = null;
     }
@@ -230,6 +324,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       const patch: MessageUpdate = { content, status: finalMessage.status, updatedAt: now };
       if (finalMessage.finishReason !== undefined) patch.finishReason = finalMessage.finishReason;
       if (finalMessage.usage !== undefined) patch.usage = finalMessage.usage;
+      if (finalMessage.truncated === true) patch.truncated = true;
       if (error !== undefined) patch.error = error;
       await persistPatch(assistantId, patch);
       if (!isCurrent(token)) return;
@@ -238,7 +333,14 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           message.id === assistantId
             ? finalizeMessage(
                 { ...message, content },
-                { status: finalMessage.status, finishReason: finalMessage.finishReason, usage: finalMessage.usage, error, now },
+                {
+                  status: finalMessage.status,
+                  finishReason: finalMessage.finishReason,
+                  usage: finalMessage.usage,
+                  truncated: finalMessage.truncated,
+                  error,
+                  now,
+                },
               )
             : message,
         ),
@@ -440,7 +542,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           modelId: target.modelId,
           conversationId,
           systemPrompt: composeSystemPrompt(conversation, settings, clock(), researchMode),
-          history: input.history,
+          history: applyCompaction(input.history, conversation),
           userMessage: input.userMessage,
           defaults: { temperature: settings.chat.temperature, maxOutputTokens: settings.chat.maxOutputTokens },
           budget: settings.agent,
@@ -450,7 +552,14 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         };
         if (target.model !== undefined) params.model = target.model;
 
-        for await (const event of runAgent(params, { provider: adapter, tools, clock, newId: generateId })) {
+        const permissions = settings.tools.requireApproval ? createPermissionGate() : undefined;
+        for await (const event of runAgent(params, {
+          provider: adapter,
+          tools,
+          clock,
+          newId: generateId,
+          ...(permissions === undefined ? {} : { permissions }),
+        })) {
           if (!isCurrent(token)) break;
           await handleAgentEvent(event, token, assistant.id, ctx);
         }
@@ -460,7 +569,111 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         if (isCurrent(token)) {
           controller = null;
           set({ runStatus: 'idle' });
+          if (deps.autoTitle === true) {
+            void maybeGenerateTitle(token, conversationId, adapter, target);
+          }
+          if (deps.compaction === true) {
+            void maybeCompact(token, conversationId, adapter, target, settings);
+          }
         }
+      }
+    }
+
+    /**
+     * Genera un título con el modelo tras el primer intercambio. No bloquea el
+     * turno y nunca pisa un título que el usuario haya cambiado a mano (solo si
+     * sigue siendo el derivado del primer mensaje de usuario).
+     */
+    async function maybeGenerateTitle(
+      token: number,
+      conversationId: string,
+      adapter: ProviderAdapter,
+      target: ResolvedTarget,
+    ): Promise<void> {
+      const messages = get().messages;
+      if (messages.length !== 2) return;
+      const userMessage = messages.find((message) => message.role === 'user');
+      const assistant = messages.find((message) => message.role === 'assistant');
+      if (userMessage === undefined || assistant === undefined) return;
+      if (assistant.status !== 'complete' && assistant.status !== 'aborted') return;
+
+      const userText = messagePlainText(userMessage);
+      const assistantText = messagePlainText(assistant);
+      if (userText.trim() === '' || assistantText.trim() === '') return;
+
+      const local = new AbortController();
+      titleController = local;
+      const title = await generateTitle({
+        provider: adapter,
+        modelId: target.modelId,
+        userText,
+        assistantText,
+        sessionId: conversationId,
+        signal: local.signal,
+      });
+      if (titleController === local) titleController = null;
+      if (title === null || !isCurrent(token)) return;
+
+      try {
+        const conversation = await repo.get(conversationId);
+        if (conversation === null) return;
+        if (conversation.title !== conversationTitleFromText(userText)) return;
+        const updated = await repo.update(conversationId, { title });
+        if (!isCurrent(token)) return;
+        publishConversation?.(updated);
+      } catch {
+        // Persistencia best-effort: el título derivado sigue siendo válido.
+      }
+    }
+
+    /**
+     * Compacta cuando la estimación de contexto supera `ventana - max(salida, buffer)`
+     * (umbral de OpenCode). Guarda el resumen anclado y el punto de corte; el turno
+     * siguiente reinyecta el resumen y descarta los mensajes ya resumidos.
+     */
+    async function maybeCompact(
+      token: number,
+      conversationId: string,
+      adapter: ProviderAdapter,
+      target: ResolvedTarget,
+      settings: AppSettings,
+    ): Promise<void> {
+      const contextWindow =
+        target.model?.contextWindow ??
+        (settings.history.mode === 'fixed' ? settings.history.maxPromptTokens : null);
+      if (contextWindow === null || contextWindow <= 0) return;
+
+      const history = get().messages;
+      const reservedOutput = settings.chat.maxOutputTokens ?? settings.history.reservedOutputTokens;
+      if (!shouldCompact({ history, contextWindow, reservedOutput })) return;
+
+      const conversation = await repo.get(conversationId);
+      if (conversation === null || !isCurrent(token)) return;
+
+      const local = new AbortController();
+      compactionController = local;
+      const result = await compactMessages({
+        provider: adapter,
+        modelId: target.modelId,
+        messages: history,
+        previousSummary: conversation.summary,
+        keepTokens: preserveRecentBudget(contextWindow),
+        maxSummaryTokens: reservedOutput > 0 ? reservedOutput : undefined,
+        sessionId: conversationId,
+        signal: local.signal,
+      });
+      if (compactionController === local) compactionController = null;
+      if (result === null || !isCurrent(token)) return;
+
+      try {
+        const updated = await repo.update(conversationId, {
+          summary: result.summary,
+          summaryThroughMessageId: result.throughMessageId,
+        });
+        if (!isCurrent(token)) return;
+        publishConversation?.(updated);
+      } catch {
+        // Persistencia best-effort: el historial completo sigue siendo válido.
       }
     }
 
@@ -471,6 +684,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       liveSteps: [],
       lastError: null,
       researchMode: false,
+      pendingApproval: null,
 
       async load(conversationId) {
         abortRun();
@@ -503,6 +717,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
 
       stop() {
         if (get().runStatus === 'idle') return;
+        cancelApproval();
         if (controller === null) {
           // Reclamo en curso (antes de abrir el stream): invalida el token y libera el turno.
           generation += 1;
@@ -511,6 +726,47 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         }
         set({ runStatus: 'stopping' });
         controller.abort();
+      },
+
+      approveTool(always) {
+        const pending = get().pendingApproval;
+        if (pending === null) return;
+        if (always) alwaysApproved.add(pending.tool);
+        const resolver = approvalResolver;
+        approvalResolver = null;
+        set({ pendingApproval: null });
+        resolver?.(true);
+      },
+
+      denyTool() {
+        const resolver = approvalResolver;
+        approvalResolver = null;
+        set({ pendingApproval: null });
+        resolver?.(false);
+      },
+
+      async continueGeneration(assistantMessageId) {
+        const state = get();
+        const conversationId = state.conversationId;
+        if (conversationId === null || state.runStatus !== 'idle') return;
+        const target = state.messages.find((message) => message.id === assistantMessageId);
+        if (target === undefined || target.role !== 'assistant') return;
+        if (state.messages[state.messages.length - 1]?.id !== assistantMessageId) return;
+        const conversation = await repo.get(conversationId);
+        if (conversation === null) return;
+        const history = await repo.listMessages(conversationId);
+        const token = ++generation;
+        const instruction = createUserMessage({
+          id: generateId(),
+          conversationId,
+          text: CONTINUATION_INSTRUCTION,
+          now: clock(),
+        });
+        try {
+          await runTurn({ conversation, userMessage: instruction, history }, token);
+        } catch (cause) {
+          if (isCurrent(token)) set({ lastError: toMessageError(cause), runStatus: 'idle' });
+        }
       },
 
       async regenerate(assistantMessageId) {
@@ -617,17 +873,54 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           // Persistencia best-effort: el estado local ya refleja el toggle.
         }
       },
+
+      async setModel(providerId, modelId) {
+        const conversationId = get().conversationId;
+        if (conversationId !== null) {
+          try {
+            const updated = await repo.update(conversationId, { providerId, modelId });
+            publishConversation?.(updated);
+          } catch {
+            // Persistencia best-effort: la selección sigue visible en el selector.
+          }
+        }
+        // El último modelo por proveedor alimenta chats nuevos y conversaciones sin target.
+        try {
+          const settings = await services.settings.load();
+          await services.settings.save({
+            ...settings,
+            activeProviderId: conversationId === null ? providerId : settings.activeProviderId,
+            lastModelByProvider: { ...settings.lastModelByProvider, [providerId]: modelId },
+            updatedAt: clock(),
+          });
+        } catch {
+          // Sin settings persistidos el turno usa el target de la conversación.
+        }
+      },
     };
   });
 }
 
-function resolveProviderTarget(
-  conversation: Conversation,
-  settings: AppSettings,
+export interface ModelTarget {
+  providerId: string;
+  modelId: string;
+}
+
+/**
+ * Resuelve proveedor/modelo efectivos con la precedencia canónica:
+ * conversación → proveedor activo → primer proveedor; y
+ * modelo de la conversación → último usado → default del proveedor → primer modelo.
+ * Compartido por el run del agente y por el selector de modelo del chat.
+ */
+export function resolveModelTarget(
+  conversation: Pick<Conversation, 'providerId' | 'modelId'> | null,
+  settings: Pick<AppSettings, 'activeProviderId' | 'lastModelByProvider'>,
   providers: readonly ProviderConfig[],
-): ResolvedTarget | null {
+): ModelTarget | null {
   const provider =
-    (conversation.providerId === null ? undefined : providers.find((entry) => entry.id === conversation.providerId)) ??
+    (conversation?.providerId == null
+      ? undefined
+      : providers.find((entry) => entry.id === conversation.providerId)) ??
     (settings.activeProviderId === null
       ? undefined
       : providers.find((entry) => entry.id === settings.activeProviderId)) ??
@@ -635,15 +928,29 @@ function resolveProviderTarget(
   if (provider === undefined) return null;
 
   const modelId =
-    (conversation.providerId === provider.id ? conversation.modelId : null) ??
+    (conversation?.providerId === provider.id ? conversation.modelId : null) ??
     settings.lastModelByProvider[provider.id] ??
     provider.defaultModelId ??
     provider.models[0]?.id ??
     null;
   if (modelId === null) return null;
 
-  const model = provider.models.find((entry) => entry.id === modelId);
-  return model === undefined ? { provider, modelId } : { provider, modelId, model };
+  return { providerId: provider.id, modelId };
+}
+
+function resolveProviderTarget(
+  conversation: Conversation,
+  settings: AppSettings,
+  providers: readonly ProviderConfig[],
+): ResolvedTarget | null {
+  const target = resolveModelTarget(conversation, settings, providers);
+  if (target === null) return null;
+
+  const provider = providers.find((entry) => entry.id === target.providerId);
+  if (provider === undefined) return null;
+
+  const model = provider.models.find((entry) => entry.id === target.modelId);
+  return model === undefined ? { provider, modelId: target.modelId } : { provider, modelId: target.modelId, model };
 }
 
 function composeSystemPrompt(conversation: Conversation, settings: AppSettings, now: number, researchMode: boolean): string {
@@ -706,6 +1013,15 @@ function isFailedAssistant(message: ChatMessage): boolean {
 
 function configurationError(message: string): Error {
   return Object.assign(new Error(message), { code: 'invalid_request' as const, retryable: false });
+}
+
+/** Argumentos de una tool formateados para el diálogo de aprobación. */
+function describeArguments(value: unknown): string {
+  try {
+    return JSON.stringify(value, null, 2) ?? String(value);
+  } catch {
+    return String(value);
+  }
 }
 
 function toMessageError(cause: unknown): MessageError {

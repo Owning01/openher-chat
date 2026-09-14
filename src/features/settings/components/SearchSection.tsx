@@ -29,6 +29,7 @@ export function SearchSection() {
     { value: 'brave', label: t('settings.searchModeBrave') },
     { value: 'tavily', label: t('settings.searchModeTavily') },
     { value: 'duckduckgo', label: t('settings.searchModeDuckduckgo') },
+    { value: 'exa', label: t('settings.searchModeExa') },
   ];
 
   const freshnessOptions: SelectOption[] = [
@@ -65,7 +66,7 @@ export function SearchSection() {
             onChange={(event) => {
               const value = event.target.value;
               const mode =
-                value === 'brave' || value === 'tavily' || value === 'duckduckgo' ? value : 'auto';
+                value === 'brave' || value === 'tavily' || value === 'duckduckgo' || value === 'exa' ? value : 'auto';
               void patch({ search: { mode } });
             }}
           />
@@ -144,6 +145,14 @@ export function SearchSection() {
             checked={tools.openUrlEnabled}
             label={t('settings.searchOpenUrl')}
             onCheckedChange={(checked) => void patch({ tools: { openUrlEnabled: checked } })}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-text">{t('settings.searchRequireApproval')}</span>
+          <Switch
+            checked={tools.requireApproval}
+            label={t('settings.searchRequireApproval')}
+            onCheckedChange={(checked) => void patch({ tools: { requireApproval: checked } })}
           />
         </div>
       </div>

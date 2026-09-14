@@ -1,7 +1,8 @@
 /**
- * Cadena de búsqueda web: Brave → Tavily → DuckDuckGo HTML (modo auto) con
- * fallback por errores, dedupe por URL y `provider` informado. Si hay proxy
- * configurado, los mismos proveedores se consultan a través del proxy.
+ * Cadena de búsqueda web: Brave → Tavily → Exa (MCP) → DuckDuckGo HTML (modo
+ * auto), con fallback por errores, dedupe por URL y `provider` informado. Si hay
+ * proxy configurado, Brave/Tavily/DuckDuckGo se consultan a través de él; Exa va
+ * siempre directo porque es público (sin key) y emite CORS.
  */
 
 import type { HttpClient } from '@/domain/ports/HttpClient';
@@ -14,6 +15,7 @@ import { isBrowserEnvironment } from '../platform';
 import { createProxySearchProvider, resolveProxyBaseUrl } from '../proxy';
 import { BRAVE_KEY_REF, createBraveProvider } from './brave';
 import { createDuckDuckGoProvider } from './duckduckgo';
+import { createExaProvider } from './exa';
 import { TAVILY_KEY_REF, createTavilyProvider } from './tavily';
 
 export interface SearchInput {
@@ -99,6 +101,7 @@ async function buildProviderChain(
   const mode = settings.mode;
   const braveKey = mode === 'auto' || mode === 'brave' ? await keys.get(BRAVE_KEY_REF) : null;
   const tavilyKey = mode === 'auto' || mode === 'tavily' ? await keys.get(TAVILY_KEY_REF) : null;
+  const includeExa = mode === 'auto' || mode === 'exa';
   const includeDuckDuckGo = mode === 'auto' || mode === 'duckduckgo';
   const providers: SearchProvider[] = [];
 
@@ -109,13 +112,21 @@ async function buildProviderChain(
     if (tavilyKey !== null) {
       providers.push(createProxySearchProvider({ http, baseUrl: proxyBaseUrl, provider: 'tavily', apiKey: tavilyKey, now }));
     }
-    if (includeDuckDuckGo) {
-      providers.push(createProxySearchProvider({ http, baseUrl: proxyBaseUrl, provider: 'duckduckgo', apiKey: null, now }));
-    }
   } else {
     if (braveKey !== null) providers.push(createBraveProvider({ http, apiKey: braveKey, now }));
     if (tavilyKey !== null) providers.push(createTavilyProvider({ http, apiKey: tavilyKey, now }));
-    if (includeDuckDuckGo) providers.push(createDuckDuckGoProvider({ http, now }));
+  }
+
+  // Exa MCP es público (sin key) y con CORS: va directo aunque haya proxy,
+  // porque el contrato del proxy solo cubre brave/tavily/duckduckgo.
+  if (includeExa) providers.push(createExaProvider({ http, now }));
+
+  if (includeDuckDuckGo) {
+    if (proxyBaseUrl !== null) {
+      providers.push(createProxySearchProvider({ http, baseUrl: proxyBaseUrl, provider: 'duckduckgo', apiKey: null, now }));
+    } else {
+      providers.push(createDuckDuckGoProvider({ http, now }));
+    }
   }
 
   if (providers.length > 0) return { providers, missingProvider: null };
@@ -125,9 +136,9 @@ async function buildProviderChain(
 
 function noProviderMessage(missingProvider: string | null): string {
   if (missingProvider !== null) {
-    return `${missingProvider} is selected but has no API key. Add the key in Settings, or switch to DuckDuckGo.`;
+    return `${missingProvider} is selected but has no API key. Add the key in Settings, or switch to Exa (no key required).`;
   }
-  return 'No search provider is configured. Add a Brave or Tavily API key in Settings, or select DuckDuckGo.';
+  return 'No search provider is configured. Select Exa in Settings (no API key required), or add a Brave or Tavily key.';
 }
 
 function canonicalUrlKey(url: string): string {

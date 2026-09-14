@@ -4,6 +4,7 @@ import type { ChatHarness } from './__fixtures__/chatTestHarness';
 import {
   assistantOf,
   createChatHarness,
+  createProviderConfig,
   deferred,
   okTool,
   providerFailure,
@@ -61,7 +62,7 @@ describe('chatStore - send y streaming', () => {
 
     const request = h.provider.requests[0];
     expect(request?.modelId).toBe('model-1');
-    expect(request?.system).toContain('Current date and time (UTC)');
+    expect(request?.system).toContain('Current date (UTC)');
     expect(request?.system).toContain('You are a helpful assistant.');
     expect(request?.messages).toEqual([
       { role: 'system', content: request?.system },
@@ -430,5 +431,178 @@ describe('chatStore - regenerar, editar y borrar', () => {
     const edited = await h.repo.get(conversationId);
     expect(edited?.messageCount).toBe(2);
     expect(edited?.lastMessagePreview).toBe('cuatro');
+  });
+});
+
+describe('chatStore - auto-título', () => {
+  it('genera el título con el modelo tras el primer intercambio y lo publica', async () => {
+    const published: string[] = [];
+    const h = createChatHarness({
+      autoTitle: true,
+      onConversationUpdated: (conversation) => published.push(conversation.title),
+    });
+    const conversationId = await startConversation(h);
+    h.provider.scripts.push(scriptFor('Hola mundo'));
+    h.provider.scripts.push({
+      events: [{ type: 'text-delta', delta: 'Title: Saludo inicial' }, { type: 'stop', reason: 'end_turn' }],
+    });
+
+    await h.store.getState().send('hola');
+
+    await vi.waitFor(() => {
+      expect(h.provider.requests).toHaveLength(2);
+    });
+    await vi.waitFor(() => {
+      expect(published).toContain('Saludo inicial');
+    });
+    expect((await h.repo.get(conversationId))?.title).toBe('Saludo inicial');
+    expect(h.provider.requests[1]?.toolChoice).toBe('none');
+    expect(h.provider.requests[1]?.maxOutputTokens).toBe(32);
+  });
+
+  it('no dispara la generación en turnos posteriores al primero', async () => {
+    const h = createChatHarness({ autoTitle: true });
+    await startConversation(h);
+    h.provider.scripts.push(scriptFor('uno'));
+    await h.store.getState().send('primera');
+    await vi.waitFor(() => {
+      expect(h.provider.requests).toHaveLength(2);
+    });
+
+    h.provider.scripts.push(scriptFor('dos'));
+    await h.store.getState().send('segunda');
+
+    await vi.waitFor(() => {
+      expect(h.provider.requests).toHaveLength(3);
+    });
+    expect(h.provider.requests[2]?.messages.at(-1)).toEqual({ role: 'user', content: 'segunda' });
+  });
+
+  it('no pisa un título renombrado por el usuario', async () => {
+    const gate = deferred();
+    const h = createChatHarness({ autoTitle: true });
+    const conversationId = await startConversation(h);
+    h.provider.scripts.push(scriptFor('Hola'));
+    h.provider.scripts.push({
+      events: [{ type: 'text-delta', delta: 'Generado' }, { type: 'stop', reason: 'end_turn' }],
+      onEvent: async (_event, index) => {
+        if (index === 0) await gate.promise;
+      },
+    });
+
+    await h.store.getState().send('hola');
+    await vi.waitFor(() => {
+      expect(h.provider.requests).toHaveLength(2);
+    });
+
+    await h.repo.update(conversationId, { title: 'Mi título' });
+    gate.resolve();
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    expect((await h.repo.get(conversationId))?.title).toBe('Mi título');
+  });
+});
+
+describe('chatStore - compactación', () => {
+  it('resume el historial y persiste el ancla al superar la ventana', async () => {
+    const provider = createProviderConfig({
+      models: [
+        { id: 'model-1', label: 'Model 1', source: 'manual', supportsTools: true, contextWindow: 5_000 },
+      ],
+    });
+    const h = createChatHarness({ compaction: true, providers: [provider] });
+    const conversationId = await startConversation(h);
+    h.provider.scripts.push(scriptFor('x'.repeat(12_000)));
+    h.provider.scripts.push({
+      events: [{ type: 'text-delta', delta: '## Objective\n- resumen anclado' }, { type: 'stop', reason: 'end_turn' }],
+    });
+
+    await h.store.getState().send('hola');
+
+    await vi.waitFor(async () => {
+      const conversation = await h.repo.get(conversationId);
+      expect(conversation?.summary).toContain('Objective');
+    });
+    const conversation = await h.repo.get(conversationId);
+    expect(conversation?.summaryThroughMessageId).toBeTruthy();
+    // El segundo mensaje de la conversación es la petición de resumen (sin tools).
+    expect(h.provider.requests[1]?.toolChoice).toBe('none');
+  });
+
+  it('no dispara compactación cuando la ventana tiene holgura', async () => {
+    const h = createChatHarness({ compaction: true });
+    await startConversation(h);
+    h.provider.scripts.push(scriptFor('corto'));
+
+    await h.store.getState().send('hola');
+
+    await vi.waitFor(() => {
+      expect(h.provider.requests).toHaveLength(1);
+    });
+    expect((await h.repo.get(h.store.getState().conversationId ?? ''))?.summary).toBeUndefined();
+  });
+});
+
+describe('chatStore - aprobación de tools', () => {
+  it('suspende la tool hasta aprobarla y continúa el turno', async () => {
+    const h = createChatHarness();
+    const settings = await h.settings.load();
+    await h.settings.save({ ...settings, tools: { ...settings.tools, requireApproval: true } });
+    const conversationId = await startConversation(h, { researchMode: true });
+    h.provider.toolCalling = true;
+    h.tools.add(okTool('web_search'));
+    h.provider.scripts.push({
+      events: [
+        { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{"query":"x"}' } },
+        { type: 'stop', reason: 'tool_use' },
+      ],
+    });
+    h.provider.scripts.push(scriptFor('listo'));
+
+    const run = h.store.getState().send('busca');
+    await vi.waitFor(() => {
+      expect(h.store.getState().pendingApproval?.tool).toBe('web_search');
+    });
+    h.store.getState().approveTool(false);
+    await run;
+
+    expect(h.store.getState().pendingApproval).toBeNull();
+    expect(assistantOf(h.store).status).toBe('complete');
+    expect((await h.repo.get(conversationId))?.messageCount).toBe(2);
+  });
+
+  it('al denegar, el turno sigue sin ejecutar la tool', async () => {
+    const h = createChatHarness();
+    const settings = await h.settings.load();
+    await h.settings.save({ ...settings, tools: { ...settings.tools, requireApproval: true } });
+    await startConversation(h, { researchMode: true });
+    h.provider.toolCalling = true;
+    let executed = false;
+    h.tools.add({
+      ...okTool('web_search'),
+      execute: async () => {
+        executed = true;
+        return { ok: true, content: 'x', durationMs: 1 };
+      },
+    });
+    h.provider.scripts.push({
+      events: [
+        { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{}' } },
+        { type: 'stop', reason: 'tool_use' },
+      ],
+    });
+    h.provider.scripts.push(scriptFor('sin tool'));
+
+    const run = h.store.getState().send('busca');
+    await vi.waitFor(() => {
+      expect(h.store.getState().pendingApproval).not.toBeNull();
+    });
+    h.store.getState().denyTool();
+    await run;
+
+    expect(executed).toBe(false);
+    expect(assistantOf(h.store).status).toBe('complete');
   });
 });

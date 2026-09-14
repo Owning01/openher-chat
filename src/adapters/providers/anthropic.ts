@@ -83,7 +83,7 @@ export function createAnthropicAdapter(config: ProviderConfig, deps: AdapterDeps
     try {
       result = await deps.transport.post({
         url: `${baseUrl}/v1/messages`,
-        headers: buildHeaders(config, deps.apiKey),
+        headers: buildHeaders(config, deps.apiKey, request.extraHeaders),
         body: buildChatPayload(request),
         signal,
       });
@@ -134,8 +134,12 @@ function normalizeBaseUrl(baseUrl: string): string {
   return baseUrl.replace(/\/+$/, '').replace(/\/v1$/, '');
 }
 
-function buildHeaders(config: ProviderConfig, apiKey: string | undefined): Record<string, string> {
-  const headers: Record<string, string> = { ...config.extraHeaders };
+function buildHeaders(
+  config: ProviderConfig,
+  apiKey: string | undefined,
+  extraHeaders?: Record<string, string>,
+): Record<string, string> {
+  const headers: Record<string, string> = { ...config.extraHeaders, ...extraHeaders };
   removeHeader(headers, 'x-api-key');
   removeHeader(headers, 'anthropic-version');
   removeHeader(headers, BROWSER_DIRECT_HEADER);
@@ -193,9 +197,14 @@ function parseModelList(text: string): ModelInfo[] {
 // Payload de /v1/messages
 // ---------------------------------------------------------------------------
 
+interface AnthropicCacheControl {
+  type: 'ephemeral';
+}
+
 interface AnthropicTextBlock {
   type: 'text';
   text: string;
+  cache_control?: AnthropicCacheControl;
 }
 
 interface AnthropicToolUseBlock {
@@ -203,15 +212,26 @@ interface AnthropicToolUseBlock {
   id: string;
   name: string;
   input: Record<string, unknown>;
+  cache_control?: AnthropicCacheControl;
 }
 
 interface AnthropicToolResultBlock {
   type: 'tool_result';
   tool_use_id: string;
   content: string;
+  cache_control?: AnthropicCacheControl;
 }
 
 type AnthropicContentBlock = AnthropicTextBlock | AnthropicToolUseBlock | AnthropicToolResultBlock;
+
+interface AnthropicSystemBlock {
+  type: 'text';
+  text: string;
+  cache_control?: AnthropicCacheControl;
+}
+
+/** TTL por defecto de Anthropic (5 min); suficiente para el loop de chat. */
+const EPHEMERAL: AnthropicCacheControl = { type: 'ephemeral' };
 
 interface AnthropicMessage {
   role: 'user' | 'assistant';
@@ -229,7 +249,7 @@ interface AnthropicMessagesPayload {
   messages: AnthropicMessage[];
   max_tokens: number;
   stream: true;
-  system?: string;
+  system?: string | AnthropicSystemBlock[];
   temperature?: number;
   tools?: AnthropicToolPayload[];
 }
@@ -237,16 +257,22 @@ interface AnthropicMessagesPayload {
 type NonSystemWireMessage = Exclude<WireMessage, { role: 'system' }>;
 
 function buildChatPayload(request: ChatCompletionRequest): AnthropicMessagesPayload {
+  const caching = request.cache?.cacheControl === true;
+  const messages = request.messages.filter(
+    (message): message is NonSystemWireMessage => message.role !== 'system',
+  );
   const payload: AnthropicMessagesPayload = {
     model: request.modelId,
-    messages: request.messages
-      .filter((message): message is NonSystemWireMessage => message.role !== 'system')
-      .map(toAnthropicMessage),
+    // El breakpoint del system ya cubre tools+system (van antes en el prefijo);
+    // los dos últimos mensajes forman la escalera móvil de la cola.
+    messages: messages.map((message, index) => toAnthropicMessage(message, caching && index >= messages.length - 2)),
     max_tokens: request.maxOutputTokens ?? DEFAULT_MAX_TOKENS,
     stream: true,
   };
   const system = resolveSystem(request);
-  if (system !== undefined && system !== '') payload.system = system;
+  if (system !== undefined && system !== '') {
+    payload.system = caching ? [{ type: 'text', text: system, cache_control: EPHEMERAL }] : system;
+  }
   if (request.temperature !== undefined) payload.temperature = request.temperature;
   if (request.tools !== undefined && request.tools.length > 0) {
     payload.tools = request.tools.map(toAnthropicTool);
@@ -262,24 +288,37 @@ function resolveSystem(request: ChatCompletionRequest): string | undefined {
   return undefined;
 }
 
-function toAnthropicMessage(message: NonSystemWireMessage): AnthropicMessage {
+function toAnthropicMessage(message: NonSystemWireMessage, mark: boolean): AnthropicMessage {
   switch (message.role) {
     case 'user':
-      return { role: 'user', content: [{ type: 'text', text: message.content }] };
+      return { role: 'user', content: [withCacheControl({ type: 'text', text: message.content }, mark)] };
     case 'assistant': {
       const content: AnthropicContentBlock[] = [];
       if (message.content !== '') content.push({ type: 'text', text: message.content });
       for (const call of message.toolCalls ?? []) {
         content.push({ type: 'tool_use', id: call.id, name: call.name, input: parseToolInput(call.argumentsText) });
       }
+      markLastBlock(content, mark);
       return { role: 'assistant', content };
     }
     case 'tool':
       return {
         role: 'user',
-        content: [{ type: 'tool_result', tool_use_id: message.toolCallId, content: message.content }],
+        content: [
+          withCacheControl({ type: 'tool_result', tool_use_id: message.toolCallId, content: message.content }, mark),
+        ],
       };
   }
+}
+
+function withCacheControl(block: AnthropicContentBlock, mark: boolean): AnthropicContentBlock {
+  if (mark) block.cache_control = EPHEMERAL;
+  return block;
+}
+
+function markLastBlock(blocks: AnthropicContentBlock[], mark: boolean): void {
+  const last = blocks[blocks.length - 1];
+  if (mark && last !== undefined) last.cache_control = EPHEMERAL;
 }
 
 function toAnthropicTool(tool: ToolDefinition): AnthropicToolPayload {
@@ -315,6 +354,8 @@ interface AnthropicStreamState {
   terminal: boolean;
   stopReason: StopReason;
   emittedDelta: boolean;
+  /** Evita contar dos veces el prompt si `message_start` y `message_delta` lo traen. */
+  promptUsageEmitted: boolean;
   accept(event: SseEvent): StreamEvent[];
 }
 
@@ -325,13 +366,14 @@ function createStreamState(): AnthropicStreamState {
     terminal: false,
     stopReason: 'end_turn',
     emittedDelta: false,
+    promptUsageEmitted: false,
     accept(event) {
       const payload = parseJsonRecord(event.data);
       if (payload === null) return [];
       const type = event.event !== undefined && event.event !== '' ? event.event : typeof payload.type === 'string' ? payload.type : '';
       switch (type) {
         case 'message_start':
-          return acceptMessageStart(payload);
+          return acceptMessageStart(payload, state);
         case 'content_block_start':
           return acceptContentBlockStart(blocks, payload);
         case 'content_block_delta':
@@ -353,11 +395,14 @@ function createStreamState(): AnthropicStreamState {
   return state;
 }
 
-function acceptMessageStart(payload: Record<string, unknown>): StreamEvent[] {
+function acceptMessageStart(payload: Record<string, unknown>, state: AnthropicStreamState): StreamEvent[] {
   const message = asRecord(payload.message);
-  const usage = message === null ? null : asRecord(message.usage);
-  if (usage === null || typeof usage.input_tokens !== 'number') return [];
-  return [{ type: 'usage', usage: { promptTokens: usage.input_tokens } }];
+  // `message_start` solo trae el lado del prompt; el output autoritativo llega
+  // en `message_delta` (el `output_tokens` de aquí es un placeholder).
+  const usage = message === null ? null : mapAnthropicPromptUsage(asRecord(message.usage));
+  if (usage === null) return [];
+  state.promptUsageEmitted = true;
+  return [{ type: 'usage', usage }];
 }
 
 function acceptContentBlockStart(blocks: Map<number, PendingBlock>, payload: Record<string, unknown>): StreamEvent[] {
@@ -441,8 +486,19 @@ function acceptMessageDelta(payload: Record<string, unknown>, state: AnthropicSt
     state.stopReason = mapStopReason(delta.stop_reason);
   }
   const usage = asRecord(payload.usage);
-  if (usage !== null && typeof usage.output_tokens === 'number') {
-    events.push({ type: 'usage', usage: { completionTokens: usage.output_tokens } });
+  if (usage !== null) {
+    // Algunos proxies solo reportan el prompt/caché en el evento final; si
+    // `message_start` no lo trajo, se recupera aquí (una sola vez).
+    if (!state.promptUsageEmitted && typeof usage.input_tokens === 'number') {
+      const promptUsage = mapAnthropicPromptUsage(usage);
+      if (promptUsage !== null) {
+        state.promptUsageEmitted = true;
+        events.push({ type: 'usage', usage: promptUsage });
+      }
+    }
+    if (typeof usage.output_tokens === 'number') {
+      events.push({ type: 'usage', usage: { completionTokens: usage.output_tokens } });
+    }
   }
   return events;
 }
@@ -633,13 +689,8 @@ function messageToEvents(message: Record<string, unknown>): StreamEvent[] {
     }
   }
 
-  const usage = asRecord(message.usage);
-  if (usage !== null) {
-    const mapped: TokenUsage = {};
-    if (typeof usage.input_tokens === 'number') mapped.promptTokens = usage.input_tokens;
-    if (typeof usage.output_tokens === 'number') mapped.completionTokens = usage.output_tokens;
-    if (Object.keys(mapped).length > 0) events.push({ type: 'usage', usage: mapped });
-  }
+  const usage = mapAnthropicUsage(asRecord(message.usage));
+  if (usage !== null) events.push({ type: 'usage', usage });
   return events;
 }
 
@@ -667,6 +718,36 @@ function parseJsonRecord(text: string): Record<string, unknown> | null {
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+/**
+ * Normaliza el usage de Anthropic. `input_tokens` EXCLUYE lo cacheado, así que
+ * el prompt real (y la calibración del presupuesto) es la suma de input +
+ * cache_read + cache_creation. Los campos de caché se exponen aparte.
+ */
+function mapAnthropicPromptUsage(usage: Record<string, unknown> | null): TokenUsage | null {
+  if (usage === null) return null;
+  const mapped: TokenUsage = {};
+  const input = finiteNumber(usage.input_tokens);
+  const cacheRead = finiteNumber(usage.cache_read_input_tokens);
+  const cacheWrite = finiteNumber(usage.cache_creation_input_tokens);
+  if (input !== undefined || cacheRead !== undefined || cacheWrite !== undefined) {
+    mapped.promptTokens = (input ?? 0) + (cacheRead ?? 0) + (cacheWrite ?? 0);
+  }
+  if (cacheRead !== undefined) mapped.cachedPromptTokens = cacheRead;
+  if (cacheWrite !== undefined) mapped.cacheWritePromptTokens = cacheWrite;
+  return Object.keys(mapped).length === 0 ? null : mapped;
+}
+
+function mapAnthropicUsage(usage: Record<string, unknown> | null): TokenUsage | null {
+  const mapped = mapAnthropicPromptUsage(usage) ?? {};
+  const output = finiteNumber(usage?.output_tokens);
+  if (output !== undefined) mapped.completionTokens = output;
+  return Object.keys(mapped).length === 0 ? null : mapped;
+}
+
+function finiteNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 function isAbortError(error: unknown): boolean {

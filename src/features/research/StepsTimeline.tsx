@@ -14,6 +14,12 @@ import { summarizeToolCall } from './selectors';
 export interface StepsTimelineProps {
   steps: AgentStep[];
   defaultOpen?: boolean;
+  /** Clases del cuerpo colapsable: permite fijar su altura y darle scroll propio. */
+  bodyClassName?: string;
+  /** Clases de la sección raíz (permite repartir el espacio del panel). */
+  className?: string;
+  /** Notifica cada cambio de plegado para que el contenedor reajuste el layout. */
+  onToggle?: (open: boolean) => void;
 }
 
 type StepState = AgentStep['status'];
@@ -31,17 +37,32 @@ const STATE_ICON_CLASSES: Record<StepState, string> = {
 };
 
 /** Timeline en vivo del loop de investigación: pasos, tools, estado y duración. */
-export function StepsTimeline({ steps, defaultOpen = true }: StepsTimelineProps) {
+export function StepsTimeline({
+  steps,
+  defaultOpen = true,
+  bodyClassName,
+  className,
+  onToggle,
+}: StepsTimelineProps) {
   const t = useT();
   const [open, setOpen] = useState(defaultOpen);
 
+  const toggle = (): void => {
+    const next = !open;
+    setOpen(next);
+    onToggle?.(next);
+  };
+
   return (
-    <section data-testid="research-steps" className="rounded-lg border border-border-subtle bg-surface-subtle/40">
+    <section
+      data-testid="research-steps"
+      className={cn('rounded-lg border border-border-subtle bg-surface-subtle/40', className)}
+    >
       <button
         type="button"
         aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+        onClick={toggle}
+        className="flex w-full shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
       >
         <Search aria-hidden="true" className="size-3.5 shrink-0" />
         <span className="flex-1">{t('research.stepsTitle')}</span>
@@ -49,15 +70,17 @@ export function StepsTimeline({ steps, defaultOpen = true }: StepsTimelineProps)
         <ChevronDown aria-hidden="true" className={cn('size-3.5 shrink-0 transition-transform', open && 'rotate-180')} />
       </button>
       {open ? (
-        steps.length === 0 ? (
-          <p className="border-t border-border-subtle px-3 py-2 text-xs text-muted">{t('research.noSteps')}</p>
-        ) : (
-          <ol className="space-y-2 border-t border-border-subtle px-3 py-2">
-            {steps.map((step) => (
-              <StepRow key={step.index} step={step} />
-            ))}
-          </ol>
-        )
+        <div className={cn('border-t border-border-subtle px-3 py-2', bodyClassName)}>
+          {steps.length === 0 ? (
+            <p className="text-xs text-muted">{t('research.noSteps')}</p>
+          ) : (
+            <ol className="space-y-2">
+              {steps.map((step) => (
+                <StepRow key={step.index} step={step} />
+              ))}
+            </ol>
+          )}
+        </div>
       ) : null}
     </section>
   );

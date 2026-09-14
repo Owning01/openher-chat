@@ -23,6 +23,10 @@ export const conversations = defineDict({
     itemLabel: 'Abrir conversación «{title}»',
     errorTitle: 'No se pudo completar la operación',
     createError: 'No se pudo crear la conversación',
+    export: 'Exportar',
+    import: 'Importar',
+    importInvalid: 'El archivo no es una conversación válida.',
+    messageHits: 'Coincidencias en mensajes',
   },
   en: {
     new: 'New chat',
@@ -46,6 +50,10 @@ export const conversations = defineDict({
     itemLabel: 'Open conversation “{title}”',
     errorTitle: 'The operation could not be completed',
     createError: 'Could not create the conversation',
+    export: 'Export',
+    import: 'Import',
+    importInvalid: 'The file is not a valid conversation.',
+    messageHits: 'Message matches',
   },
 });
 

@@ -5,6 +5,7 @@ import {
   DEFAULT_HISTORY_BUDGET,
   DEFAULT_SEARCH_SETTINGS,
   DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_UI_SETTINGS,
   createDefaultSettings,
 } from './defaults';
 import { migrateSettings } from './migrate';
@@ -60,7 +61,7 @@ describe('migrateSettings', () => {
 
   it('ignora campos anidados con tipo inválido', () => {
     const migrated = migrateSettings(
-      { chat: 'nope', history: [], agent: 5, tools: null, search: 'x', proxy: 3, lastModelByProvider: 'nope' },
+      { chat: 'nope', history: [], agent: 5, tools: null, search: 'x', proxy: 3, ui: 7, lastModelByProvider: 'nope' },
       NOW,
     );
     expect(migrated.chat).toEqual(DEFAULT_CHAT_DEFAULTS);
@@ -68,7 +69,19 @@ describe('migrateSettings', () => {
     expect(migrated.agent).toEqual(DEFAULT_AGENT_BUDGET);
     expect(migrated.search).toEqual(DEFAULT_SEARCH_SETTINGS);
     expect(migrated.proxy).toEqual({ mode: 'direct', baseUrl: null });
+    expect(migrated.ui).toEqual(DEFAULT_UI_SETTINGS);
     expect(migrated.lastModelByProvider).toEqual({});
+  });
+
+  it('conserva la visibilidad del panel de investigación y sanea valores inválidos', () => {
+    expect(migrateSettings({ ui: { researchPanelVisible: false } }, NOW).ui.researchPanelVisible).toBe(false);
+    expect(migrateSettings({ ui: { researchPanelVisible: 'nope' } }, NOW).ui.researchPanelVisible).toBe(true);
+    expect(migrateSettings({ ui: null }, NOW).ui).toEqual(DEFAULT_UI_SETTINGS);
+  });
+
+  it('conserva el auto-chequeo de actualizaciones', () => {
+    expect(migrateSettings({ ui: { autoCheckUpdates: false } }, NOW).ui.autoCheckUpdates).toBe(false);
+    expect(migrateSettings({ ui: { autoCheckUpdates: 0 } }, NOW).ui.autoCheckUpdates).toBe(true);
   });
 
   it('acota temperature al rango 0-2', () => {

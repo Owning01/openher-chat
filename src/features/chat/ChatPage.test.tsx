@@ -107,8 +107,10 @@ describe('ChatPage', () => {
     fireEvent.click(suggestion);
 
     expect(await screen.findByText('respuesta única')).toBeInTheDocument();
-    expect(harness.provider.requests).toHaveLength(1);
-    expect(harness.provider.requests[0]?.messages.at(-1)?.content).toBe(suggestion.textContent);
+    // El auto-título añade una llamada lateral (`toolChoice: none`); el turno es único.
+    const turnRequests = harness.provider.requests.filter((request) => request.toolChoice !== 'none');
+    expect(turnRequests).toHaveLength(1);
+    expect(turnRequests[0]?.messages.at(-1)?.content).toBe(suggestion.textContent);
 
     const conversationsInRepo = await harness.repo.list();
     expect(conversationsInRepo).toHaveLength(1);
@@ -169,5 +171,32 @@ describe('ChatPage', () => {
 
     gate.resolve();
     expect(await screen.findByText('respuesta')).toBeInTheDocument();
+  });
+
+  it('cambia el modelo desde el chat y lo persiste en la conversación', async () => {
+    const harness = createChatHarness();
+    localStorage.setItem(
+      PROVIDERS_STORAGE_KEY,
+      JSON.stringify([
+        createProviderConfig({
+          models: [
+            { id: 'model-1', label: 'Model 1', source: 'manual' },
+            { id: 'model-2', label: 'Model 2', source: 'manual' },
+          ],
+          defaultModelId: 'model-1',
+        }),
+      ]),
+    );
+    const conversation = await harness.repo.create({ title: 'Mi chat' });
+    window.location.hash = `#/chat/${conversation.id}`;
+    renderChatPage(harness.services);
+
+    const select = await screen.findByRole('combobox', { name: 'Modelo' });
+    expect(select).toHaveValue('0');
+    fireEvent.change(select, { target: { value: '1' } });
+
+    await waitFor(async () => {
+      expect((await harness.repo.get(conversation.id))?.modelId).toBe('model-2');
+    });
   });
 });

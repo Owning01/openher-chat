@@ -5,6 +5,11 @@ export const chat = defineDict({
     composerPlaceholder: 'Escribe un mensaje…',
     send: 'Enviar',
     stop: 'Detener',
+    continue: 'Continuar',
+    voiceInput: 'Dictar por voz',
+    voiceListening: 'Detener dictado',
+    voiceUnavailable: 'El dictado por voz no está disponible en este dispositivo.',
+    voicePermissionDenied: 'Permiso de micrófono denegado. Actívalo en los ajustes del sistema.',
     streaming: 'Generando respuesta…',
     scrollToBottom: 'Ir al final',
 
@@ -26,6 +31,13 @@ export const chat = defineDict({
     retry: 'Reintentar',
 
     reasoning: 'Razonamiento',
+    usageIn: 'entrada',
+    usageOut: 'salida',
+    usageCached: 'caché',
+    usageTokens: 'tokens',
+    usageEstimated: 'estimado',
+    usageTotal: 'Uso de la conversación',
+    compacted: 'Contexto compactado',
     toolLabel: 'Herramienta: {name}',
     toolRunning: 'En curso',
     toolDone: 'Completado',
@@ -33,6 +45,7 @@ export const chat = defineDict({
     toolDurationMs: '{ms} ms',
     toolDurationSeconds: '{seconds} s',
     modelLabel: 'Modelo: {model}',
+    selectModel: 'Modelo',
 
     errorAuth: 'Revisa la API key del proveedor.',
     errorRateLimit: 'El proveedor limitó la frecuencia. Inténtalo en un momento.',
@@ -43,11 +56,22 @@ export const chat = defineDict({
     errorContextLength: 'La conversación supera el contexto del modelo.',
     errorAborted: 'La respuesta se detuvo.',
     errorUnknown: 'Ocurrió un error inesperado.',
+
+    approvalTitle: 'Permiso para usar una herramienta',
+    approvalBody: 'El modelo quiere ejecutar «{tool}»:',
+    approvalDeny: 'Denegar',
+    approvalOnce: 'Permitir una vez',
+    approvalAlways: 'Permitir siempre',
   },
   en: {
     composerPlaceholder: 'Write a message…',
     send: 'Send',
     stop: 'Stop',
+    continue: 'Continue',
+    voiceInput: 'Dictate',
+    voiceListening: 'Stop dictation',
+    voiceUnavailable: 'Voice dictation is not available on this device.',
+    voicePermissionDenied: 'Microphone permission denied. Enable it in system settings.',
     streaming: 'Generating response…',
     scrollToBottom: 'Go to bottom',
 
@@ -69,6 +93,13 @@ export const chat = defineDict({
     retry: 'Retry',
 
     reasoning: 'Reasoning',
+    usageIn: 'in',
+    usageOut: 'out',
+    usageCached: 'cached',
+    usageTokens: 'tokens',
+    usageEstimated: 'estimated',
+    usageTotal: 'Conversation usage',
+    compacted: 'Context compacted',
     toolLabel: 'Tool: {name}',
     toolRunning: 'Running',
     toolDone: 'Completed',
@@ -76,6 +107,7 @@ export const chat = defineDict({
     toolDurationMs: '{ms} ms',
     toolDurationSeconds: '{seconds} s',
     modelLabel: 'Model: {model}',
+    selectModel: 'Model',
 
     errorAuth: 'Check the provider API key.',
     errorRateLimit: 'The provider rate-limited the request. Try again in a moment.',
@@ -86,6 +118,12 @@ export const chat = defineDict({
     errorContextLength: 'The conversation exceeds the model context.',
     errorAborted: 'The response was stopped.',
     errorUnknown: 'An unexpected error occurred.',
+
+    approvalTitle: 'Tool permission',
+    approvalBody: 'The model wants to run “{tool}”:',
+    approvalDeny: 'Deny',
+    approvalOnce: 'Allow once',
+    approvalAlways: 'Always allow',
   },
 });
 

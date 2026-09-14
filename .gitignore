@@ -5,6 +5,9 @@ node_modules/
 dist/
 dist-ssr/
 
+# APK artifacts
+apk/
+
 # Agent scratch
 scratch/
 
@@ -35,3 +38,6 @@ Thumbs.db
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Tooling artifacts
+.playwright-mcp/

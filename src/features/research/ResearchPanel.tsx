@@ -1,11 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { SETTINGS_HREF } from '@/app/routing';
 import type { AgentStep } from '@/domain/types/agent';
 import type { ChatMessage } from '@/domain/types/chat';
 import type { AppSettings } from '@/domain/types/settings';
 import { useT } from '@/i18n/useT';
-import { Search, TriangleAlert } from '@/shared/icons';
+import { PanelRightClose, Search, TriangleAlert } from '@/shared/icons';
+import { IconButton } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 
 import { BudgetMeter } from './BudgetMeter';
@@ -21,12 +22,15 @@ export interface ResearchPanelProps {
   settings: AppSettings | null;
   keyPresence: SearchKeyPresence;
   browser: boolean;
+  /** Oculta el panel sin apagar el modo investigación. */
+  onHide?: () => void;
   className?: string;
 }
 
 /** Panel del modo investigación: timeline en vivo, fuentes del turno y consumo del presupuesto. */
-export function ResearchPanel({ steps, messages, settings, keyPresence, browser, className }: ResearchPanelProps) {
+export function ResearchPanel({ steps, messages, settings, keyPresence, browser, onHide, className }: ResearchPanelProps) {
   const t = useT();
+  const [stepsOpen, setStepsOpen] = useState(true);
   const sources = useMemo(() => sourcesFromMessages(messages), [messages]);
   const usage = settings === null ? null : budgetUsage(steps, settings.agent);
   const warning =
@@ -36,18 +40,28 @@ export function ResearchPanel({ steps, messages, settings, keyPresence, browser,
     <aside
       data-testid="research-panel"
       aria-label={t('research.panelTitle')}
-      className={cn('flex min-h-0 flex-col gap-3 overflow-y-auto bg-surface-subtle/30 p-3', className)}
+      className={cn('flex min-h-0 flex-col gap-2 overflow-y-auto bg-surface-subtle/30 p-3', className)}
     >
-      <header className="flex items-center gap-2">
+      <header className="flex shrink-0 items-center gap-2">
         <Search aria-hidden="true" className="size-4 shrink-0 text-primary" />
-        <h2 className="text-sm font-medium text-text">{t('research.panelTitle')}</h2>
+        <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-text">{t('research.panelTitle')}</h2>
+        {onHide === undefined ? null : (
+          <IconButton
+            data-testid="research-panel-hide"
+            label={t('research.hidePanel')}
+            size="sm"
+            icon={<PanelRightClose aria-hidden="true" className="size-4" />}
+            onClick={onHide}
+            className="-mr-1 shrink-0"
+          />
+        )}
       </header>
 
       {warning !== null ? (
-        <div role="status" className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning-soft px-3 py-2 text-xs">
-          <TriangleAlert aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 text-warning" />
-          <div className="min-w-0 flex-1 space-y-1">
-            <p className="break-words text-text">{researchWarningText(t, warning)}</p>
+        <div role="status" className="flex shrink-0 items-start gap-2 rounded-lg border border-warning/30 bg-warning-soft px-2.5 py-1.5 text-[11px]">
+          <TriangleAlert aria-hidden="true" className="mt-0.5 size-3 shrink-0 text-warning" />
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <p className="line-clamp-2 break-words text-text">{researchWarningText(t, warning)}</p>
             <a
               href={SETTINGS_HREF}
               className="inline-flex font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
@@ -58,9 +72,19 @@ export function ResearchPanel({ steps, messages, settings, keyPresence, browser,
         </div>
       ) : null}
 
-      <StepsTimeline steps={steps} />
-      <SourcesList sources={sources} title={t('research.sourcesTitle')} />
-      {usage !== null ? <BudgetMeter usage={usage} /> : null}
+      <StepsTimeline
+        steps={steps}
+        onToggle={setStepsOpen}
+        className={cn('flex min-h-0 flex-col', stepsOpen ? 'flex-1' : 'shrink-0')}
+        bodyClassName="min-h-12 flex-1 overflow-y-auto"
+      />
+      <SourcesList
+        sources={sources}
+        title={t('research.sourcesTitle')}
+        className="flex min-h-0 flex-1 flex-col"
+        listClassName="min-h-10 flex-1 overflow-y-auto"
+      />
+      {usage !== null ? <BudgetMeter usage={usage} className="shrink-0" /> : null}
     </aside>
   );
 }

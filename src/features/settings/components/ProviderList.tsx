@@ -7,7 +7,9 @@ import { ChevronDown, ChevronRight, Pencil, Plus, Trash } from '@/shared/icons';
 import { Badge, Button, Dialog, EmptyState, IconButton, useToast } from '@/shared/ui';
 
 import { useSettingsStore } from '../state/settingsStore';
+import { ImportOpenCodeServer } from './ImportOpenCodeServer';
 import { ModelsSection } from './ModelsSection';
+import { providerKindLabel } from './providerKindLabel';
 import { ProviderForm } from './ProviderForm';
 import type { ProviderFormValue } from './ProviderForm';
 import { SectionCard } from './SectionCard';
@@ -23,6 +25,7 @@ export function ProviderList() {
   const updateProvider = useSettingsStore((state) => state.updateProvider);
   const removeProvider = useSettingsStore((state) => state.removeProvider);
   const saveApiKey = useSettingsStore((state) => state.saveApiKey);
+  const refreshModels = useSettingsStore((state) => state.refreshModels);
   const setActiveProvider = useSettingsStore((state) => state.setActiveProvider);
   const { push } = useToast();
 
@@ -30,6 +33,7 @@ export function ProviderList() {
   const [deleting, setDeleting] = useState<ProviderConfig | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const editingProvider =
     editor?.mode === 'edit' ? (providers.find((provider) => provider.id === editor.providerId) ?? null) : null;
@@ -47,28 +51,52 @@ export function ProviderList() {
         requiresKey: value.requiresKey,
       });
       if (created !== null) {
-        if (value.apiKey.trim() !== '' && created.keyRef !== null) {
+        const typedKey = value.apiKey.trim() !== '';
+        if (typedKey && created.keyRef !== null) {
           await saveApiKey(created.keyRef, value.apiKey);
         }
         push({ title: t('settings.providerCreated'), variant: 'success' });
         setEditor(null);
+        await discoverModels(created, typedKey);
       }
     } else {
       const target = providers.find((provider) => provider.id === editor.providerId);
       if (target !== undefined) {
+        const typedKey = value.apiKey.trim() !== '';
         await updateProvider(target.id, {
           label: value.label,
           kind: value.kind,
           baseUrl: value.baseUrl,
           requiresKey: value.requiresKey,
         });
-        if (value.apiKey.trim() !== '' && target.keyRef !== null) {
+        if (typedKey && target.keyRef !== null) {
           await saveApiKey(target.keyRef, value.apiKey);
+        }
+        if (target.models.length === 0) {
+          await discoverModels(target, typedKey);
         }
       }
       setEditor(null);
     }
     setSaving(false);
+  };
+
+  /**
+   * Descubre modelos al conectar, para que el usuario nunca tenga que tipearlos:
+   * solo si el proveedor no requiere key o ya hay una guardada o recién escrita.
+   */
+  const discoverModels = async (provider: ProviderConfig, typedKey: boolean): Promise<void> => {
+    const canDiscover =
+      !provider.requiresKey ||
+      typedKey ||
+      (provider.keyRef !== null && keyPresence[provider.keyRef] === true);
+    if (!canDiscover) return;
+    const models = await refreshModels(provider.id);
+    if (models === null) {
+      push({ title: t('settings.providerAutoDiscoverError'), variant: 'warning' });
+      return;
+    }
+    push({ title: t('settings.providerAutoDiscoverSuccess', { count: models.length }), variant: 'success' });
   };
 
   const handleClearKey = async (provider: ProviderConfig): Promise<void> => {
@@ -97,9 +125,14 @@ export function ProviderList() {
       description={t('settings.sectionProvidersDescription')}
       icon={<Server aria-hidden="true" className="size-4" />}
       actions={
-        <Button size="sm" icon={<Plus aria-hidden="true" />} onClick={() => setEditor({ mode: 'add' })}>
-          {t('settings.providerAdd')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="secondary" onClick={() => setImportOpen(true)}>
+            {t('settings.importOpencodeAction')}
+          </Button>
+          <Button size="sm" icon={<Plus aria-hidden="true" />} onClick={() => setEditor({ mode: 'add' })}>
+            {t('settings.providerAdd')}
+          </Button>
+        </div>
       }
     >
       {providers.length === 0 ? (
@@ -130,7 +163,7 @@ export function ProviderList() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-text">{provider.label}</p>
                     <p className="truncate text-xs text-muted">
-                      {provider.kind === 'anthropic' ? t('settings.providerKindAnthropic') : t('settings.providerKindOpenai')}
+                      {providerKindLabel(provider.kind, t)}
                       {' · '}
                       {provider.baseUrl}
                       {' · '}
@@ -210,6 +243,8 @@ export function ProviderList() {
       >
         <p>{deleting === null ? '' : t('settings.providerDeleteDescription', { name: deleting.label })}</p>
       </Dialog>
+
+      <ImportOpenCodeServer open={importOpen} onClose={() => setImportOpen(false)} />
     </SectionCard>
   );
 }

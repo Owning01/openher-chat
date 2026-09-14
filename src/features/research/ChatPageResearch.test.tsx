@@ -87,4 +87,45 @@ describe('ChatPage - modo investigación', () => {
     await waitFor(() => expect(within(composer).queryByText(/Brave está seleccionado/)).not.toBeInTheDocument());
     expect(screen.queryByTestId('research-panel')).not.toBeInTheDocument();
   });
+
+  it('oculta el panel desde su cabecera y lo restaura, persistiendo la preferencia', async () => {
+    const harness = createChatHarness();
+    const conversation = await harness.repo.create({ title: 'Investigación' });
+    await harness.repo.update(conversation.id, { researchMode: true });
+    window.location.hash = `#/chat/${conversation.id}`;
+    renderChatPage(harness.services);
+
+    expect(await screen.findByTestId('research-panel')).toBeInTheDocument();
+    const toggle = screen.getByRole('switch', { name: 'Investigación' });
+    await waitFor(() => expect(toggle).toBeEnabled());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ocultar panel' }));
+
+    await waitFor(() => expect(screen.queryByTestId('research-panel')).not.toBeInTheDocument());
+    // Ocultar el panel no apaga el modo investigación.
+    expect(toggle).toBeChecked();
+    await waitFor(async () => {
+      expect((await harness.settings.load()).ui.researchPanelVisible).toBe(false);
+    });
+
+    fireEvent.click(screen.getByTestId('research-panel-show'));
+
+    expect(await screen.findByTestId('research-panel')).toBeInTheDocument();
+    await waitFor(async () => {
+      expect((await harness.settings.load()).ui.researchPanelVisible).toBe(true);
+    });
+  });
+
+  it('arranca con el panel oculto cuando la preferencia está guardada', async () => {
+    const harness = createChatHarness();
+    const settings = await harness.settings.load();
+    await harness.settings.save({ ...settings, ui: { ...settings.ui, researchPanelVisible: false } });
+    const conversation = await harness.repo.create({ title: 'Investigación' });
+    await harness.repo.update(conversation.id, { researchMode: true });
+    window.location.hash = `#/chat/${conversation.id}`;
+    renderChatPage(harness.services);
+
+    expect(await screen.findByTestId('research-panel-show')).toBeInTheDocument();
+    expect(screen.queryByTestId('research-panel')).not.toBeInTheDocument();
+  });
 });

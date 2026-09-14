@@ -13,6 +13,8 @@ export const research = defineDict({
     warningBrowserProxy: 'En el navegador las búsquedas directas pueden bloquearse por CORS. Si fallan, configura el proxy.',
 
     panelTitle: 'Investigación',
+    hidePanel: 'Ocultar panel',
+    showPanel: 'Mostrar panel',
     stepsTitle: 'Pasos',
     noSteps: 'Aún no hay pasos.',
     stepLabel: 'Paso {index}',
@@ -47,6 +49,8 @@ export const research = defineDict({
     warningBrowserProxy: 'Direct searches may be blocked by CORS in the browser. If they fail, configure the proxy.',
 
     panelTitle: 'Research',
+    hidePanel: 'Hide panel',
+    showPanel: 'Show panel',
     stepsTitle: 'Steps',
     noSteps: 'No steps yet.',
     stepLabel: 'Step {index}',

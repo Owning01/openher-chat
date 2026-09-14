@@ -33,6 +33,28 @@ export const PROXY_SEARCH_PAYLOAD: unknown = {
   ],
 };
 
+/** Texto de un `web_search_exa` (bloques `Title/URL/Published/Author/Highlights` separados por `---`). */
+export const EXA_RESULT_TEXT =
+  'Title: First Exa Hit\n' +
+  'URL: https://exa.example/one\n' +
+  'Published: 2026-01-01T00:00:00.000Z\n' +
+  'Author: N/A\n' +
+  'Highlights:\n' +
+  'First highlight line\n' +
+  'with more detail\n' +
+  '\n---\n\n' +
+  'Title: Second Exa Hit\n' +
+  'URL: https://exa.example/two\n' +
+  'Published: N/A\n' +
+  'Author: N/A\n' +
+  'Highlights:\n' +
+  'Second highlight line';
+
+/** Respuesta SSE de `mcp.exa.ai` con el texto de arriba. */
+export const EXA_SSE = `event: message\ndata: ${JSON.stringify({
+  result: { content: [{ type: 'text', text: EXA_RESULT_TEXT }] },
+})}\n\n`;
+
 export const DDG_HTML = `<!DOCTYPE html>
 <html><body>
   <div class="result results_links web-result">

@@ -59,6 +59,8 @@ export function ProviderForm({
     () => [
       { value: 'openai-compatible', label: t('settings.providerKindOpenai') },
       { value: 'anthropic', label: t('settings.providerKindAnthropic') },
+      { value: 'openai-responses', label: t('settings.providerKindResponses') },
+      { value: 'opencode', label: t('settings.providerKindOpencode') },
     ],
     [t],
   );

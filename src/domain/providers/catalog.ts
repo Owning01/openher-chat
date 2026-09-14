@@ -44,6 +44,9 @@ export const PROVIDER_TEMPLATES: readonly ProviderTemplate[] = [
     requiresKey: true,
     models: [],
     defaultModelId: null,
+    // Caché: la clave estable mejora el routing y `include_usage` es lo que
+    // permite medir `prompt_tokens_details.cached_tokens` en streaming.
+    quirks: { promptCache: true, includeUsage: true },
   },
   {
     id: 'deepseek',
@@ -91,6 +94,26 @@ export const PROVIDER_TEMPLATES: readonly ProviderTemplate[] = [
     description: 'Claude models via the Anthropic API.',
     kind: 'anthropic',
     baseUrl: 'https://api.anthropic.com',
+    requiresKey: true,
+    models: [],
+    defaultModelId: null,
+  },
+  {
+    id: 'opencode-zen',
+    label: 'OpenCode Zen',
+    description: 'OpenCode gateway: Claude, GPT, Gemini, GLM, Kimi and more with a single API key.',
+    kind: 'opencode',
+    baseUrl: 'https://opencode.ai/zen/v1',
+    requiresKey: true,
+    models: [],
+    defaultModelId: null,
+  },
+  {
+    id: 'opencode-go',
+    label: 'OpenCode Go',
+    description: 'OpenCode low-cost subscription for open coding models (MiniMax, GLM, Kimi, Qwen, DeepSeek…).',
+    kind: 'opencode',
+    baseUrl: 'https://opencode.ai/zen/go/v1',
     requiresKey: true,
     models: [],
     defaultModelId: null,

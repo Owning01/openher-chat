@@ -1,0 +1,36 @@
+{
+  "project": "OpenHer Chat — Provider Standard (OpenCode)",
+  "repo": "G:\\Proyectos\\openher-chat",
+  "orchestratorState": "COMPLETED",
+  "integrityMode": "development",
+  "route": "standard",
+  "rules": [
+    "Exclusive file ownership por Worker; nadie edita fuera de su scope",
+    "Cero dependencias nuevas",
+    "tsc -b limpio y vitest verde antes de cada gate",
+    "Cero console.log / dead code / TODOs",
+    "La API key nunca se serializa en ProviderConfig",
+    "Workers Wave 1 verifican solo con vitest de sus propios tests"
+  ],
+  "frozenContracts": [
+    "ProviderKind incluye openai-responses y opencode",
+    "ModelInfo.api?: 'chat-completions'|'messages'|'responses'",
+    "createOpenAIResponsesAdapter(config, deps): ProviderAdapter",
+    "createOpenCodeAdapter(config, deps): ProviderAdapter",
+    "classifyOpenCodeModelApi(modelId): ModelApi",
+    "parseOpenAIModelList(text): ModelInfo[]"
+  ],
+  "tasks": [
+    { "id": "M0", "title": "Tipos, catálogo Zen, kinds y persistencia de api", "status": "ACCEPTED", "wave": 0, "dependencies": [] },
+    { "id": "W1", "title": "Adapter OpenAI Responses + fixtures + tests", "status": "ACCEPTED", "wave": 1, "dependencies": ["M0"], "evidence": "19 tests, exit 0" },
+    { "id": "W2", "title": "Router OpenCode Zen + clasificador + modelList", "status": "ACCEPTED", "wave": 1, "dependencies": ["M0"], "evidence": "21 tests, exit 0" },
+    { "id": "M1", "title": "Integración registry + UX + i18n + auto-descubrimiento", "status": "ACCEPTED", "wave": 2, "dependencies": ["W1", "W2"] },
+    { "id": "W3", "title": "Importador catálogo opencode serve local", "status": "ACCEPTED", "wave": 3, "dependencies": ["M1"], "evidence": "14 tests, exit 0" },
+    { "id": "M2", "title": "UI de importación local + wiring", "status": "ACCEPTED", "wave": 3, "dependencies": ["W3"] },
+    { "id": "M3", "title": "Docs estándar + README/architecture", "status": "ACCEPTED", "wave": 4, "dependencies": ["M1", "W3"] },
+    { "id": "G1", "title": "Gate Critic + Challenger", "status": "ACCEPTED", "wave": 4, "dependencies": ["M1", "W3"], "evidence": "Critic FAIL (1 MAJOR + 4 MINOR) y Challenger 3 bugs; remediados con tests de regresión (+43 tests)" },
+    { "id": "G2", "title": "Auditoría empírica tsc/test/build", "status": "ACCEPTED", "wave": 4, "dependencies": ["M1", "W3"], "evidence": "tsc/test/build exit 0; integridad 6/6 PASS" },
+    { "id": "G3", "title": "Aceptación final", "status": "ACCEPTED", "wave": 4, "dependencies": ["G1", "G2"], "evidence": "Evaluator ACCEPTED (DoD 6/6)" },
+    { "id": "M4", "title": "OpenCode Go (gateway /zen/go/v1) + variante de clasificación", "status": "ACCEPTED", "wave": 5, "dependencies": ["M3"], "evidence": "tsc 0; 822 tests; catálogo real 37 modelos; MiniMax→messages en Go" }
+  ]
+}

@@ -4,9 +4,10 @@ import { buildSystemPrompt } from './systemPrompt';
 const NOW = Date.UTC(2026, 0, 2, 3, 4, 5);
 
 describe('buildSystemPrompt', () => {
-  it('incluye la fecha ISO actual', () => {
+  it('incluye la fecha UTC sin hora para no romper la caché de prompt', () => {
     const prompt = buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es' });
-    expect(prompt).toContain('2026-01-02T03:04:05.000Z');
+    expect(prompt).toContain('Current date (UTC): 2026-01-02.');
+    expect(prompt).not.toContain('2026-01-02T03:04:05');
   });
 
   it('fija el idioma de respuesta según el locale', () => {
@@ -32,5 +33,13 @@ describe('buildSystemPrompt', () => {
 
   it('presenta al asistente en inglés para el modelo', () => {
     expect(buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es' })).toContain('You are OpenHer');
+  });
+
+  it('es byte-estable dentro del mismo día UTC (no rompe la caché de prefijo)', () => {
+    const startOfDay = Date.UTC(2026, 0, 2, 0, 0, 1);
+    const endOfDay = Date.UTC(2026, 0, 2, 23, 59, 59);
+    expect(buildSystemPrompt({ researchMode: false, now: startOfDay, locale: 'en' })).toBe(
+      buildSystemPrompt({ researchMode: false, now: endOfDay, locale: 'en' }),
+    );
   });
 });

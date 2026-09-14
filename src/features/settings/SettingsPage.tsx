@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { AlertBanner } from '@/app/layout/AlertBanner';
 import { useServices } from '@/app/services';
 import { useT } from '@/i18n/useT';
-import { Brain, MessageSquare, Search } from '@/shared/icons';
+import { Brain, MessageSquare, RefreshCw, Search } from '@/shared/icons';
 import { Button, Skeleton } from '@/shared/ui';
+import { UpdatesSection } from '@/features/updates/components/UpdatesSection';
 
 import { AgentBudgetSection } from './components/AgentBudgetSection';
 import { AppearanceSection } from './components/AppearanceSection';
@@ -118,6 +119,14 @@ function SettingsContent() {
         icon={<Palette aria-hidden="true" className="size-4" />}
       >
         <AppearanceSection />
+      </SectionCard>
+
+      <SectionCard
+        title={t('updates.title')}
+        description={t('updates.description')}
+        icon={<RefreshCw aria-hidden="true" className="size-4" />}
+      >
+        <UpdatesSection />
       </SectionCard>
     </div>
   );

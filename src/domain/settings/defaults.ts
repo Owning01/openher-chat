@@ -1,5 +1,13 @@
 import type { AgentBudget } from '../types/agent';
-import type { AppSettings, ChatDefaults, HistoryBudget, ProxySettings, SearchSettings, ToolSettings } from '../types/settings';
+import type {
+  AppSettings,
+  ChatDefaults,
+  HistoryBudget,
+  ProxySettings,
+  SearchSettings,
+  ToolSettings,
+  UiSettings,
+} from '../types/settings';
 
 export const SETTINGS_SCHEMA_VERSION = 1;
 
@@ -34,6 +42,7 @@ export const DEFAULT_CHAT_DEFAULTS: ChatDefaults = {
 export const DEFAULT_TOOL_SETTINGS: ToolSettings = {
   webSearchEnabled: true,
   openUrlEnabled: true,
+  requireApproval: false,
 };
 
 export const DEFAULT_SEARCH_SETTINGS: SearchSettings = {
@@ -46,6 +55,11 @@ export const DEFAULT_SEARCH_SETTINGS: SearchSettings = {
 export const DEFAULT_PROXY_SETTINGS: ProxySettings = {
   mode: 'direct',
   baseUrl: null,
+};
+
+export const DEFAULT_UI_SETTINGS: UiSettings = {
+  researchPanelVisible: true,
+  autoCheckUpdates: true,
 };
 
 /** Base de settings sin `updatedAt`: usar `createDefaultSettings(now)` para obtener un AppSettings completo. */
@@ -61,6 +75,7 @@ export const DEFAULT_SETTINGS: Omit<AppSettings, 'updatedAt'> = {
   tools: DEFAULT_TOOL_SETTINGS,
   search: DEFAULT_SEARCH_SETTINGS,
   proxy: DEFAULT_PROXY_SETTINGS,
+  ui: DEFAULT_UI_SETTINGS,
   onboardingCompleted: false,
 };
 
@@ -75,6 +90,7 @@ export function createDefaultSettings(now: number): AppSettings {
     tools: { ...DEFAULT_TOOL_SETTINGS },
     search: { ...DEFAULT_SEARCH_SETTINGS },
     proxy: { ...DEFAULT_PROXY_SETTINGS },
+    ui: { ...DEFAULT_UI_SETTINGS },
     updatedAt: now,
   };
 }

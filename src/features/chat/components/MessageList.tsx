@@ -7,6 +7,7 @@ import { cn } from '@/shared/utils/cn';
 
 import type { ChatRunStatus } from '../state/chatStore';
 import { MessageActions, MessageEditForm } from './MessageActions';
+import { MessageUsage } from './MessageUsage';
 import { ReasoningBlock } from './ReasoningBlock';
 import { ToolCallCard } from './ToolCallCard';
 
@@ -59,11 +60,13 @@ export interface MessageListProps {
   messages: ChatMessage[];
   runStatus: ChatRunStatus;
   onRegenerate: (assistantMessageId: string) => void;
+  /** Opcional: reanudar respuestas truncadas. Sin él, no se muestra el botón. */
+  onContinue?: (assistantMessageId: string) => void;
   onEdit: (userMessageId: string, text: string) => void;
   onDelete: (messageId: string) => void;
 }
 
-export function MessageList({ messages, runStatus, onRegenerate, onEdit, onDelete }: MessageListProps) {
+export function MessageList({ messages, runStatus, onRegenerate, onContinue, onEdit, onDelete }: MessageListProps) {
   const busy = runStatus !== 'idle';
   const lastAssistantId = useMemo(() => findLastAssistantId(messages), [messages]);
   const streamingId = useMemo(() => findStreamingAssistantId(messages), [messages]);
@@ -78,6 +81,7 @@ export function MessageList({ messages, runStatus, onRegenerate, onEdit, onDelet
             streaming={message.id === streamingId}
             busy={busy}
             onRegenerate={onRegenerate}
+            onContinue={onContinue}
             onEdit={onEdit}
             onDelete={onDelete}
           />
@@ -93,11 +97,21 @@ interface MessageItemProps {
   streaming: boolean;
   busy: boolean;
   onRegenerate: (assistantMessageId: string) => void;
+  onContinue?: (assistantMessageId: string) => void;
   onEdit: (userMessageId: string, text: string) => void;
   onDelete: (messageId: string) => void;
 }
 
-function MessageItem({ message, isLastAssistant, streaming, busy, onRegenerate, onEdit, onDelete }: MessageItemProps) {
+function MessageItem({
+  message,
+  isLastAssistant,
+  streaming,
+  busy,
+  onRegenerate,
+  onContinue,
+  onEdit,
+  onDelete,
+}: MessageItemProps) {
   const [editing, setEditing] = useState(false);
   const isUser = message.role === 'user';
   const text = messageText(message);
@@ -141,12 +155,18 @@ function MessageItem({ message, isLastAssistant, streaming, busy, onRegenerate, 
           role={message.role}
           text={text}
           canRegenerate={!isUser && isLastAssistant}
+          onContinue={
+            onContinue !== undefined && !isUser && isLastAssistant && !busy && message.truncated === true
+              ? onContinue
+              : undefined
+          }
           disabled={busy}
           onRegenerate={onRegenerate}
           onEditStart={() => setEditing(true)}
           onDelete={onDelete}
         />
       )}
+      {!isUser ? <MessageUsage message={message} /> : null}
     </article>
   );
 }

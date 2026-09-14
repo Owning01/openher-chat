@@ -71,4 +71,34 @@ describe('useAutoScroll', () => {
 
     expect(result.current.isAtBottom).toBe(false);
   });
+
+  it('con enabled=false no arrastra al fondo ni ofrece el botón (estado vacío)', () => {
+    const element = createScrollElement({ scrollHeight: 900, clientHeight: 300, scrollTop: 0 });
+    const { result, rerender } = renderHook(({ revision }) => useAutoScroll<HTMLDivElement>(revision, { enabled: false }), {
+      initialProps: { revision: 0 },
+    });
+    result.current.scrollRef.current = element;
+
+    rerender({ revision: 1 });
+
+    expect(element.scrollTop).toBe(0);
+    expect(result.current.isAtBottom).toBe(true);
+
+    // Aunque el usuario se aleje del fondo, sin mensajes no se muestra el botón.
+    act(() => result.current.onScroll());
+    expect(result.current.isAtBottom).toBe(true);
+  });
+
+  it('al habilitarse vuelve a pegarse al fondo', () => {
+    const element = createScrollElement({ scrollHeight: 900, clientHeight: 300, scrollTop: 0 });
+    const { result, rerender } = renderHook(
+      ({ revision, enabled }) => useAutoScroll<HTMLDivElement>(revision, { enabled }),
+      { initialProps: { revision: 0, enabled: false } },
+    );
+    result.current.scrollRef.current = element;
+
+    rerender({ revision: 1, enabled: true });
+
+    expect(element.scrollTop).toBe(900);
+  });
 });

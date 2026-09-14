@@ -12,7 +12,12 @@ export interface ProviderDraft {
   requiresKey: boolean;
 }
 
-export const PROVIDER_KINDS: readonly ProviderKind[] = ['openai-compatible', 'anthropic'];
+export const PROVIDER_KINDS: readonly ProviderKind[] = [
+  'openai-compatible',
+  'anthropic',
+  'openai-responses',
+  'opencode',
+];
 
 export function isProviderKind(value: string): value is ProviderKind {
   return (PROVIDER_KINDS as readonly string[]).includes(value);

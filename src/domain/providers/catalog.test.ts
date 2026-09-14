@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PROVIDER_TEMPLATES, getProviderTemplate } from './catalog';
 
 describe('PROVIDER_TEMPLATES', () => {
-  it('incluye los ocho proveedores aprobados', () => {
+  it('incluye los diez proveedores aprobados', () => {
     expect(PROVIDER_TEMPLATES.map((template) => template.id)).toEqual([
       'groq',
       'cerebras',
@@ -12,6 +12,8 @@ describe('PROVIDER_TEMPLATES', () => {
       'lmstudio',
       'vllm',
       'anthropic',
+      'opencode-zen',
+      'opencode-go',
     ]);
   });
 
@@ -32,11 +34,25 @@ describe('PROVIDER_TEMPLATES', () => {
       quirks: { includeUsage: true, sendToolChoice: true },
     });
     expect(getProviderTemplate('cerebras')).toMatchObject({ baseUrl: 'https://api.cerebras.ai/v1', requiresKey: true });
-    expect(getProviderTemplate('openai')).toMatchObject({ baseUrl: 'https://api.openai.com/v1', requiresKey: true });
+    expect(getProviderTemplate('openai')).toMatchObject({
+      baseUrl: 'https://api.openai.com/v1',
+      requiresKey: true,
+      quirks: { promptCache: true, includeUsage: true },
+    });
     expect(getProviderTemplate('deepseek')).toMatchObject({ baseUrl: 'https://api.deepseek.com/v1', requiresKey: true });
     expect(getProviderTemplate('anthropic')).toMatchObject({
       kind: 'anthropic',
       baseUrl: 'https://api.anthropic.com',
+      requiresKey: true,
+    });
+    expect(getProviderTemplate('opencode-zen')).toMatchObject({
+      kind: 'opencode',
+      baseUrl: 'https://opencode.ai/zen/v1',
+      requiresKey: true,
+    });
+    expect(getProviderTemplate('opencode-go')).toMatchObject({
+      kind: 'opencode',
+      baseUrl: 'https://opencode.ai/zen/go/v1',
       requiresKey: true,
     });
   });

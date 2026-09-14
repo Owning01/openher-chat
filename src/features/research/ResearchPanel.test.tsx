@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDefaultSettings } from '@/domain/settings/defaults';
 import type { AgentStep } from '@/domain/types/agent';
@@ -121,6 +121,24 @@ describe('ResearchPanel', () => {
     expect(screen.getByTestId('research-sources')).toHaveTextContent('Aún no hay fuentes.');
     expect(screen.queryByTestId('research-budget')).not.toBeInTheDocument();
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('oculta el panel desde su cabecera cuando hay handler', () => {
+    const onHide = vi.fn();
+    const props = {
+      steps: STEPS,
+      messages: [],
+      settings: SETTINGS,
+      keyPresence: { brave: false, tavily: false },
+      browser: false,
+    };
+    const { rerender } = render(<ResearchPanel {...props} onHide={onHide} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ocultar panel' }));
+    expect(onHide).toHaveBeenCalledTimes(1);
+
+    rerender(<ResearchPanel {...props} />);
+    expect(screen.queryByRole('button', { name: 'Ocultar panel' })).not.toBeInTheDocument();
   });
 
   it('colapsa el timeline desde su cabecera', () => {

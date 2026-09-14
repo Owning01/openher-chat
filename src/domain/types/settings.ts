@@ -2,7 +2,7 @@ import type { AgentBudget } from './agent';
 
 export type Locale = 'es' | 'en';
 export type ThemeMode = 'light' | 'dark' | 'system';
-export type SearchMode = 'auto' | 'brave' | 'tavily' | 'duckduckgo';
+export type SearchMode = 'auto' | 'brave' | 'tavily' | 'duckduckgo' | 'exa';
 export type Freshness = 'any' | 'day' | 'week' | 'month' | 'year';
 
 export interface ChatDefaults {
@@ -22,6 +22,8 @@ export interface HistoryBudget {
 export interface ToolSettings {
   webSearchEnabled: boolean;
   openUrlEnabled: boolean;
+  /** Pide confirmación al usuario antes de ejecutar cada tool (gate tipo permisos). */
+  requireApproval: boolean;
 }
 
 export interface SearchSettings {
@@ -36,6 +38,13 @@ export interface ProxySettings {
   baseUrl: string | null;
 }
 
+export interface UiSettings {
+  /** Muestra el panel de investigación junto al chat; el modo sigue activo al ocultarlo. */
+  researchPanelVisible: boolean;
+  /** Comprueba si hay una versión nueva al abrir la app (única llamada de red de fondo). */
+  autoCheckUpdates: boolean;
+}
+
 export interface AppSettings {
   schemaVersion: number;
   locale: Locale;
@@ -48,6 +57,7 @@ export interface AppSettings {
   tools: ToolSettings;
   search: SearchSettings;
   proxy: ProxySettings;
+  ui: UiSettings;
   onboardingCompleted: boolean;
   updatedAt: number;
 }
