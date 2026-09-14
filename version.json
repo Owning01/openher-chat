@@ -1,8 +1,8 @@
 {
-  "version": "1.1.0",
-  "versionCode": 2,
+  "version": "1.2.0",
+  "versionCode": 3,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "864759805EEA001D67B753DD5BA0578C90573F2CB2CA5F965D7FEBD9F7F1AAEB",
-  "notes": "Selector de modelo en el chat (agrupado por proveedor y ordenado por nombre), panel de investigación ocultable y comprobación de actualizaciones.",
+  "sha256": "01122606B44915A47B69D3477FE8518A0CDC6DF0CA7617562A29793A16585AA2",
+  "notes": "Login con Firebase (correo) + portada de bienvenida, datos por usuario (ajustes, API keys y conversaciones separadas por cuenta), modo legal argentino, y la configuración ahora aparece después del login.",
   "publishedAt": "2026-09-14"
 }
