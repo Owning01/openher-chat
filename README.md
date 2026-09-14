@@ -7,6 +7,7 @@ Cliente de chat multi-proveedor con modo investigación. Corre 100% local en el 
 - Descubrimiento automático de modelos al conectar un proveedor (sin tipear modelo por modelo) e importación opcional del catálogo de un `opencode serve` local.
 - Agente con presupuestos (pasos, tools, tokens, tiempo), reintentos y modo investigación.
 - Herramientas web `web_search` (Brave / Tavily / DuckDuckGo, con fallback) y `open_url` con política anti-SSRF.
+- Modo legal (MVP, Argentina civil y comercial): corpus normativo local verificable por hash, expediente por conversación, análisis adversarial y estudio de documentos con marcas de verificación (ver abajo).
 - Ajustes de tema, idioma, proxy de búsqueda y presupuestos; wizard de onboarding.
 - Packaging web (PWA instalable) y Android vía Capacitor.
 
@@ -43,12 +44,16 @@ src/
   i18n/         # diccionarios es/en con paridad en compile-time
 public/         # manifest PWA, icono propio y service worker
 android/        # proyecto Capacitor (Gradle), generado con `cap add android`
-docs/           # setup, contrato del proxy y smoke E2E
+docs/           # setup, contrato del proxy, smoke E2E y packs legales
 ```
 
 Flujo de una conversación: `ChatPage` crea el `chatStore` → `send` persiste el mensaje de usuario y ejecuta `runAgent` → `runAgent` consume el `ProviderAdapter` (SSE) y, en modo investigación, el `ToolRegistry` → cada evento (`text-delta`, `tool-start/end`, `run-end`) actualiza bloques, pasos y la lista de conversaciones sin recargar.
 
 Flujo de herramientas web: el toggle de investigación solo se activa si `settings.tools.webSearchEnabled` y el modelo/adapter soportan tools. `createToolRegistry` arma `web_search` y `open_url`; `web_search` usa Brave → Tavily → DuckDuckGo (o el proxy personalizado, con error accionable si la URL del proxy es inválida) y `open_url` valida cada URL contra la política anti-SSRF antes de leerla. Los resultados se normalizan a `SourceRef` deduplicadas y quedan visibles en el panel de investigación.
+
+## Modo legal (MVP)
+
+Asistente de redacción para escritos civiles y comerciales argentinos con corpus normativo local (3 packs nacionales, 12 artículos) verificado por hash SHA-256 y 100% en el dispositivo. Cada conversación se vincula a un expediente (`#/legal`); el turno legal compone búsqueda normativa con guard de citas (lo no textual va `[VERIFICAR]`) y exige consentimiento antes de exportar. Estado: núcleo MVP nacional; sin jurisprudencia ni todas las provincias. Documentación: `docs/legal-packs.md` (curación, licencia, hash, fases y límites) y `public/legal/README.md` (contenido y gap report). El texto del corpus es referencial; el auténtico es el Boletín Oficial.
 
 ## Seguridad y privacidad
 

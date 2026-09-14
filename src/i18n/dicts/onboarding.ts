@@ -12,6 +12,7 @@ export const onboarding = defineDict({
     stepProvider: 'Proveedor',
     stepConnection: 'Conexión',
     stepModel: 'Modelo',
+    stepLegal: 'Legal',
 
     providerTitle: 'Elegí un proveedor',
     providerDescription: 'Seleccioná una plantilla del catálogo o configurá un endpoint propio.',
@@ -52,6 +53,7 @@ export const onboarding = defineDict({
     stepProvider: 'Provider',
     stepConnection: 'Connection',
     stepModel: 'Model',
+    stepLegal: 'Legal',
 
     providerTitle: 'Choose a provider',
     providerDescription: 'Pick a template from the catalog or configure your own endpoint.',

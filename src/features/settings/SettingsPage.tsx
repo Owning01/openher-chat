@@ -1,4 +1,4 @@
-import { Palette } from 'lucide-react';
+import { Palette, Scale } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { AlertBanner } from '@/app/layout/AlertBanner';
@@ -15,6 +15,7 @@ import { ProviderList } from './components/ProviderList';
 import { ProxySection } from './components/ProxySection';
 import { SearchSection } from './components/SearchSection';
 import { SectionCard } from './components/SectionCard';
+import { WorkModeSection } from './components/WorkModeSection';
 import { SettingsStoreProvider, createSettingsStore, useSettingsStore } from './state/settingsStore';
 
 export function SettingsPage() {
@@ -111,6 +112,14 @@ function SettingsContent() {
       >
         <SearchSection />
         <ProxySection />
+      </SectionCard>
+
+      <SectionCard
+        title={t('settings.sectionWorkMode')}
+        description={t('settings.sectionWorkModeDescription')}
+        icon={<Scale aria-hidden="true" className="size-4" />}
+      >
+        <WorkModeSection />
       </SectionCard>
 
       <SectionCard

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDefaultSettings } from '@/domain/settings/defaults';
 import type { ProviderConfig } from '@/domain/types/provider';
 import { LocalSettingsRepository, SETTINGS_STORAGE_KEY } from './LocalSettingsRepository';
-import { KEY_STORAGE_PREFIX, LocalKeyVault } from './LocalKeyVault';
+import { KEY_STORAGE_PREFIX, LocalKeyVault, keyStorageKey } from './LocalKeyVault';
 
 const NOW = 1_700_000_000_000;
 
@@ -63,5 +63,35 @@ describe('LocalKeyVault', () => {
     expect(serializedProvider).not.toContain(secret);
     expect(serializedProvider).toContain('provider:groq');
     expect(await vault.get('provider:groq')).toBe(secret);
+  });
+});
+
+describe('LocalKeyVault por owner', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('keyStorageKey usa openher.key.<ref> sin owner y lo namespacing con owner', () => {
+    expect(keyStorageKey('provider:groq')).toBe(`${KEY_STORAGE_PREFIX}provider:groq`);
+    expect(keyStorageKey('provider:groq', null)).toBe(`${KEY_STORAGE_PREFIX}provider:groq`);
+    expect(keyStorageKey('provider:groq', 'uid1')).toBe(`${KEY_STORAGE_PREFIX}uid1:provider:groq`);
+  });
+
+  it('los vaults por owner quedan aislados y el default sigue intacto', async () => {
+    const global = new LocalKeyVault();
+    const vaultA = new LocalKeyVault('owner-a');
+    const vaultB = new LocalKeyVault('owner-b');
+
+    await vaultA.set('provider:groq', 'secret-a');
+    expect(await vaultA.get('provider:groq')).toBe('secret-a');
+    expect(await vaultA.has('provider:groq')).toBe(true);
+    expect(await vaultB.get('provider:groq')).toBeNull();
+    expect(await global.get('provider:groq')).toBeNull();
+    expect(localStorage.getItem(keyStorageKey('provider:groq', 'owner-a'))).toBe('secret-a');
+    expect(localStorage.getItem(`${KEY_STORAGE_PREFIX}provider:groq`)).toBeNull();
+
+    await vaultA.remove('provider:groq');
+    expect(await vaultA.has('provider:groq')).toBe(false);
+    expect(localStorage.getItem(keyStorageKey('provider:groq', 'owner-a'))).toBeNull();
   });
 });

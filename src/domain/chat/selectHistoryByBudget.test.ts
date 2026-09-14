@@ -445,4 +445,61 @@ describe('selectHistoryByBudget', () => {
     // clamp superior 1 => tope 512 tokens => 2048 chars
     expect(wireText(selectWith(2))).toContain('[... truncated 1952 chars ...]');
   });
+
+  it('reservedTokens reduce el presupuesto efectivo y descarta turnos', () => {
+    const history = historyOf(1, 2, 3);
+    const withoutReserve = selectHistoryByBudget({
+      history,
+      userMessage: userMessage('current'),
+      system: 'sys',
+      budget: budget(),
+    });
+    expect(withoutReserve.messages).toHaveLength(6);
+
+    // 512 - 500 = 12 tokens efectivos: no alcanza ni para un turno mínimo.
+    const withReserve = selectHistoryByBudget({
+      history,
+      userMessage: userMessage('current'),
+      system: 'sys',
+      budget: budget(),
+      reservedTokens: 500,
+    });
+    expect(withReserve.messages).toEqual([]);
+    expect(withReserve.droppedCount).toBe(6);
+  });
+
+  it('garantiza que historial seleccionado + reserva no desborden el presupuesto', () => {
+    const reservedTokens = 100;
+    const history = historyOf(...Array.from({ length: 40 }, (_, index) => index + 1));
+    const result = selectHistoryByBudget({
+      history,
+      userMessage: userMessage('current'),
+      system: 'sys',
+      budget: budget(),
+      reservedTokens,
+    });
+    expect(result.estimatedPromptTokens + reservedTokens).toBeLessThanOrEqual(512);
+  });
+
+  it('reservedTokens ausente, cero, no finito o negativo equivale a no reservar', () => {
+    const history = historyOf(1, 2, 3);
+    const base = selectHistoryByBudget({
+      history,
+      userMessage: userMessage('current'),
+      system: 'sys',
+      budget: budget(),
+    });
+    for (const reservedTokens of [undefined, 0, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, -50]) {
+      const result = selectHistoryByBudget({
+        history,
+        userMessage: userMessage('current'),
+        system: 'sys',
+        budget: budget(),
+        reservedTokens,
+      });
+      expect(result.messages).toEqual(base.messages);
+      expect(result.droppedCount).toBe(base.droppedCount);
+      expect(result.estimatedPromptTokens).toBe(base.estimatedPromptTokens);
+    }
+  });
 });

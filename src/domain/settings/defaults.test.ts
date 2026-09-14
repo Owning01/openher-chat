@@ -3,6 +3,9 @@ import {
   DEFAULT_AGENT_BUDGET,
   DEFAULT_CHAT_DEFAULTS,
   DEFAULT_HISTORY_BUDGET,
+  DEFAULT_LEGAL_ANALYSIS_BUDGET,
+  DEFAULT_LEGAL_RETRIEVAL_BUDGET,
+  DEFAULT_LEGAL_SETTINGS,
   DEFAULT_SEARCH_SETTINGS,
   DEFAULT_SETTINGS,
   DEFAULT_SYSTEM_PROMPT,
@@ -50,6 +53,30 @@ describe('defaults de settings', () => {
     expect(DEFAULT_SETTINGS.theme).toBe('system');
     expect(DEFAULT_SETTINGS.search).toEqual(DEFAULT_SEARCH_SETTINGS);
     expect(DEFAULT_SETTINGS.tools).toEqual(DEFAULT_TOOL_SETTINGS);
+    expect(DEFAULT_SETTINGS.legal).toEqual(DEFAULT_LEGAL_SETTINGS);
+  });
+
+  it('DEFAULT_LEGAL_SETTINGS arranca apagado, sin expediente y con anonimización obligatoria', () => {
+    expect(DEFAULT_LEGAL_RETRIEVAL_BUDGET).toEqual({ maxPassages: 8, maxPassageChars: 1200, maxBriefTokens: 6000 });
+    expect(DEFAULT_LEGAL_ANALYSIS_BUDGET).toEqual({
+      maxCalls: 5,
+      maxTotalTokens: 60000,
+      maxWallClockMs: 120000,
+      maxParallel: 4,
+      maxOutputTokensPerPersona: 1500,
+    });
+    expect(DEFAULT_LEGAL_SETTINGS).toEqual({
+      enabled: false,
+      defaultJurisdiction: 'national',
+      defaultCourt: '',
+      defaultMatter: 'civil-commercial',
+      retrieval: DEFAULT_LEGAL_RETRIEVAL_BUDGET,
+      analysis: DEFAULT_LEGAL_ANALYSIS_BUDGET,
+      anonymization: 'required',
+      perspectives: ['defense', 'attack', 'judge', 'risk'],
+      defaultTemplates: {},
+      setupCompleted: false,
+    });
   });
 
   it('DEFAULT_UI_SETTINGS arranca con panel visible y chequeo de updates activo', () => {
@@ -75,5 +102,15 @@ describe('defaults de settings', () => {
     expect(first.search).not.toBe(second.search);
     expect(first.lastModelByProvider).not.toBe(second.lastModelByProvider);
     expect(first.ui).not.toBe(second.ui);
+    expect(first.legal).not.toBe(second.legal);
+    expect(first.legal).not.toBe(DEFAULT_LEGAL_SETTINGS);
+    expect(first.legal).toEqual(DEFAULT_LEGAL_SETTINGS);
+    expect(first.legal.retrieval).not.toBe(second.legal.retrieval);
+    expect(first.legal.retrieval).not.toBe(DEFAULT_LEGAL_RETRIEVAL_BUDGET);
+    expect(first.legal.analysis).not.toBe(second.legal.analysis);
+    expect(first.legal.analysis).not.toBe(DEFAULT_LEGAL_ANALYSIS_BUDGET);
+    expect(first.legal.perspectives).not.toBe(second.legal.perspectives);
+    expect(first.legal.perspectives).not.toBe(DEFAULT_LEGAL_SETTINGS.perspectives);
+    expect(first.legal.defaultTemplates).not.toBe(second.legal.defaultTemplates);
   });
 });

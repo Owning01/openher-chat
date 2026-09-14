@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { ChatCompletionRequest, ProviderAdapter } from '../ports/ProviderAdapter';
 import { DEFAULT_AGENT_BUDGET } from '../settings/defaults';
 import type { AgentBudget, AgentEvent } from '../types/agent';
-import type { ChatMessage, MessageErrorCode, ToolErrorCode, ToolResult } from '../types/chat';
+import type { ChatMessage, MessageContent, MessageErrorCode, ToolErrorCode, ToolResult } from '../types/chat';
 import type { ModelInfo, ProviderCapabilities } from '../types/provider';
-import type { StreamEvent } from '../types/stream';
+import type { StreamEvent, WireMessage } from '../types/stream';
 import type { ToolDefinition, ToolRegistry } from '../types/tools';
 import { runAgent, type RunAgentDeps, type RunAgentParams } from './runAgent';
 
@@ -186,6 +186,39 @@ async function collect(generator: AsyncGenerator<AgentEvent, void, void>): Promi
   const events: AgentEvent[] = [];
   for await (const event of generator) events.push(event);
   return events;
+}
+
+/** C1: en el contenido del mensaje, cada `tool-call` debe tener su `tool-result` previo/siguiente. */
+function expectNoOrphanToolCalls(blocks: MessageContent[]): void {
+  const pending = new Set<string>();
+  for (const block of blocks) {
+    if (block.type === 'tool-call') {
+      pending.add(block.toolCall.id);
+    } else if (block.type === 'tool-result') {
+      expect(pending.has(block.toolCallId)).toBe(true);
+      pending.delete(block.toolCallId);
+    }
+  }
+  expect([...pending]).toEqual([]);
+}
+
+/** C1: el wire no puede tener tool-calls sin respuesta ni respuestas sin call precedente. */
+function expectValidWirePairs(messages: WireMessage[]): void {
+  const known = new Set<string>();
+  const pending = new Set<string>();
+  for (const message of messages) {
+    if (message.role === 'assistant' && message.toolCalls !== undefined) {
+      for (const call of message.toolCalls) {
+        known.add(call.id);
+        pending.add(call.id);
+      }
+    } else if (message.role === 'tool') {
+      expect(known.has(message.toolCallId)).toBe(true);
+      expect(pending.has(message.toolCallId)).toBe(true);
+      pending.delete(message.toolCallId);
+    }
+  }
+  expect([...pending]).toEqual([]);
 }
 
 const TOOL_CALL_SEARCH: StreamEvent = {
@@ -460,7 +493,7 @@ describe('runAgent - abort', () => {
     expect(h.provider.requests).toHaveLength(0);
   });
 
-  it('aborta durante una tool sin emitir tool-end', async () => {
+  it('aborta durante una tool y cierra su tool-call con not_executed', async () => {
     const h = createHarness({ params: { researchMode: true } });
     h.tools.add(
       makeTool(
@@ -487,10 +520,14 @@ describe('runAgent - abort', () => {
       if (next.value.type === 'tool-start') h.controller.abort();
     }
     const end = runEnd(events);
+    const toolEnds = eventsOfType(events, 'tool-end');
 
     expect(end.status).toBe('aborted');
-    expect(end.message.content.map((block) => block.type)).toEqual(['tool-call']);
-    expect(eventsOfType(events, 'tool-end')).toHaveLength(0);
+    expect(end.message.content.map((block) => block.type)).toEqual(['tool-call', 'tool-result']);
+    expect(toolEnds).toHaveLength(1);
+    expect(toolEnds[0]?.result.ok).toBe(false);
+    expect(toolEnds[0]?.result.error?.code).toBe('not_executed');
+    expectNoOrphanToolCalls(end.message.content);
   });
 });
 
@@ -970,8 +1007,17 @@ describe('runAgent - casos límite', () => {
 
     expect(end.status).toBe('aborted');
     expect(executions).toHaveLength(1);
-    expect(eventsOfType(events, 'tool-start')).toHaveLength(1);
-    expect(end.message.content.map((block) => block.type)).toEqual(['tool-call', 'tool-call', 'tool-result']);
+    // B1: el call cortado por el aborto también emite su `tool-start` sintético.
+    expect(eventsOfType(events, 'tool-start')).toHaveLength(2);
+    expect(end.message.content.map((block) => block.type)).toEqual([
+      'tool-call',
+      'tool-call',
+      'tool-result',
+      'tool-result',
+    ]);
+    const toolEnds = eventsOfType(events, 'tool-end');
+    expect(toolEnds.map((event) => event.result.error?.code)).toEqual([undefined, 'not_executed']);
+    expectNoOrphanToolCalls(end.message.content);
   });
 
   it('agota wall-clock durante el batch de tools', async () => {
@@ -986,8 +1032,11 @@ describe('runAgent - casos límite', () => {
     const end = runEnd(events);
 
     expect(end.status).toBe('budget_exceeded');
-    expect(eventsOfType(events, 'tool-start')).toHaveLength(0);
-    expect(end.message.content.map((block) => block.type)).toEqual(['tool-call']);
+    // B1: el único call, cortado por wall-clock antes de ejecutarse, cierra con
+    // `tool-start` sintético + `tool-end` (par simétrico, sin ejecución real).
+    expect(eventsOfType(events, 'tool-start')).toHaveLength(1);
+    expect(end.message.content.map((block) => block.type)).toEqual(['tool-call', 'tool-result']);
+    expectNoOrphanToolCalls(end.message.content);
   });
 
   it('al agotar tool-calls a mitad de batch, reserva una respuesta final sin tools', async () => {
@@ -1010,9 +1059,25 @@ describe('runAgent - casos límite', () => {
     const end = runEnd(events);
 
     expect(end.status).toBe('complete');
-    expect(eventsOfType(events, 'tool-start')).toHaveLength(1);
-    expect(end.message.content.map((block) => block.type)).toEqual(['tool-call', 'tool-call', 'tool-result', 'text']);
+    // B1: c1 real + c2 sintético (cortado por el tope antes de su turno).
+    expect(eventsOfType(events, 'tool-start')).toHaveLength(2);
+    expect(end.message.content.map((block) => block.type)).toEqual([
+      'tool-call',
+      'tool-call',
+      'tool-result',
+      'tool-result',
+      'text',
+    ]);
+    expectNoOrphanToolCalls(end.message.content);
     expect(h.provider.requests[1]?.tools).toBeUndefined();
+    const secondWire = h.provider.requests[1]?.messages ?? [];
+    expectValidWirePairs(secondWire);
+    const notExecuted = secondWire.find((message) => message.role === 'tool' && message.toolCallId === 'c2');
+    expect(notExecuted).toBeDefined();
+    if (notExecuted?.role === 'tool') {
+      expect(notExecuted.content).toContain('was not executed because the run budget was exhausted');
+      expect(notExecuted.toolName).toBe('web_search');
+    }
   });
 
   it('convierte 2 fallos de timeout consecutivos en run-end error timeout', async () => {
@@ -1283,5 +1348,308 @@ describe('runAgent - aprobación de tools', () => {
 
     expect(executed).toBe(true);
     expect(requested).toEqual(['web_search']);
+  });
+});
+
+describe('runAgent - cierre de tool-calls huérfanos (C1)', () => {
+  it('tras 2 fallos consecutivos cierra con not_executed los calls no ejecutados', async () => {
+    const h = createHarness({ params: { researchMode: true } });
+    h.tools.add(makeTool('broken', async () => failResult('network', 'down')));
+    h.provider.scripts.push({
+      events: [
+        { type: 'tool-call', toolCall: { id: 'c1', name: 'broken', argumentsText: '{"n":1}' } },
+        { type: 'tool-call', toolCall: { id: 'c2', name: 'broken', argumentsText: '{"n":2}' } },
+        { type: 'tool-call', toolCall: { id: 'c3', name: 'broken', argumentsText: '{"n":3}' } },
+        { type: 'stop', reason: 'tool_use' },
+      ],
+    });
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+    const toolEnds = eventsOfType(events, 'tool-end');
+
+    expect(end.status).toBe('error');
+    expect(end.error?.code).toBe('network');
+    expect(toolEnds.map((event) => event.result.error?.code)).toEqual(['network', 'network', 'not_executed']);
+    expectNoOrphanToolCalls(end.message.content);
+  });
+
+  it('al agotar tool-calls cierra el call cortado y el paso final forzado usa un wire válido', async () => {
+    const h = createHarness({ params: { researchMode: true, budget: agentBudget({ maxToolCalls: 1 }) } });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    h.provider.scripts.push(
+      {
+        events: [
+          { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{"query":"a"}' } },
+          { type: 'tool-call', toolCall: { id: 'c2', name: 'web_search', argumentsText: '{"query":"b"}' } },
+          { type: 'stop', reason: 'tool_use' },
+        ],
+      },
+      { events: [{ type: 'text-delta', delta: 'síntesis' }, { type: 'stop', reason: 'end_turn' }] },
+    );
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+
+    expect(end.status).toBe('complete');
+    expectNoOrphanToolCalls(end.message.content);
+    expectValidWirePairs(h.provider.requests[1]?.messages ?? []);
+    expect(h.provider.requests[1]?.tools).toBeUndefined();
+  });
+
+  it('al abortar entre dos calls, el segundo se cierra y el primero conserva su resultado', async () => {
+    const h = createHarness({ params: { researchMode: true } });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    h.provider.scripts.push({
+      events: [
+        { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{"query":"a"}' } },
+        { type: 'tool-call', toolCall: { id: 'c2', name: 'web_search', argumentsText: '{"query":"b"}' } },
+        { type: 'stop', reason: 'tool_use' },
+      ],
+    });
+
+    const iterator = runAgent(h.params, h.deps);
+    const events: AgentEvent[] = [];
+    for (;;) {
+      const next = await iterator.next();
+      if (next.done === true) break;
+      events.push(next.value);
+      if (next.value.type === 'tool-end') h.controller.abort();
+    }
+    const end = runEnd(events);
+
+    expect(end.status).toBe('aborted');
+    expectNoOrphanToolCalls(end.message.content);
+    expect(eventsOfType(events, 'tool-end').map((event) => event.result.error?.code)).toEqual([undefined, 'not_executed']);
+  });
+});
+
+describe('runAgent - enableTools (AMEND §A2)', () => {
+  it('enableTools:false deshabilita tools aunque researchMode sea true', async () => {
+    const h = createHarness({ params: { researchMode: true, enableTools: false } });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    h.provider.scripts.push({ events: [{ type: 'stop', reason: 'end_turn' }] });
+
+    await collect(runAgent(h.params, h.deps));
+
+    expect(h.provider.requests[0]?.tools).toBeUndefined();
+    expect(h.provider.requests[0]?.toolChoice).toBeUndefined();
+  });
+
+  it('enableTools:true habilita tools aunque researchMode sea false', async () => {
+    const h = createHarness({ params: { researchMode: false, enableTools: true } });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    h.provider.scripts.push({ events: [{ type: 'stop', reason: 'end_turn' }] });
+
+    await collect(runAgent(h.params, h.deps));
+
+    expect(h.provider.requests[0]?.tools).toHaveLength(1);
+    expect(h.provider.requests[0]?.toolChoice).toBe('auto');
+  });
+
+  it('sin enableTools el gate sigue dependiendo de researchMode (regresión)', async () => {
+    const on = createHarness({ params: { researchMode: true } });
+    on.tools.add(makeTool('web_search', async () => okResult('r')));
+    on.provider.scripts.push({ events: [{ type: 'stop', reason: 'end_turn' }] });
+    await collect(runAgent(on.params, on.deps));
+    expect(on.provider.requests[0]?.tools).toHaveLength(1);
+
+    const off = createHarness({ params: { researchMode: false } });
+    off.tools.add(makeTool('web_search', async () => okResult('r')));
+    off.provider.scripts.push({ events: [{ type: 'stop', reason: 'end_turn' }] });
+    await collect(runAgent(off.params, off.deps));
+    expect(off.provider.requests[0]?.tools).toBeUndefined();
+  });
+
+  it('respeta supportsTools=false aunque enableTools sea true', async () => {
+    const h = createHarness({
+      params: { enableTools: true, model: { id: 'fake-model', label: 'Fake', source: 'manual', supportsTools: false } },
+    });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    h.provider.scripts.push({ events: [{ type: 'stop', reason: 'end_turn' }] });
+
+    await collect(runAgent(h.params, h.deps));
+
+    expect(h.provider.requests[0]?.tools).toBeUndefined();
+  });
+});
+
+describe('runAgent - ephemeralSuffix (AMEND §A6)', () => {
+  it('anexa el sufijo al wire antes del user, sin entrar al system ni al mensaje final', async () => {
+    const h = createHarness({ params: { researchMode: true } });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    h.params.ephemeralSuffix = [textMessage('eph-1', 'user', 'EPHEMERAL-BRIEF')];
+    h.provider.scripts.push(
+      { events: [TOOL_CALL_SEARCH, { type: 'stop', reason: 'tool_use' }] },
+      { events: [{ type: 'text-delta', delta: 'fin' }, { type: 'stop', reason: 'end_turn' }] },
+    );
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+
+    const first = h.provider.requests[0]?.messages ?? [];
+    expect(first[0]).toEqual({ role: 'system', content: h.params.systemPrompt });
+    expect(first[first.length - 1]).toEqual({ role: 'user', content: 'hello' });
+    expect(first[first.length - 2]).toEqual({ role: 'user', content: 'EPHEMERAL-BRIEF' });
+    expect(h.provider.requests[0]?.system ?? '').not.toContain('EPHEMERAL-BRIEF');
+
+    // Recompuesto en cada paso, nunca acumulado dentro de loopHistory.
+    const ephInSecond = (h.provider.requests[1]?.messages ?? []).filter(
+      (message) => message.role === 'user' && message.content === 'EPHEMERAL-BRIEF',
+    );
+    expect(ephInSecond).toHaveLength(1);
+    expect(JSON.stringify(end.message.content)).not.toContain('EPHEMERAL-BRIEF');
+  });
+
+  it('un breve gigante descarta todo el historial y sigue presente en el wire', async () => {
+    const h = createHarness();
+    h.params.historyBudget = { ...h.params.historyBudget, keepLastTurns: 0 };
+    h.params.history = [textMessage('u1', 'user', 'historia uno'), textMessage('a1', 'assistant', 'respuesta uno')];
+    h.params.ephemeralSuffix = [textMessage('eph', 'user', 'x'.repeat(20_000))];
+    h.provider.scripts.push({ events: [{ type: 'stop', reason: 'end_turn' }] });
+
+    await collect(runAgent(h.params, h.deps));
+
+    const messages = h.provider.requests[0]?.messages ?? [];
+    expect(messages.some((message) => message.content === 'historia uno')).toBe(false);
+    expect(messages).toContainEqual({ role: 'user', content: 'x'.repeat(20_000) });
+  });
+
+  it('sin ephemeralSuffix y con sufijo vacío el wire es idéntico (regresión)', async () => {
+    const h = createHarness({ params: { researchMode: true, ephemeralSuffix: [] } });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    h.provider.scripts.push({ events: [{ type: 'stop', reason: 'end_turn' }] });
+
+    await collect(runAgent(h.params, h.deps));
+
+    expect(h.provider.requests[0]?.messages).toEqual([
+      { role: 'system', content: h.params.systemPrompt },
+      { role: 'user', content: 'hello' },
+    ]);
+    expect(h.provider.requests[0]?.tools).toHaveLength(1);
+  });
+
+  it('el sufijo efímero cuenta en el presupuesto de tokens: sin fail-open (B4)', async () => {
+    // B4: la ventana está protegida por `reservedTokens` en la selección, pero el
+    // costo debe medirse con el prompt real (historial + sufijo). Un sufijo de
+    // ~1000 tokens con tope de 500 se bloquea ANTES del primer request.
+    const h = createHarness({ params: { budget: agentBudget({ maxTotalTokens: 500 }) } });
+    h.params.ephemeralSuffix = [textMessage('eph', 'user', 'x'.repeat(4000))];
+    h.provider.scripts.push({ events: [{ type: 'text-delta', delta: 'no debería correr' }] });
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+
+    expect(end.status).toBe('budget_exceeded');
+    expect(h.provider.requests).toHaveLength(0);
+    expect(eventsOfType(events, 'step-start')).toHaveLength(0);
+  });
+});
+
+describe('runAgent - simetría tool-start/tool-end (B1)', () => {
+  it('todo tool-end está precedido de su tool-start, también en cierres sintéticos', async () => {
+    const h = createHarness({
+      params: { researchMode: true, budget: agentBudget({ maxToolCalls: 1 }) },
+    });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    h.provider.scripts.push(
+      {
+        events: [
+          { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{"query":"a"}' } },
+          { type: 'tool-call', toolCall: { id: 'c2', name: 'web_search', argumentsText: '{"query":"b"}' } },
+          { type: 'stop', reason: 'tool_use' },
+        ],
+      },
+      { events: [{ type: 'text-delta', delta: 'síntesis' }, { type: 'stop', reason: 'end_turn' }] },
+    );
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const starts = eventsOfType(events, 'tool-start');
+    const ends = eventsOfType(events, 'tool-end');
+
+    expect(starts.map((event) => event.toolCall.id)).toEqual(['c1', 'c2']);
+    expect(ends.map((event) => event.toolCall.id)).toEqual(['c1', 'c2']);
+    const startPosition = new Map(starts.map((event) => [event.toolCall.id, events.indexOf(event)] as const));
+    for (const end of ends) {
+      const position = startPosition.get(end.toolCall.id);
+      expect(position).toBeDefined();
+      expect(position ?? Number.POSITIVE_INFINITY).toBeLessThan(events.indexOf(end));
+    }
+  });
+
+  it('un reject del gate a mitad de batch no duplica starts: exactamente 1× por call (B3)', async () => {
+    const h = createHarness({ params: { researchMode: true } });
+    h.tools.add(makeTool('web_search', async () => okResult('r')));
+    let requests = 0;
+    h.deps.permissions = {
+      request: async () => {
+        requests += 1;
+        if (requests === 2) throw new Error('gate caído');
+        return true;
+      },
+    };
+    h.provider.scripts.push({
+      events: [
+        { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{"query":"a"}' } },
+        { type: 'tool-call', toolCall: { id: 'c2', name: 'web_search', argumentsText: '{"query":"b"}' } },
+        { type: 'tool-call', toolCall: { id: 'c3', name: 'web_search', argumentsText: '{"query":"c"}' } },
+        { type: 'stop', reason: 'tool_use' },
+      ],
+    });
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+    const starts = eventsOfType(events, 'tool-start');
+    const ends = eventsOfType(events, 'tool-end');
+
+    expect(end.status).toBe('error');
+    expect(end.error?.message).toContain('gate caído');
+    // c1 ejecutada, c2 con start real + end sintético, c3 con start + end sintéticos.
+    expect(starts.map((event) => event.toolCall.id)).toEqual(['c1', 'c2', 'c3']);
+    expect(ends).toHaveLength(3);
+    expect(ends[0]?.result.ok).toBe(true);
+    expect(ends[1]?.result.error?.code).toBe('not_executed');
+    expect(ends[2]?.result.error?.code).toBe('not_executed');
+    expectNoOrphanToolCalls(end.message.content);
+  });
+});
+
+describe('runAgent - ids de tool-call únicos por intento (B2/B6)', () => {
+  it('un proveedor que repite ids no corrompe el apareo: se reescriben y ambas se ejecutan', async () => {
+    // B2 era bug real: dos results con el mismo `toolCallId` dejaban el historial
+    // persistido inválido. B6 (`sanitizeToolPairs` cuenta por id) no se toca en
+    // este fix: con ids únicos garantizados a la entrada, esa cuenta es exacta.
+    const h = createHarness({ params: { researchMode: true } });
+    let executions = 0;
+    h.tools.add(
+      makeTool('web_search', async () => {
+        executions += 1;
+        return okResult(`resultado ${executions}`);
+      }),
+    );
+    h.provider.scripts.push(
+      {
+        events: [
+          { type: 'tool-call', toolCall: { id: 'dup', name: 'web_search', argumentsText: '{"query":"a"}' } },
+          { type: 'tool-call', toolCall: { id: 'dup', name: 'web_search', argumentsText: '{"query":"b"}' } },
+          { type: 'stop', reason: 'tool_use' },
+        ],
+      },
+      { events: [{ type: 'text-delta', delta: 'fin' }, { type: 'stop', reason: 'end_turn' }] },
+    );
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+
+    expect(end.status).toBe('complete');
+    expect(executions).toBe(2);
+    const startIds = eventsOfType(events, 'tool-start').map((event) => event.toolCall.id);
+    expect(new Set(startIds).size).toBe(startIds.length);
+    expect(startIds).toContain('dup');
+    const endIds = eventsOfType(events, 'tool-end').map((event) => event.toolCall.id);
+    expect(new Set(endIds).size).toBe(endIds.length);
+    expectNoOrphanToolCalls(end.message.content);
+    // El wire del paso siguiente aparea cada call con su result (precondición de B6).
+    expectValidWirePairs(h.provider.requests[1]?.messages ?? []);
   });
 });

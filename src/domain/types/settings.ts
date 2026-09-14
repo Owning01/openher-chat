@@ -1,4 +1,5 @@
 import type { AgentBudget } from './agent';
+import type { LegalSettings } from './legal';
 
 export type Locale = 'es' | 'en';
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -58,6 +59,7 @@ export interface AppSettings {
   search: SearchSettings;
   proxy: ProxySettings;
   ui: UiSettings;
+  legal: LegalSettings;
   onboardingCompleted: boolean;
   updatedAt: number;
 }

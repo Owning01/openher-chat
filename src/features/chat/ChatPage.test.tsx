@@ -7,8 +7,12 @@ import {
   ConversationsStoreProvider,
   createConversationsStore,
 } from '@/features/conversations/state/conversationsStore';
+import { CaseStoreProvider } from '@/features/legal/state/CaseStoreContext';
+import { createCaseStore } from '@/features/legal/state/caseStore';
+import type { CaseStore } from '@/features/legal/state/caseStore';
 import { PROVIDERS_STORAGE_KEY } from '@/features/settings/state/providerStorage';
 import { setLocale } from '@/i18n';
+import { MemoryLegalCaseRepository } from '@/test/fakes/MemoryRepos';
 
 import { ChatPage } from './ChatPage';
 import { assistantMessage, userMessage } from './components/__fixtures__/messages';
@@ -43,6 +47,25 @@ function renderChatPage(services: AppServices) {
     </ServicesProvider>,
   );
   return { conversations };
+}
+
+/** Variante con expediente: monta el provider opcional del caseStore sobre el chat. */
+function renderChatPageWithCases(services: AppServices, caseStore: CaseStore) {
+  const conversations = createConversationsStore(services.conversations);
+  render(
+    <ServicesProvider services={services}>
+      <ConversationsStoreProvider store={conversations}>
+        <CaseStoreProvider store={caseStore}>
+          <ChatPage />
+        </CaseStoreProvider>
+      </ConversationsStoreProvider>
+    </ServicesProvider>,
+  );
+  return { conversations };
+}
+
+function openModesMenu(): void {
+  fireEvent.click(screen.getByTestId('modes-menu-button'));
 }
 
 describe('ChatPage', () => {
@@ -198,5 +221,214 @@ describe('ChatPage', () => {
     await waitFor(async () => {
       expect((await harness.repo.get(conversation.id))?.modelId).toBe('model-2');
     });
+  });
+});
+
+describe('ChatPage - menú de modos (T27)', () => {
+  it('abre el menú de modos desde la cabecera con el estado general', async () => {
+    const harness = createChatHarness();
+    renderChatPage(harness.services);
+
+    openModesMenu();
+    expect(await screen.findByTestId('modes-menu')).toBeInTheDocument();
+    expect(screen.getByTestId('modes-menu-research')).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent('Modo general');
+  });
+
+  it('encender el modo legal sin caso abre el diálogo de vínculo', async () => {
+    const harness = createChatHarness();
+    const caseStore = createCaseStore({ cases: new MemoryLegalCaseRepository() });
+    renderChatPageWithCases(harness.services, caseStore);
+
+    openModesMenu();
+    fireEvent.click(screen.getByTestId('modes-menu-legal'));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('case-link-empty')).toBeInTheDocument();
+  });
+
+  it('vincular un expediente desde el diálogo activa el modo legal en el menú', async () => {
+    const harness = createChatHarness();
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Pérez c/ Gómez',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    renderChatPageWithCases(harness.services, caseStore);
+
+    openModesMenu();
+    fireEvent.click(screen.getByTestId('modes-menu-legal'));
+    fireEvent.click(await screen.findByTestId(`case-link-option-${created.id}`));
+
+    // El diálogo se cierra y el menú deriva el vínculo con su título.
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    openModesMenu();
+    expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent(
+      'Expediente vinculado: Pérez c/ Gómez.',
+    );
+  });
+
+  it('apagar el modo legal desde el menú desvincula el expediente', async () => {
+    const harness = createChatHarness();
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Caso testigo',
+      jurisdiction: 'caba',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    renderChatPageWithCases(harness.services, caseStore);
+
+    openModesMenu();
+    fireEvent.click(screen.getByTestId('modes-menu-legal'));
+    fireEvent.click(await screen.findByTestId(`case-link-option-${created.id}`));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    openModesMenu();
+    fireEvent.click(screen.getByTestId('modes-menu-legal'));
+    expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent('Modo general');
+  });
+
+  it('el switch del composer y el menú convergen al mismo estado persistido', async () => {
+    const harness = createChatHarness();
+    const conversation = await harness.repo.create({ title: 'Chat con modos' });
+    window.location.hash = `#/chat/${conversation.id}`;
+    renderChatPage(harness.services);
+
+    // Vía 1: el Switch del composer (se mantiene intacto, misma fuente).
+    const researchSwitch = await screen.findByRole('switch', { name: 'Investigación' });
+    await waitFor(() => expect(researchSwitch).toBeEnabled());
+    fireEvent.click(researchSwitch);
+    await waitFor(async () => {
+      expect((await harness.repo.get(conversation.id))?.researchMode).toBe(true);
+    });
+
+    // El menú refleja la misma fuente sin duplicarla.
+    openModesMenu();
+    expect(screen.getByTestId('modes-menu-research')).toHaveAttribute('aria-checked', 'true');
+
+    // Vía 2: el menú apaga y el composer lo refleja.
+    fireEvent.click(screen.getByTestId('modes-menu-research'));
+    await waitFor(async () => {
+      expect((await harness.repo.get(conversation.id))?.researchMode).toBe(false);
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('switch', { name: 'Investigación' })).toHaveAttribute(
+        'aria-checked',
+        'false',
+      );
+    });
+  });
+
+  it('los modos son ortogonales: uno no altera el otro ni en el repo', async () => {
+    const harness = createChatHarness();
+    const conversation = await harness.repo.create({ title: 'Chat ortogonal' });
+    window.location.hash = `#/chat/${conversation.id}`;
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Caso ortogonal',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    renderChatPageWithCases(harness.services, caseStore);
+
+    // Vincula el expediente: el modo investigación sigue apagado.
+    openModesMenu();
+    fireEvent.click(screen.getByTestId('modes-menu-legal'));
+    fireEvent.click(await screen.findByTestId(`case-link-option-${created.id}`));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(async () => {
+      expect((await harness.repo.get(conversation.id))?.legalCaseId).toBe(created.id);
+    });
+    expect((await harness.repo.get(conversation.id))?.researchMode).toBe(false);
+
+    // Enciende investigación: el vínculo legal queda intacto (combinación ambos).
+    openModesMenu();
+    fireEvent.click(screen.getByTestId('modes-menu-research'));
+    await waitFor(async () => {
+      expect((await harness.repo.get(conversation.id))?.researchMode).toBe(true);
+    });
+    expect((await harness.repo.get(conversation.id))?.legalCaseId).toBe(created.id);
+    expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent(
+      'Investigación y expediente activos: Caso ortogonal.',
+    );
+
+    // Apaga investigación: el vínculo legal sigue intacto.
+    fireEvent.click(screen.getByTestId('modes-menu-research'));
+    await waitFor(async () => {
+      expect((await harness.repo.get(conversation.id))?.researchMode).toBe(false);
+    });
+    expect((await harness.repo.get(conversation.id))?.legalCaseId).toBe(created.id);
+  });
+});
+
+describe('ChatPage - modo legal con expediente (G1)', () => {
+  it('vincular un expediente muestra el preview de privacidad y el consentimiento persiste en el caso', async () => {
+    const harness = createChatHarness();
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Caso G1',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    renderChatPageWithCases(harness.services, caseStore);
+
+    // Sin vínculo no hay preview: el modo general queda intacto.
+    expect(screen.queryByTestId('legal-privacy-preview')).not.toBeInTheDocument();
+
+    openModesMenu();
+    fireEvent.click(screen.getByTestId('modes-menu-legal'));
+    fireEvent.click(await screen.findByTestId(`case-link-option-${created.id}`));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    // Con vínculo aparece el preview (conteos vacíos: el mapping aún no existe).
+    const preview = await screen.findByTestId('legal-privacy-preview');
+    expect(preview).toHaveTextContent('Sin datos anonimizados en este envío.');
+
+    // El consentimiento persiste en `LegalCase.consent` vía `caseStore.update`.
+    fireEvent.click(within(preview).getByRole('checkbox'));
+    await waitFor(async () => {
+      expect((await legalRepo.get(created.id))?.consent).toBeDefined();
+    });
+    expect(await screen.findByText('Consentimiento aceptado para esta sesión.')).toBeInTheDocument();
+  });
+
+  it('en modo legal el listado se renderiza con el guard neutro (sin corpus)', async () => {
+    const harness = createChatHarness();
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Caso G1',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    const conversation = await harness.repo.create({ title: 'Chat legal' });
+    await harness.repo.update(conversation.id, { legalCaseId: created.id });
+    await harness.repo.appendMessage(
+      userMessage('m1', 'hola', { conversationId: conversation.id, createdAt: 1 }),
+    );
+    window.location.hash = `#/chat/${conversation.id}`;
+    renderChatPageWithCases(harness.services, caseStore);
+
+    expect(await screen.findByText('hola')).toBeInTheDocument();
+    expect(screen.queryByText(/VERIFICAR/)).not.toBeInTheDocument();
+    expect(await screen.findByTestId('legal-privacy-preview')).toBeInTheDocument();
   });
 });

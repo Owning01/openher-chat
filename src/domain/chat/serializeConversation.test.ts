@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildLegalIndex } from '../legal/retrieval';
+import type { LegalPack } from '../types/legal';
 import type { ChatMessage } from '../types/chat';
 import type { Conversation } from '../types/conversation';
 import {
@@ -106,5 +108,93 @@ describe('conversationToJson / parseConversationArchive', () => {
     const archive = conversationToArchive(conversation(), messages, 1);
     archive.messages[0]!.content[0] = { type: 'text', text: 'mutado' };
     expect(messages[0]?.content[0]).toEqual({ type: 'text', text: '¿Qué pasó hoy?' });
+  });
+
+  it('hace round-trip del vínculo legal y lo omite en modo general', () => {
+    const legal = conversationToArchive(conversation({ legalCaseId: 'case-1' }), [userMessage()], 7);
+    expect(legal.conversation.legalCaseId).toBe('case-1');
+    expect(parseConversationArchive(JSON.stringify(legal))?.conversation.legalCaseId).toBe('case-1');
+
+    const general = conversationToArchive(conversation(), [userMessage()], 7);
+    expect(general.conversation).not.toHaveProperty('legalCaseId');
+    expect(parseConversationArchive(JSON.stringify(general))?.conversation.legalCaseId).toBeUndefined();
+  });
+});
+
+const LEGAL_PACK: LegalPack = {
+  schema: 'openher.legal.pack/1',
+  id: 'test-pack',
+  title: 'Pack de prueba',
+  version: '1.0.0',
+  publishedAt: '2026-01-01',
+  jurisdiction: 'national',
+  matter: 'civil',
+  license: { name: 'prueba', url: 'https://example.com/licencia', attribution: 'prueba' },
+  sources: [],
+  norms: [{ id: 'CCyC', short: 'CCyC', long: 'Código Civil y Comercial de la Nación', jurisdiction: 'national' }],
+  provisions: [
+    {
+      id: 'CCyC-2560',
+      normId: 'CCyC',
+      article: '2560',
+      text: 'El plazo genérico de prescripción es de cinco años.',
+      jurisdiction: 'national',
+      sourceUrl: 'https://example.com/ccyc-2560',
+      sourceDate: '2026-01-01',
+      textHash: 'hash',
+      verificationMethod: 'manual',
+      tags: [],
+      verified: true,
+    },
+  ],
+  hash: 'hash',
+};
+
+function legalAssistant(text: string): ChatMessage {
+  return {
+    id: 'm9',
+    conversationId: 'c1',
+    role: 'assistant',
+    status: 'complete',
+    content: [{ type: 'text', text }],
+    createdAt: 2,
+    updatedAt: 2,
+  };
+}
+
+describe('conversationToMarkdown legal', () => {
+  it('incluye watermark, disclaimer y modo legal sin alterar el turno general', () => {
+    const general = conversationToMarkdown(conversation({ researchMode: false }), [userMessage()]);
+    expect(general).not.toContain('ANÁLISIS INTERNO');
+    expect(general).not.toContain('Boletín Oficial');
+
+    const legal = conversationToMarkdown(conversation({ researchMode: false, legalCaseId: 'case-1' }), [
+      userMessage(),
+    ]);
+    expect(legal).toContain('ANÁLISIS INTERNO');
+    expect(legal).toContain('Boletín Oficial');
+    expect(legal).toContain('Legal mode: on');
+  });
+
+  it('con índice verifica lo existente y marca lo ausente', () => {
+    const index = buildLegalIndex([LEGAL_PACK]);
+    const convo = conversation({ researchMode: false, legalCaseId: 'case-1' });
+
+    const verified = conversationToMarkdown(convo, [legalAssistant('Según CCyC art. 2560 corresponde.')], {
+      index,
+    });
+    expect(verified).not.toContain('2560 [VERIFICAR]');
+
+    const missing = conversationToMarkdown(convo, [legalAssistant('Según CCyC art. 9999 corresponde.')], {
+      index,
+    });
+    expect(missing).toContain('9999 [VERIFICAR]');
+  });
+
+  it('sin índice marca conservadoramente y documenta el límite', () => {
+    const convo = conversation({ researchMode: false, legalCaseId: 'case-1' });
+    const md = conversationToMarkdown(convo, [legalAssistant('Según CCyC art. 2560 corresponde.')]);
+    expect(md).toContain('[VERIFICAR]');
+    expect(md).toContain('no están confirmadas');
   });
 });

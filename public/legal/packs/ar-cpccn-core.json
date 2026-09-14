@@ -1,0 +1,151 @@
+{
+  "schema": "openher.legal.pack/1",
+  "id": "ar-cpccn-core",
+  "title": "Código Procesal Civil y Comercial de la Nación — núcleo procesal",
+  "version": "1.0.0",
+  "publishedAt": "2026-09-14",
+  "jurisdiction": "national",
+  "matter": "civil-commercial",
+  "license": {
+    "name": "CC BY 2.5 AR (InfoLEG)",
+    "url": "http://www.infoleg.gob.ar/",
+    "attribution": "InfoLEG — Ministerio de Justicia de la Nación",
+    "verifiedAt": "2026-09-14"
+  },
+  "sources": [
+    {
+      "url": "https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id=16547",
+      "retrievedAt": "2026-09-14",
+      "note": "Texto consolidado del CPCCN publicado por InfoLEG (texto vigente)."
+    }
+  ],
+  "norms": [
+    {
+      "id": "CPCCN",
+      "short": "CPCCN",
+      "long": "Código Procesal Civil y Comercial de la Nación",
+      "aliases": [
+        "CPCC",
+        "Ley 17.454"
+      ],
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id=16547"
+    }
+  ],
+  "provisions": [
+    {
+      "id": "CPCCN-330",
+      "normId": "CPCCN",
+      "article": "330",
+      "title": "Requisitos de la demanda",
+      "text": "La demanda será deducida por escrito y contendrá: 1. El nombre y domicilio del demandante. 2. El nombre y domicilio del demandado. 3. La cosa demandada, designándola con toda exactitud. 4. Los hechos en que se funde, explicados claramente. 5. El derecho expuesto sucintamente, evitando repeticiones innecesarias. 6. La petición en términos claros y positivos. La demanda deberá precisar el monto reclamado, salvo cuando al actor no le fuere posible determinarlo. En estos supuestos, no procederá la excepción de defecto legal.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id=16547",
+      "sourceDate": "2026-09-14",
+      "textHash": "460003cb986e82590866ded3efbe2d57b88ef12a5ef40a654522e7b5807a7df6",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "demanda",
+        "requisitos"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPCCN-347",
+      "normId": "CPCCN",
+      "article": "347",
+      "title": "Excepciones admisibles",
+      "text": "Sólo se admitirán como previas las siguientes excepciones: 1. Incompetencia. 2. Falta de personería en el demandante, en el demandado o sus representantes. 3. Falta de legitimación para obrar en el actor o en el demandado, cuando fuere manifiesta. 4. Litispendencia. 5. Defecto legal en el modo de proponer la demanda. 6. Cosa juzgada. 7. Transacción, conciliación y desistimiento del derecho. 8. Las defensas temporarias que se consagran en las leyes generales, tales como el beneficio de inventario o el de excusión. La existencia de cosa juzgada o de litispendencia podrá ser declarada de oficio, en cualquier estado de la causa.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id=16547",
+      "sourceDate": "2026-09-14",
+      "textHash": "2cbc390731f65ad6b216a49f585baebe6c15eb7fb8c8665cb188f9cbcf9c4507",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "excepciones",
+        "previas"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPCCN-310",
+      "normId": "CPCCN",
+      "article": "310",
+      "title": "Plazos",
+      "text": "Se producirá la caducidad de instancia cuando no se instare su curso dentro de los siguientes plazos: 1. De seis meses, en primera o única instancia. 2. De tres meses, en segunda o tercera instancia y en cualquiera de las instancias en el juicio sumarísimo, en el juicio ejecutivo, en las ejecuciones especiales y en los incidentes. 3. En el que se opere la prescripción de la acción, si fuere menor a los indicados precedentemente. 4. De un mes, en el incidente de caducidad de instancia. La instancia se abre con la promoción de la demanda aunque no hubiere sido notificada la resolución que dispone su traslado y termina con el dictado de la sentencia.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id=16547",
+      "sourceDate": "2026-09-14",
+      "textHash": "f334f769b415d913e2b608a041d3f0bc60f3220dd89691db7c7b66b7648b2695",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "caducidad",
+        "instancia"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPCCN-311",
+      "normId": "CPCCN",
+      "article": "311",
+      "title": "Cómputo",
+      "text": "Los plazos señalados en el artículo anterior se computarán desde la fecha de la última petición de las partes, o resolución o actuación del juez, secretario u oficial primero, que tenga por efecto impulsar el procedimiento; correrán durante los días inhábiles salvo los que correspondan a las ferias judiciales.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id=16547",
+      "sourceDate": "2026-09-14",
+      "textHash": "5665d787ad57e6b8d016dc3619bab475d556560e37761382a2b5870eb148c566",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "caducidad",
+        "computo"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPCCN-377",
+      "normId": "CPCCN",
+      "article": "377",
+      "title": "Carga de la prueba",
+      "text": "Incumbirá la carga de la prueba a la parte que afirme la existencia de un hecho controvertido. Cada una de las partes deberá probar el presupuesto de hecho de la norma o normas que invocare como fundamento de su pretensión, defensa o excepción.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id=16547",
+      "sourceDate": "2026-09-14",
+      "textHash": "110ec12386de9fad638046444ab49525708762ee223883b9b47753a4910f6083",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "prueba",
+        "carga"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPCCN-68",
+      "normId": "CPCCN",
+      "article": "68",
+      "title": "Costas",
+      "text": "La parte vencida en el juicio deberá pagar todos los gastos de la contraria, aún cuando ésta no lo hubiese solicitado. Sin embargo, el juez podrá eximir total o parcialmente de esta responsabilidad al litigante vencido, siempre que encontrare mérito para ello, expresándolo en su pronunciamiento, bajo pena de nulidad.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/verNorma.do?id=16547",
+      "sourceDate": "2026-09-14",
+      "textHash": "94bb7e0df5c65f1bf10cb33a54866fd416c0404cef34b7668a721a8e67dc068d",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "costas"
+      ],
+      "verified": true
+    }
+  ],
+  "hash": "b8beeac27a21ab09449d0cf63c978960167306b8d1e59f49d00afb757f8b668c"
+}

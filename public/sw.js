@@ -33,6 +33,13 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(networkFirst(request));
     return;
   }
+  // El corpus legal (`/legal/`) evita el cache-first: va siempre a red.
+  // Los packs se versionan con `?v=<hash>` y el manifiesto con `?t=<ahora>`,
+  // así una actualización del corpus nunca queda pegada en la caché del SW.
+  if (url.pathname.startsWith('/legal/')) {
+    event.respondWith(fetch(request));
+    return;
+  }
   event.respondWith(cacheFirst(request));
 });
 

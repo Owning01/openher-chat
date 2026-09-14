@@ -319,6 +319,64 @@ describe('conversationsStore', () => {
     await store.getState().searchMessages('a');
     expect(store.getState().messageHits).toEqual([]);
   });
+
+  it('crea con vínculo legal sin poblarlo en create (link vía update)', async () => {
+    const { repo, store } = createHarness();
+
+    const created = await store.getState().create({ title: 'Legal', legalCaseId: 'case-1' });
+
+    expect(created).not.toBeNull();
+    if (created === null) return;
+    expect(created.legalCaseId).toBe('case-1');
+    expect((await repo.get(created.id))?.legalCaseId).toBe('case-1');
+    expect(store.getState().items[0]?.legalCaseId).toBe('case-1');
+  });
+
+  it('el vínculo sobrevive a exportar/importar (round-trip de legalCaseId)', async () => {
+    const { repo, store } = createHarness();
+    const created = await store.getState().create({ title: 'Legal', legalCaseId: 'case-7' });
+    expect(created).not.toBeNull();
+    if (created === null) return;
+    await repo.appendMessage({
+      id: 'm1',
+      conversationId: created.id,
+      role: 'user',
+      status: 'complete',
+      content: [{ type: 'text', text: 'hola' }],
+      createdAt: 1,
+      updatedAt: 1,
+    });
+
+    const json = await store.getState().exportJson(created.id);
+    expect(json).toContain('case-7');
+
+    const imported = await store.getState().importConversation(json ?? '');
+    expect(imported).not.toBeNull();
+    if (imported === null) return;
+    expect(imported.id).not.toBe(created.id);
+    expect(imported.legalCaseId).toBe('case-7');
+  });
+
+  it('exporta el markdown legal con watermark y disclaimer', async () => {
+    const { repo, store } = createHarness();
+    const created = await store.getState().create({ title: 'Legal', legalCaseId: 'case-9' });
+    expect(created).not.toBeNull();
+    if (created === null) return;
+    await repo.appendMessage({
+      id: 'm1',
+      conversationId: created.id,
+      role: 'user',
+      status: 'complete',
+      content: [{ type: 'text', text: 'Según CCyC art. 2560' }],
+      createdAt: 1,
+      updatedAt: 1,
+    });
+
+    const markdown = await store.getState().exportMarkdown(created.id);
+    expect(markdown).toContain('ANÁLISIS INTERNO');
+    expect(markdown).toContain('Boletín Oficial');
+    expect(markdown).toContain('[VERIFICAR]');
+  });
 });
 
 describe('helpers de conversaciones', () => {

@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import { useT } from '@/i18n/useT';
+import type { Translate } from '@/i18n/useT';
+import type { RedactionKind } from '@/domain/legal/redaction';
 import { matchCommands, expandSlashInput } from '@/domain/prompts/commands';
 import type { SlashCommand } from '@/domain/prompts/commands';
 import { Mic, Send, Square, TriangleAlert } from '@/shared/icons';
@@ -29,18 +31,67 @@ export interface ComposerResearch {
   onToggle: (enabled: boolean) => void;
 }
 
+/** Conteo de tokens anonimizados por categoría (sin mapping ni valores originales). */
+export type LegalRedactionCounts = Partial<Record<RedactionKind, number>>;
+
+export interface ComposerLegal {
+  /** Redacción activa: muestra el preview y exige consentimiento antes del primer envío. */
+  redactionActive: boolean;
+  /** Tokens anonimizados por categoría que saldrán del dispositivo con el envío. */
+  redactedCounts: LegalRedactionCounts;
+  /** Consentimiento ya persistido (p. ej. `LegalCase.consent`); abre el gate. */
+  consentAccepted?: boolean;
+  /** Notifica el cambio para que el padre lo persista; si no se persiste, el gate vale por sesión. */
+  onConsentChange?: (accepted: boolean) => void;
+}
+
 export interface ComposerProps {
   status: ChatRunStatus;
   onSend: (text: string) => void;
   onStop: () => void;
   research?: ComposerResearch;
+  /** Ausente = modo general (sin preview ni gate). Lo cablea T27 al vincular el expediente. */
+  legal?: ComposerLegal;
 }
 
-export function Composer({ status, onSend, onStop, research }: ComposerProps) {
+/** Categorías de redacción en orden estable para el preview (mismo orden que `redaction.ts`). */
+const REDACTION_KINDS: readonly RedactionKind[] = ['person', 'doc', 'cuit', 'email', 'phone', 'cbu', 'address'];
+
+/** Etiqueta i18n por categoría de dato anonimizado. */
+function redactionLabel(t: Translate, kind: RedactionKind): string {
+  switch (kind) {
+    case 'person':
+      return t('legalTrust.redactionPerson');
+    case 'doc':
+      return t('legalTrust.redactionDoc');
+    case 'cuit':
+      return t('legalTrust.redactionCuit');
+    case 'email':
+      return t('legalTrust.redactionEmail');
+    case 'phone':
+      return t('legalTrust.redactionPhone');
+    case 'cbu':
+      return t('legalTrust.redactionCbu');
+    case 'address':
+      return t('legalTrust.redactionAddress');
+  }
+}
+
+export function Composer({ status, onSend, onStop, research, legal }: ComposerProps) {
   const t = useT();
   const [text, setText] = useState('');
   const busy = status !== 'idle';
-  const canSend = text.trim() !== '' && !busy;
+  // Gate de confidencialidad (modo legal con redacción activa): bloquea el primer
+  // envío hasta el consentimiento explícito. El consentimiento vale por sesión de
+  // montaje salvo que el padre lo persista (vía `onConsentChange` → `LegalCase.consent`,
+  // T22/T27); sin prop `legal` el composer no cambia.
+  const legalGate = legal !== undefined && legal.redactionActive;
+  const [sessionConsent, setSessionConsent] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(true);
+  const consentPersisted = legal?.consentAccepted === true;
+  const consentGiven = !legalGate || consentPersisted || sessionConsent;
+  const needsConsent = legalGate && !consentGiven;
+  const canSend = text.trim() !== '' && !busy && !needsConsent;
   const wasBusy = useRef(busy);
   const [stopReady, setStopReady] = useState(true);
   const speech = useSpeechRecognition();
@@ -80,6 +131,19 @@ export function Composer({ status, onSend, onStop, research }: ComposerProps) {
     setText('');
     setHighlighted(0);
   };
+
+  const handleConsentChange = (accepted: boolean): void => {
+    setSessionConsent(accepted);
+    legal?.onConsentChange?.(accepted);
+  };
+
+  // Entradas del preview: sólo categorías con conteo > 0 (el mapping nunca sale).
+  const redactionEntries =
+    legalGate && legal !== undefined
+      ? REDACTION_KINDS.map((kind) => ({ kind, count: legal.redactedCounts[kind] ?? 0 })).filter(
+          (entry) => entry.count > 0,
+        )
+      : [];
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>): void => {
     if (event.nativeEvent.isComposing) return;
@@ -170,6 +234,61 @@ export function Composer({ status, onSend, onStop, research }: ComposerProps) {
         <p role="status" className="text-xs text-warning">
           {voiceNotice}
         </p>
+      ) : null}
+      {legalGate && legal !== undefined ? (
+        <section
+          data-testid="legal-privacy-preview"
+          aria-label={t('legalTrust.privacyTitle')}
+          className="rounded-xl border border-border bg-surface px-3 py-2 text-xs text-text"
+        >
+          <div className="flex items-center gap-2">
+            <span className="font-medium">{t('legalTrust.privacyTitle')}</span>
+            <button
+              type="button"
+              aria-expanded={privacyOpen}
+              onClick={() => setPrivacyOpen((open) => !open)}
+              className="ml-auto shrink-0 font-medium text-muted underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+            >
+              {privacyOpen ? t('legalTrust.privacyHide') : t('legalTrust.privacyShow')}
+            </button>
+          </div>
+          {privacyOpen ? (
+            <div className="mt-1.5 space-y-1.5">
+              {redactionEntries.length === 0 ? (
+                <p className="text-muted">{t('legalTrust.privacyEmpty')}</p>
+              ) : (
+                <ul className="flex flex-wrap gap-x-3 gap-y-0.5 text-muted">
+                  {redactionEntries.map((entry) => (
+                    <li key={entry.kind}>
+                      {redactionLabel(t, entry.kind)}: {entry.count}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-muted">{t('legalTrust.privacyNote')}</p>
+              {consentGiven ? (
+                <p role="status" className="font-medium">
+                  {t('legalTrust.consentAccepted')}
+                </p>
+              ) : (
+                <>
+                  <label className="flex cursor-pointer items-start gap-2">
+                    <input
+                      type="checkbox"
+                      checked={sessionConsent}
+                      onChange={(event) => handleConsentChange(event.target.checked)}
+                      className="mt-0.5 size-4 shrink-0"
+                    />
+                    <span>{t('legalTrust.consentLabel')}</span>
+                  </label>
+                  <p className="text-warning">{t('legalTrust.consentRequired')}</p>
+                </>
+              )}
+              <p className="text-muted">{t('legalTrust.secrecyNotice')}</p>
+              <p className="text-muted">{t('legalTrust.watermarkLabel')}</p>
+            </div>
+          ) : null}
+        </section>
       ) : null}
       <div className="relative flex w-full items-end gap-2">
         {commands.length > 0 ? (

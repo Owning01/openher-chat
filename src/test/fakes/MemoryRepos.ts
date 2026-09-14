@@ -2,10 +2,21 @@ import { searchMessages as searchInMessages } from '@/domain/chat/messageSearch'
 import type { MessageSearchHit } from '@/domain/chat/messageSearch';
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
 import type { KeyVault } from '@/domain/ports/KeyVault';
+import type { CreateLegalCaseInput, LegalCaseRepository } from '@/domain/ports/LegalCaseRepository';
+import type { LegalPackStore } from '@/domain/ports/LegalPackStore';
 import type { SettingsRepository } from '@/domain/ports/SettingsRepository';
 import { createDefaultSettings } from '@/domain/settings/defaults';
 import type { ChatMessage } from '@/domain/types/chat';
 import type { Conversation } from '@/domain/types/conversation';
+import type {
+  AcknowledgmentRecord,
+  CaseAnalysis,
+  GapReportEntry,
+  InstalledPack,
+  LegalCase,
+  LegalDocument,
+  LegalPack,
+} from '@/domain/types/legal';
 import type { AppSettings } from '@/domain/types/settings';
 import { newId as defaultNewId } from '@/shared/utils/ids';
 
@@ -128,6 +139,198 @@ export class MemoryConversationRepository implements ConversationRepository {
   }
 }
 
+export interface MemoryLegalCaseRepositoryDeps {
+  newId?: () => string;
+  now?: () => number;
+}
+
+/** Doble en memoria de `LegalCaseRepository` con la misma semántica que `IndexedDbLegalCases` (cascada, orden, timestamps). */
+export class MemoryLegalCaseRepository implements LegalCaseRepository {
+  private readonly cases = new Map<string, LegalCase>();
+  private readonly documents = new Map<string, LegalDocument>();
+  private readonly analyses = new Map<string, CaseAnalysis>();
+  private readonly acknowledgments = new Map<string, AcknowledgmentRecord>();
+  private readonly gaps = new Map<string, GapReportEntry>();
+  private readonly newId: () => string;
+  private readonly now: () => number;
+
+  constructor(deps: MemoryLegalCaseRepositoryDeps = {}) {
+    this.newId = deps.newId ?? (() => defaultNewId());
+    this.now = deps.now ?? (() => Date.now());
+  }
+
+  async list(): Promise<LegalCase[]> {
+    return [...this.cases.values()].map(cloneLegal).sort(compareLegalByCreatedAt);
+  }
+
+  async get(id: string): Promise<LegalCase | null> {
+    const legalCase = this.cases.get(id);
+    return legalCase === undefined ? null : cloneLegal(legalCase);
+  }
+
+  async create(input: CreateLegalCaseInput): Promise<LegalCase> {
+    const now = this.now();
+    const legalCase: LegalCase = {
+      id: this.newId(),
+      title: input.title,
+      status: 'active',
+      jurisdiction: input.jurisdiction,
+      court: input.court,
+      matter: input.matter,
+      clientRole: input.clientRole,
+      parties: [],
+      facts: [],
+      keyDates: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.cases.set(legalCase.id, cloneLegal(legalCase));
+    return cloneLegal(legalCase);
+  }
+
+  async update(id: string, patch: Partial<Omit<LegalCase, 'id' | 'createdAt'>>): Promise<LegalCase> {
+    const existing = this.cases.get(id);
+    if (existing === undefined) throw new Error(`Legal case not found: ${id}`);
+    const updated: LegalCase = { ...existing, ...patch, updatedAt: this.now() };
+    this.cases.set(id, cloneLegal(updated));
+    return cloneLegal(updated);
+  }
+
+  /** Baja en cascada: documentos, análisis, acknowledgments y gaps del caso; no-op si no existe. */
+  async remove(id: string): Promise<void> {
+    this.cases.delete(id);
+    for (const [documentId, document] of this.documents) {
+      if (document.caseId === id) this.documents.delete(documentId);
+    }
+    for (const [analysisId, analysis] of this.analyses) {
+      if (analysis.caseId === id) this.analyses.delete(analysisId);
+    }
+    for (const [recordId, record] of this.acknowledgments) {
+      if (record.caseId === id) this.acknowledgments.delete(recordId);
+    }
+    for (const [entryId, entry] of this.gaps) {
+      if (entry.caseId === id) this.gaps.delete(entryId);
+    }
+  }
+
+  async listAnalyses(caseId: string): Promise<CaseAnalysis[]> {
+    return [...this.analyses.values()]
+      .filter((analysis) => analysis.caseId === caseId)
+      .map(cloneLegal)
+      .sort(compareLegalByCreatedAt);
+  }
+
+  async appendAnalysis(analysis: CaseAnalysis): Promise<void> {
+    this.analyses.set(analysis.id, cloneLegal(analysis));
+  }
+
+  async listDocuments(caseId: string): Promise<LegalDocument[]> {
+    return [...this.documents.values()]
+      .filter((document) => document.caseId === caseId)
+      .map(cloneLegal)
+      .sort(compareLegalByCreatedAt);
+  }
+
+  async appendDocument(document: LegalDocument): Promise<void> {
+    this.documents.set(document.id, cloneLegal(document));
+  }
+
+  async updateDocument(
+    id: string,
+    patch: Partial<Omit<LegalDocument, 'id' | 'caseId' | 'createdAt'>>,
+  ): Promise<LegalDocument> {
+    const existing = this.documents.get(id);
+    if (existing === undefined) throw new Error(`Legal document not found: ${id}`);
+    const updated: LegalDocument = { ...existing, ...patch, updatedAt: this.now() };
+    this.documents.set(id, cloneLegal(updated));
+    return cloneLegal(updated);
+  }
+
+  async removeDocument(id: string): Promise<void> {
+    this.documents.delete(id);
+  }
+
+  async appendAcknowledgment(record: AcknowledgmentRecord): Promise<void> {
+    this.acknowledgments.set(record.id, cloneLegal(record));
+  }
+
+  async listAcknowledgments(caseId: string): Promise<AcknowledgmentRecord[]> {
+    return [...this.acknowledgments.values()]
+      .filter((record) => record.caseId === caseId)
+      .map(cloneLegal)
+      .sort(compareLegalByAt);
+  }
+
+  async appendGap(entry: GapReportEntry): Promise<void> {
+    this.gaps.set(entry.id, cloneLegal(entry));
+  }
+
+  async listGaps(caseId: string): Promise<GapReportEntry[]> {
+    return [...this.gaps.values()]
+      .filter((entry) => entry.caseId === caseId)
+      .map(cloneLegal)
+      .sort(compareLegalByAt);
+  }
+
+  /** Vacía casos y todas sus colecciones derivadas para aislar tests del arnés. */
+  clear(): void {
+    this.cases.clear();
+    this.documents.clear();
+    this.analyses.clear();
+    this.acknowledgments.clear();
+    this.gaps.clear();
+  }
+}
+
+export interface MemoryLegalPackStoreDeps {
+  now?: () => number;
+}
+
+/** Doble en memoria de `LegalPackStore` con la misma semántica que `IndexedDbLegalPacks` (upsert, metadatos sin contenido). */
+export class MemoryLegalPackStore implements LegalPackStore {
+  private readonly stored = new Map<string, { pack: LegalPack; installedAt: number; bytes: number }>();
+  private readonly now: () => number;
+
+  constructor(deps: MemoryLegalPackStoreDeps = {}) {
+    this.now = deps.now ?? (() => Date.now());
+  }
+
+  /** Metadatos de los packs instalados, en orden `(installedAt, id)`, sin contenido. */
+  async listInstalled(): Promise<InstalledPack[]> {
+    return [...this.stored.values()]
+      .map(({ pack, installedAt, bytes }) => ({
+        id: pack.id,
+        version: pack.version,
+        hash: pack.hash,
+        installedAt,
+        bytes,
+      }))
+      .sort((a, b) => a.installedAt - b.installedAt || a.id.localeCompare(b.id));
+  }
+
+  /** Pack completo por id (sin los metadatos de instalación), o `null` si no está. */
+  async get(id: string): Promise<LegalPack | null> {
+    const entry = this.stored.get(id);
+    return entry === undefined ? null : cloneLegal(entry.pack);
+  }
+
+  /** Instala o reemplaza por `id` (upsert) y devuelve los metadatos persistidos. */
+  async install(pack: LegalPack, bytes: number): Promise<InstalledPack> {
+    const installedAt = this.now();
+    this.stored.set(pack.id, { pack: cloneLegal(pack), installedAt, bytes });
+    return { id: pack.id, version: pack.version, hash: pack.hash, installedAt, bytes };
+  }
+
+  async remove(id: string): Promise<void> {
+    this.stored.delete(id);
+  }
+
+  /** Vacía los packs instalados para aislar tests del arnés. */
+  clear(): void {
+    this.stored.clear();
+  }
+}
+
 export interface MemorySettingsRepositoryOptions {
   now?: () => number;
   initial?: AppSettings;
@@ -196,4 +399,22 @@ function cloneSettings(settings: AppSettings): AppSettings {
 /** Orden canónico de mensajes dentro de una conversación (paridad con IndexedDB). */
 function compareMessages(a: ChatMessage, b: ChatMessage): number {
   return a.createdAt - b.createdAt || a.id.localeCompare(b.id);
+}
+
+/** Orden canónico `(createdAt, id)` de casos, documentos y análisis (paridad con IndexedDB). */
+function compareLegalByCreatedAt(
+  a: { createdAt: number; id: string },
+  b: { createdAt: number; id: string },
+): number {
+  return a.createdAt - b.createdAt || a.id.localeCompare(b.id);
+}
+
+/** Orden canónico `(at, id)` del log append-only (paridad con IndexedDB). */
+function compareLegalByAt(a: { at: number; id: string }, b: { at: number; id: string }): number {
+  return a.at - b.at || a.id.localeCompare(b.id);
+}
+
+/** Clonado profundo defensivo de las entidades legales (evita aliasar el store). */
+function cloneLegal<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }

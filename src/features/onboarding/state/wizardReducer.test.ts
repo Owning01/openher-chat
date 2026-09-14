@@ -169,6 +169,73 @@ describe('wizardReducer', () => {
     expect(canAdvance(withModels)).toBe(true);
   });
 
+  it('arranca con el modo legal apagado y sin consentimiento', () => {
+    const state = createWizardState();
+
+    expect(state.legalEnabled).toBe(false);
+    expect(state.legalConsent).toBe(false);
+  });
+
+  it('el paso legal avanza siempre salvo activado sin consentimiento', () => {
+    const base = { ...createWizardState(), step: 'legal' } as WizardState;
+
+    expect(canAdvance(base)).toBe(true);
+
+    const enabled = wizardReducer(base, { type: 'setLegal', enabled: true });
+    expect(enabled.legalEnabled).toBe(true);
+    expect(canAdvance(enabled)).toBe(false);
+
+    const consented = wizardReducer(enabled, { type: 'setLegal', consent: true });
+    expect(canAdvance(consented)).toBe(true);
+  });
+
+  it('apagar el modo legal limpia el consentimiento', () => {
+    const base = { ...createWizardState(), step: 'legal' } as WizardState;
+    const on = wizardReducer(wizardReducer(base, { type: 'setLegal', enabled: true }), {
+      type: 'setLegal',
+      consent: true,
+    });
+    const off = wizardReducer(on, { type: 'setLegal', enabled: false });
+
+    expect(off.legalEnabled).toBe(false);
+    expect(off.legalConsent).toBe(false);
+    expect(canAdvance(off)).toBe(true);
+  });
+
+  it('atraviesa el paso legal con next y back', () => {
+    const keyless = atKeyStep({ requiresKey: false, keyRef: null });
+    const withModels = wizardReducer(keyless, { type: 'testSucceeded', models: MODELS });
+
+    const atModel = wizardReducer(withModels, { type: 'next' });
+    expect(atModel.step).toBe('model');
+
+    // Sin modelo elegido no se avanza al paso legal.
+    expect(wizardReducer({ ...atModel, selectedModelId: null }, { type: 'next' }).step).toBe('model');
+
+    const picked = wizardReducer(atModel, { type: 'selectModel', modelId: 'model-b' });
+    const toLegal = wizardReducer(picked, { type: 'next' });
+    expect(toLegal.step).toBe('legal');
+    expect(toLegal.selectedModelId).toBe('model-b');
+
+    const backToModel = wizardReducer(toLegal, { type: 'back' });
+    expect(backToModel.step).toBe('model');
+    expect(backToModel.legalEnabled).toBe(false);
+  });
+
+  it('el paso legal es terminal para next y conserva el estado al volver', () => {
+    const base = { ...createWizardState(), step: 'legal' } as WizardState;
+    const enabled = wizardReducer(wizardReducer(base, { type: 'setLegal', enabled: true }), {
+      type: 'setLegal',
+      consent: true,
+    });
+
+    expect(wizardReducer(enabled, { type: 'next' }).step).toBe('legal');
+
+    const back = wizardReducer(enabled, { type: 'back' });
+    expect(back.step).toBe('model');
+    expect(back.legalEnabled).toBe(true);
+    expect(back.legalConsent).toBe(true);
+  });
   it('canAdvance refleja la validación de cada paso', () => {
     expect(canAdvance(createWizardState())).toBe(false);
     expect(canAdvance({ ...createWizardState(), choice: { kind: 'custom' } })).toBe(true);

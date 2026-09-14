@@ -1,6 +1,7 @@
 export * from './agent';
 export * from './chat';
 export * from './conversation';
+export * from './legal';
 export * from './provider';
 export * from './settings';
 export * from './stream';

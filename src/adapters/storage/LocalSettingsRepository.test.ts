@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_CHAT_DEFAULTS, SETTINGS_SCHEMA_VERSION, createDefaultSettings } from '@/domain/settings/defaults';
 import { migrateSettings } from '@/domain/settings/migrate';
-import { LocalSettingsRepository, SETTINGS_STORAGE_KEY } from './LocalSettingsRepository';
+import { LocalSettingsRepository, SETTINGS_STORAGE_KEY, settingsStorageKey } from './LocalSettingsRepository';
 
 const NOW = 1_700_000_000_000;
 
@@ -50,5 +50,41 @@ describe('LocalSettingsRepository', () => {
     await expect(repo.save(createDefaultSettings(NOW))).resolves.toBeUndefined();
     expect(await repo.load()).toEqual(createDefaultSettings(NOW));
     vi.unstubAllGlobals();
+  });
+});
+
+describe('LocalSettingsRepository por owner', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('settingsStorageKey usa la global sin owner y sufija con owner', () => {
+    expect(settingsStorageKey()).toBe(SETTINGS_STORAGE_KEY);
+    expect(settingsStorageKey(null)).toBe(SETTINGS_STORAGE_KEY);
+    expect(settingsStorageKey('uid123')).toBe(`${SETTINGS_STORAGE_KEY}:uid123`);
+  });
+
+  it('los owners quedan aislados entre sí y del global', async () => {
+    const repoA = new LocalSettingsRepository(() => NOW, 'owner-a');
+    const repoB = new LocalSettingsRepository(() => NOW, 'owner-b');
+    const global = new LocalSettingsRepository(() => NOW);
+
+    const settingsA = migrateSettings({ locale: 'en' }, NOW);
+    await repoA.save(settingsA);
+
+    expect(await repoA.load()).toEqual(settingsA);
+    expect(await repoB.load()).toEqual(createDefaultSettings(NOW));
+    expect(await global.load()).toEqual(createDefaultSettings(NOW));
+    expect(localStorage.getItem(settingsStorageKey('owner-a'))).not.toBeNull();
+    expect(localStorage.getItem(settingsStorageKey('owner-b'))).toBeNull();
+    expect(localStorage.getItem(SETTINGS_STORAGE_KEY)).toBeNull();
+  });
+
+  it('ctor default intacto: sin owner lee y escribe la clave global', async () => {
+    const repo = new LocalSettingsRepository(() => NOW);
+    const settings = migrateSettings({ theme: 'dark' }, NOW);
+    await repo.save(settings);
+    expect(localStorage.getItem(SETTINGS_STORAGE_KEY)).not.toBeNull();
+    expect(await repo.load()).toEqual(settings);
   });
 });

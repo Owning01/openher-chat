@@ -1,0 +1,1378 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "OpenHer Chat — Modo Legal Argentina (Civil y Comercial) — v2 (remediado)",
+  "repo": "G:\\Proyectos\\openher-chat",
+  "plan": ".agents/legal_mode_plan.md",
+  "orchestratorState": "COMPLETE",
+  "integrityMode": "development",
+  "route": "legal-mode-v2",
+  "leadOrchestrator": {
+    "role": "Project Orchestrator",
+    "status": "COORDINATING"
+  },
+  "consolidationNotes": [
+    "T06 (redacción) se fusionó en T05 (plazos + redacción).",
+    "T08 (prompt + brief) se fusionó en T07 (plantillas + documento + prompt + brief).",
+    "Los IDs con gap (T06/T08) no existen: la numeración de este board coincide 1:1 con el plan v2.",
+    "T35 (hardening del agente) del plan v1 pasó a ser T11 en v2.",
+    "Los 3 gates adversariales del v1 se mantienen como G1/G2/G3.",
+    "v2.1: se agrega T27 (M3). ChatPage.tsx se reasigna de T21 a T27 (el menu vive en la cabecera del chat) y ChatPage.test.tsx pasa a T27 (antes sin dueno).",
+    "v2.1: para no dejar a T21 sin punto de montaje, el guard de circulacion se expone como hook useCitationGuard() en CitationGuardContext.tsx y lo consumen MessageList/MessageActions; ChatPage no monta provider.",
+    "v2.1: T20 incorpora la accion chatStore.setLegalCase(caseId|null) con el mismo lifecycle que setResearchMode (incluye draft sin conversationId); T27 solo consume stores existentes.",
+    "v2.1: dict nuevo src/i18n/dicts/modes.ts (no se toca chat.ts: es compartido y sin dueno; un dict dedicado aisla las claves del feature y mantiene paridad local).",
+    "v2.1: la nota del pedido decia que el caseStore era 'T26'; en este board el caseStore es T22 (T26 es documentacion). T27 depende de T22 (y de T20).",
+    "v2.1: 'modo global vs por conversacion' queda RESUELTA por D17 (per-conversacion con defaults globales)."
+  ],
+  "groundRules": [
+    "Exclusive file ownership: 1 archivo = 1 worker; nadie edita fuera de allowedFiles",
+    "Cero dependencias nuevas (prohibido vector DB, embeddings, zod, OCR, parser PDF, hash libs)",
+    "TypeScript estricto: tsc -b limpio, sin any, named exports, import type, sin enums TS",
+    "Cero console.log, código comentado, TODOs sueltos ni archivos huérfanos",
+    "domain/legal puro: no importa adapters/, features/ ni app/",
+    "i18n con paridad es/en obligatoria (defineDict), un dict por subfeature",
+    "100% local: corpus y expediente en el dispositivo; API keys nunca en logs/tests/repo",
+    "Exactitud jurídica innegociable: no se citan normas ausentes del índice; fidelidad verbatim de spans entrecomillados; lo no verificado va [VERIFICAR]",
+    "Verificación por hito: pnpm exec tsc -b limpio + pnpm test verde (pnpm build en M1/M3)",
+    "Contratos congelados: cambios solo vía AMEND aditivo (A1-A8) con test de regresión",
+    "El baseline 91 archivos / 956 tests se re-verifica al abrir M0"
+  ],
+  "frozenContracts": [
+    "A1: Conversation.legalCaseId?: string | null (aditivo; create() NO lo puebla; null = desvincular; unico enlace, se elimina LegalCase.conversationId)",
+    "A2: RunAgentParams.enableTools?: boolean; gate = (enableTools ?? researchMode) && toolCalling && model.supportsTools !== false; modo legal derivado por conversación",
+    "A3: AppServices.createTools(settings, context?) con context?: {conversationId, legalCaseId}; legalCases?/legalPacks?/legalCorpus? opcionales",
+    "A4: IndexedDB DB_VERSION 1 -> 2 con stores nuevos, upgradeOpenHerDb idempotente y handlers blocked/blocking",
+    "A5: ConversationArchive.legalCaseId?: string | null + guard/watermark en conversationToMarkdown",
+    "A6: RunAgentParams.ephemeralSuffix?: ChatMessage[] + SelectHistoryByBudgetInput.reservedTokens?; el sufijo va al wire despues de la seleccion, fuera de loopHistory; role 'tool' es del wire, no de ChatMessage",
+    "A7: runAgent cierra todo tool-call sin resultado (aborted/budget/failedTwice/answerForced) con tool-result sintetico; buildWireMessages repara pares huerfanos en ambos sentidos",
+    "A8: tools legales not-found => ToolResult {ok:true} explicativo; ToolErrorCode NO cambia; invalid_args solo para args malformados",
+    "ToolRegistryDeps, MessageContent y ChatMessage NO cambian",
+    "hash de pack = sha256 del canon {schema,id,version,publishedAt,license,sources,norms,provisions}; textHash por provision; mismatch => rechazo",
+    "mergeSettings enumera explicitamente la seccion legal (defaults/migrate/settingsStore)"
+  ],
+  "milestones": [
+    {
+      "id": "M0",
+      "title": "Dominio + hardening del agente",
+      "effort": "L",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T07",
+        "T09",
+        "T10",
+        "T11"
+      ],
+      "verify": "pnpm exec tsc -b && pnpm test",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "M1",
+      "title": "Persistencia + corpus curado",
+      "effort": "M",
+      "tasks": [
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "T16"
+      ],
+      "verify": "pnpm exec tsc -b && pnpm test && pnpm build",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "M2",
+      "title": "Integracion de chat + tools",
+      "effort": "M",
+      "tasks": [
+        "T17",
+        "T18",
+        "T19",
+        "T20",
+        "T21"
+      ],
+      "verify": "pnpm exec tsc -b && pnpm test",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "M3",
+      "title": "Adversarial + documentos + confianza + modos + onboarding",
+      "effort": "L+",
+      "effortNote": "L pasa a L+ por el menú de modos, CaseLinkDialog, a11y y sus tests (~+15-20%)",
+      "tasks": [
+        "T22",
+        "T23",
+        "T24",
+        "T25",
+        "T26",
+        "T27"
+      ],
+      "verify": "pnpm exec tsc -b && pnpm test && pnpm build",
+      "status": "COMPLETE"
+    },
+    {
+      "id": "G1",
+      "title": "Gate adversarial (Critic/BugHunter/Challenger)",
+      "effort": "S",
+      "tasks": [
+        "G1"
+      ],
+      "verify": "pnpm exec tsc -b && pnpm test"
+    },
+    {
+      "id": "G2",
+      "title": "Auditoria de integridad",
+      "effort": "S",
+      "tasks": [
+        "G2"
+      ],
+      "verify": "pnpm exec tsc -b && pnpm test && pnpm build"
+    },
+    {
+      "id": "G3",
+      "title": "Aceptacion final",
+      "effort": "S",
+      "tasks": [
+        "G3"
+      ],
+      "verify": "evaluator verdict"
+    }
+  ],
+  "measurableDefinitionOfDone": [
+    "Golden set de 30 escritos tipicos anonimizados: >=80% de citas normativas resuelven en el corpus instalado; el resto en el gap report",
+    "0 citas fuera del pack reportadas como verified (test de propiedad sobre el golden set)",
+    "100% de las provisiones publicadas con sourceUrl + sourceDate + textHash valido",
+    "100% de documentos/analisis exportados con watermark + contador verified/unverified",
+    "System prompt byte-identico (sha256) en 10 turnos legales consecutivos",
+    "0 tokens de PII en payloads de wire para 20 fixtures de redaction",
+    "Contrato legal corre contra real y fake sin ciclo; corpus <= 500 KB; dist/legal auditado",
+    "Modos: encender un modo no altera el otro; las 3 vias (onboarding/Ajustes/chat) convergen en el mismo estado persistido; el menu no duplica estado (aria-checked derivado)",
+    "tsc -b + test (+ build en M1/M3) verdes por hito; baseline 91/956 re-verificado al abrir M0"
+  ],
+  "corpusPhases": [
+    {
+      "id": "F1",
+      "title": "MVP verificable",
+      "content": "Packs por casos de uso tipicos (CCyC obligaciones/contratos/responsabilidad/prescripcion, CPCCN nucleo, LDC); 0 verified:false; sourceUrl+sourceDate+textHash; <=500 KB; verify-packs.mjs"
+    },
+    {
+      "id": "F2",
+      "title": "Aportes del usuario",
+      "content": "Normativa provincial y jurisprudencia propia con fuente y licencia obligatorias; pack local verificationMethod:'user-provided'; nunca redistribuido"
+    },
+    {
+      "id": "F3",
+      "title": "Gap report -> backlog",
+      "content": "legal_search sin resultados y cite_article not-found escriben gap report local visible en la UI; alimenta el proximo pack"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Dominio base legal: tipos + puertos",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 0,
+      "assignedTo": "builder-domain-core",
+      "allowedFiles": [
+        "src/domain/types/legal.ts",
+        "src/domain/ports/LegalCaseRepository.ts",
+        "src/domain/ports/LegalPackStore.ts",
+        "src/domain/ports/index.ts",
+        "src/domain/types/index.ts"
+      ],
+      "dependencies": [],
+      "invariants": [
+        "Solo tipos e interfaces; vocabulario canonico en ingles",
+        "Sin LegalCase.conversationId ni findByConversationId (fuente unica = Conversation.legalCaseId)",
+        "LegalSettings con defaultJurisdiction/defaultCourt/defaultMatter y SIN packs",
+        "Sin imports de adapters/features/app",
+        "domain/types/index.ts reexporta legal (barrel)"
+      ],
+      "definitionOfDone": [
+        "tsc -b limpio",
+        "LegalAnalysisBudget y AcknowledgmentRecord exportados",
+        "Puertos consumidos por storage y stores"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave0 tsc -b exit 0 + 972 tests"
+    },
+    {
+      "id": "T11",
+      "title": "Hardening del agente: tool-calls huerfanos (C1) + ephemeralSuffix (C3) + enableTools (M7)",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 0,
+      "assignedTo": "builder-agent",
+      "allowedFiles": [
+        "src/domain/agent/runAgent.ts",
+        "src/domain/agent/runAgent.test.ts",
+        "src/domain/chat/buildWireMessages.ts",
+        "src/domain/chat/buildWireMessages.test.ts",
+        "src/domain/chat/selectHistoryByBudget.ts",
+        "src/domain/chat/selectHistoryByBudget.test.ts",
+        "src/domain/types/chat.ts"
+      ],
+      "dependencies": [],
+      "invariants": [
+        "Todo tool-call sin resultado se cierra con tool-result sintetico ok:false",
+        "buildWireMessages repara pares huerfanos en ambos sentidos",
+        "ephemeralSuffix anexado al wire tras la seleccion, fuera de loopHistory",
+        "reservedTokens evita overflow; enableTools aditivo sin sobrecargar researchMode",
+        "Contratos de ChatMessage/MessageContent sin cambios",
+        "ToolErrorCode gana el valor aditivo not_executed; TOOL_FAILURE_MESSAGE_CODES (Record exhaustivo en runAgent.ts) se actualiza en el mismo task"
+      ],
+      "definitionOfDone": [
+        "Tests de regresion en los 4 caminos de corte (aborted/budget/failedTwice/answerForced)",
+        "Tests hoy institucionalizados del huerfano actualizados (runAgent.test.ts ~990/~1014; buildWireMessages.test.ts ~75/~83)",
+        "Test de brief gigante + historial largo sin overflow y con brief presente",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave0 tsc -b exit 0 + 972 tests"
+    },
+    {
+      "id": "T02",
+      "title": "Packs: parseo, canon y hash SHA-256 JS puro",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 1,
+      "assignedTo": "builder-packs",
+      "allowedFiles": [
+        "src/domain/legal/hash.ts",
+        "src/domain/legal/hash.test.ts",
+        "src/domain/legal/packs.ts",
+        "src/domain/legal/packs.test.ts"
+      ],
+      "dependencies": [
+        "T01"
+      ],
+      "invariants": [
+        "Puro, sin dependencias; nunca lanza (degrada a null/errores)",
+        "Canon incluye license/sources/publishedAt/norms/provisions",
+        "textHash por provision; provision sin sourceUrl/sourceDate/textHash es invalida",
+        "hasher inyectable; fallback JS puro sin crypto.subtle"
+      ],
+      "definitionOfDone": [
+        "Tests de hash correcto/mismatch y de hash sin crypto.subtle",
+        "buildLegalIndex idempotente",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave1 tsc -b exit 0 + 1050 tests"
+    },
+    {
+      "id": "T10",
+      "title": "Settings domain: seccion legal con defaults y saneo",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 1,
+      "assignedTo": "builder-settings-domain",
+      "allowedFiles": [
+        "src/domain/types/settings.ts",
+        "src/domain/settings/defaults.ts",
+        "src/domain/settings/migrate.ts",
+        "src/domain/settings/migrate.test.ts",
+        "src/domain/settings/defaults.test.ts"
+      ],
+      "dependencies": [
+        "T01"
+      ],
+      "invariants": [
+        "createDefaultSettings clona legal profundamente",
+        "migrateLegal nunca lanza e idempotente",
+        "SIN packs en LegalSettings",
+        "defaultJurisdiction/defaultCourt/defaultMatter saneados por enum",
+        "DEFAULT_SETTINGS y createDefaultSettings incluyen legal (clonado profundo) y defaults.test.ts se actualiza en el mismo task"
+      ],
+      "definitionOfDone": [
+        "Tests de defaults/migrate con legal corrupto",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave1 tsc -b exit 0 + 1050 tests"
+    },
+    {
+      "id": "T05",
+      "title": "Reglas de plazo (verificadas) + redaccion/pseudonimizacion",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 1,
+      "assignedTo": "builder-rules-privacy",
+      "allowedFiles": [
+        "src/domain/legal/deadlines.ts",
+        "src/domain/legal/rules/index.ts",
+        "src/domain/legal/rules/national.ts",
+        "src/domain/legal/rules/caba.ts",
+        "src/domain/legal/redaction.ts",
+        "src/domain/legal/deadlines.test.ts",
+        "src/domain/legal/redaction.test.ts"
+      ],
+      "dependencies": [
+        "T01"
+      ],
+      "invariants": [
+        "Reglas con verified + normRef + sourceUrl; solo prescripcion CCyC verificada en MVP",
+        "Solo regex + nombres/domicilios estructurados del caso; nunca NER libre",
+        "Mapping local; deanonymize(redact(x)) round-trip"
+      ],
+      "definitionOfDone": [
+        "Tests de vencimiento/ferias/bisiesto y verified:false",
+        "Tests DNI/CUIT/CBU/email/tel/domicilio/particulas",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave1 tsc -b exit 0 + 1050 tests"
+    },
+    {
+      "id": "T03",
+      "title": "Retrieval BM25 con normalizacion, abreviaturas y aliases",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 2,
+      "assignedTo": "builder-retrieval",
+      "allowedFiles": [
+        "src/domain/legal/retrieval.ts",
+        "src/domain/legal/retrieval.test.ts"
+      ],
+      "dependencies": [
+        "T02"
+      ],
+      "invariants": [
+        "Sin dependencias; determinista",
+        "Normaliza acentos, stopwords y sufijos livianos; canonicaliza art./arts.",
+        "Indexa norm.short/long/aliases y synonyms del pack",
+        "estimateLegalTokens = ceil(bytes/3)"
+      ],
+      "definitionOfDone": [
+        "Recall adversarial: prescribe->CCyC-2560, CPCCN 330, arts. 2560 y 2561, LDC 52 bis",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave2/3 tsc -b exit 0 + 1107 tests"
+    },
+    {
+      "id": "T04",
+      "title": "Citation guard: existencia + fidelidad verbatim",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 2,
+      "assignedTo": "builder-citation",
+      "allowedFiles": [
+        "src/domain/legal/citation.ts",
+        "src/domain/legal/citation.test.ts"
+      ],
+      "dependencies": [
+        "T02"
+      ],
+      "invariants": [
+        "Puro; fallos/doctrina/expedientes SIEMPRE unverified",
+        "Spans entrecomillados no verbatim => paraphrase => [VERIFICAR: cita no textual]",
+        "Marcadores aplicados en render; salida cruda intacta",
+        "Nunca marca verified una cita ausente del indice"
+      ],
+      "definitionOfDone": [
+        "Tests verified/unverified/paraphrase/malformed",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave2/3 tsc -b exit 0 + 1107 tests"
+    },
+    {
+      "id": "T07",
+      "title": "Generacion: plantillas + documento + prompt legal + brief",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 2,
+      "assignedTo": "builder-generation",
+      "allowedFiles": [
+        "src/domain/legal/templates/index.ts",
+        "src/domain/legal/templates/claim.ts",
+        "src/domain/legal/templates/answer.ts",
+        "src/domain/legal/templates/demandLetter.ts",
+        "src/domain/legal/document.ts",
+        "src/domain/legal/prompt.ts",
+        "src/domain/legal/brief.ts",
+        "src/domain/legal/document.test.ts",
+        "src/domain/legal/brief.test.ts"
+      ],
+      "dependencies": [
+        "T01"
+      ],
+      "invariants": [
+        "Plantilla = data pura con checklist (art. 330 CPCCN) y packProvisions",
+        "documentToMarkdown impone watermark y disclaimer InfoLEG",
+        "System byte-estable; brief con delimitadores <expediente> y preamble dato-no-instruccion",
+        "Brief devuelve tool-pair o text-block segun capacidades de tool calling"
+      ],
+      "definitionOfDone": [
+        "Tests de render/checklist/watermark/disclaimer",
+        "Test anti-injection: hecho con 'ignore previous instructions' queda como dato",
+        "Test de byte-estabilidad y de que el brief no aparece en el system",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave1 tsc -b exit 0 + 1050 tests"
+    },
+    {
+      "id": "T09",
+      "title": "Orquestacion adversarial: 4 personas + sintesis + budget",
+      "status": "DONE",
+      "milestone": "M0",
+      "wave": 3,
+      "assignedTo": "builder-adversarial",
+      "allowedFiles": [
+        "src/domain/legal/adversarial.ts",
+        "src/domain/legal/adversarial.test.ts"
+      ],
+      "dependencies": [
+        "T04",
+        "T07"
+      ],
+      "invariants": [
+        "System identico en las 4 personas; rol al final del user",
+        "LegalAnalysisBudget aplicado localmente; sessionId comun",
+        "Parser tolerante que degrada sin lanzar; citas por item via citation guard"
+      ],
+      "definitionOfDone": [
+        "Test de 4 requests con system igual y rol al final",
+        "Test de corte por budget y de degradacion a N personas",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M0-wave2/3 tsc -b exit 0 + 1107 tests"
+    },
+    {
+      "id": "T12",
+      "title": "IndexedDB v2 con handlers blocked/blocking",
+      "status": "DONE",
+      "milestone": "M1",
+      "wave": 3,
+      "assignedTo": "builder-storage",
+      "allowedFiles": [
+        "src/adapters/storage/idb.ts",
+        "src/adapters/storage/idb.test.ts"
+      ],
+      "dependencies": [
+        "T01"
+      ],
+      "invariants": [
+        "DB_VERSION = 2; upgrade idempotente; no borra datos de v1",
+        "handlers blocked/blocking que cierran la conexion vieja",
+        "stores legalCases/legalDocuments/legalAnalyses/legalPacks/acknowledgments/gaps"
+      ],
+      "definitionOfDone": [
+        "Test de upgrade v1->v2 con dos conexiones",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M1-waveA tsc -b exit 0 + 1137 tests + verify-packs OK"
+    },
+    {
+      "id": "T16",
+      "title": "Corpus curado MVP + script de verificacion + gap report",
+      "status": "DONE",
+      "milestone": "M1",
+      "wave": 3,
+      "assignedTo": "builder-corpus-data",
+      "allowedFiles": [
+        "public/legal/packs/index.json",
+        "public/legal/packs/ar-ccyc-core.json",
+        "public/legal/packs/ar-cpccn-core.json",
+        "public/legal/packs/ar-ldc-core.json",
+        "public/legal/README.md",
+        "scripts/legal/verify-packs.mjs",
+        "scripts/legal/__fixtures__/golden-set.json",
+        "src/adapters/legal/corpus.test.ts"
+      ],
+      "dependencies": [
+        "T02"
+      ],
+      "invariants": [
+        "Toda provision con sourceUrl + sourceDate + textHash + verificationMethod",
+        "0 verified:false en packs publicados; sin jurisprudencia ni doctrina",
+        "Licencia documentada o marcada unverified; <=500 KB total",
+        "Los textos de las provisiones los aporta el Orchestrator: PROHIBIDO inventar, parafrasear o completar articulos; solo se publica lo aportado",
+        "corpus.test.ts valida con parseLegalPack({verifyTextHashes:true}) y computePackHash reales"
+      ],
+      "definitionOfDone": [
+        "JSON valido contra el schema del pack; hash correcto",
+        "verify-packs.mjs corre contra fixtures y reporta mismatch",
+        "golden-set.json con 30 escritos de prueba",
+        "Licencia documentada en public/legal/README.md"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M1-waveA tsc -b exit 0 + 1137 tests + verify-packs OK"
+    },
+    {
+      "id": "T13",
+      "title": "Repositorios IDB: expediente/documentos/analisis/consent y packs",
+      "status": "DONE",
+      "milestone": "M1",
+      "wave": 4,
+      "assignedTo": "builder-storage",
+      "allowedFiles": [
+        "src/adapters/storage/IndexedDbLegalCases.ts",
+        "src/adapters/storage/IndexedDbLegalPacks.ts",
+        "src/adapters/storage/IndexedDbLegalCases.test.ts",
+        "src/adapters/storage/IndexedDbLegalPacks.test.ts"
+      ],
+      "dependencies": [
+        "T12",
+        "T01"
+      ],
+      "invariants": [
+        "Cascada caso -> documentos/analisis/acknowledgments/gaps",
+        "update bumpea updatedAt sin tocar createdAt",
+        "install reemplaza por id; listInstalled sin contenido; get devuelve el pack completo"
+      ],
+      "definitionOfDone": [
+        "Contrato T14 verde contra ambos repos",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M1 gate: tsc -b 0 + 1201 tests + build OK"
+    },
+    {
+      "id": "T15",
+      "title": "Loader/verifier/corpus async + bypass del service worker",
+      "status": "DONE",
+      "milestone": "M1",
+      "wave": 4,
+      "assignedTo": "builder-corpus-adapters",
+      "allowedFiles": [
+        "src/adapters/legal/packLoader.ts",
+        "src/adapters/legal/packVerifier.ts",
+        "src/adapters/legal/LegalCorpus.ts",
+        "src/adapters/legal/legalAdapters.test.ts",
+        "public/sw.js"
+      ],
+      "dependencies": [
+        "T02",
+        "T13"
+      ],
+      "invariants": [
+        "Usa el puerto HttpClient (sin fetch directo)",
+        "hash/textHash mismatch => rechazo; hasher JS puro inyectable",
+        "ensureIndex async, idempotente y cacheado por (packId, packVersion)",
+        "manifestUrl con cache-buster y packUrl con ?v=hash; sw.js sin cache-first para /legal/"
+      ],
+      "definitionOfDone": [
+        "Tests de hash ok/mismatch y de URL builders",
+        "Test de ensureIndex cacheado",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M1 gate: tsc -b 0 + 1201 tests + build OK"
+    },
+    {
+      "id": "T14",
+      "title": "Fakes en memoria + contrato legal compartido + link/unlink de conversacion",
+      "status": "DONE",
+      "milestone": "M1",
+      "wave": 5,
+      "assignedTo": "builder-storage",
+      "allowedFiles": [
+        "src/test/fakes/MemoryRepos.ts",
+        "src/adapters/storage/legalContract.ts",
+        "src/adapters/storage/legalContract.test.ts",
+        "src/adapters/storage/conversationContract.ts"
+      ],
+      "dependencies": [
+        "T13"
+      ],
+      "invariants": [
+        "Mismo patron que conversationContract.ts; paridad real/fake obligatoria",
+        "create() NO puebla legalCaseId; update({legalCaseId:null}) desvincula; undefined/null = no legal",
+        "Sin red"
+      ],
+      "definitionOfDone": [
+        "describeLegalRepositoryContract corre contra real y fake en el mismo task (sin ciclo)",
+        "Test de link/unlink real+fake en conversationContract.ts",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M1 gate: tsc -b 0 + 1201 tests + build OK"
+    },
+    {
+      "id": "T17",
+      "title": "Tools legales + composeToolRegistries",
+      "status": "DONE",
+      "milestone": "M2",
+      "wave": 5,
+      "assignedTo": "builder-tools",
+      "allowedFiles": [
+        "src/domain/tools/composeRegistry.ts",
+        "src/domain/tools/composeRegistry.test.ts",
+        "src/adapters/tools/legal/index.ts",
+        "src/adapters/tools/legal/index.test.ts"
+      ],
+      "dependencies": [
+        "T03",
+        "T04",
+        "T15"
+      ],
+      "invariants": [
+        "legal_search y cite_article (get_legal_passage fusionado en search)",
+        "not-found => ok:true explicativo + gap report; invalid_args solo para args malformados",
+        "ToolResult de error, nunca throw; cita siempre del fixture pack",
+        "Registro solo en modo legal; ToolRegistryDeps y ToolErrorCode sin cambios"
+      ],
+      "definitionOfDone": [
+        "Tests de schema/ejecucion/args invalidos/not-found/truncado",
+        "0 citas fuera del pack reportadas como verified",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M2-wave5 tsc -b 0 + 1218 tests"
+    },
+    {
+      "id": "T18",
+      "title": "settingsStore: seccion legal + mergeSettings",
+      "status": "DONE",
+      "milestone": "M2",
+      "wave": 5,
+      "assignedTo": "builder-settings-domain",
+      "allowedFiles": [
+        "src/features/settings/state/settingsStore.ts",
+        "src/features/settings/state/settingsStore.test.ts"
+      ],
+      "dependencies": [
+        "T10"
+      ],
+      "invariants": [
+        "mergeSettings enumera legal explicitamente",
+        "patch parcial no destruye la seccion",
+        "switch global solo afecta defaults de conversaciones nuevas"
+      ],
+      "definitionOfDone": [
+        "Test de patch legal parcial",
+        "Turno general sin regresion",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M2-wave5 tsc -b 0 + 1218 tests"
+    },
+    {
+      "id": "T19",
+      "title": "Composicion de servicios: createTools con contexto de conversacion",
+      "status": "DONE",
+      "milestone": "M2",
+      "wave": 6,
+      "assignedTo": "builder-app",
+      "allowedFiles": [
+        "src/app/services.tsx",
+        "src/app/services.test.ts"
+      ],
+      "dependencies": [
+        "T13",
+        "T14",
+        "T15",
+        "T17",
+        "T18"
+      ],
+      "invariants": [
+        "createTools(settings, context?) compone web? + legal? segun legalCaseId de la conversacion",
+        "legalCases?/legalPacks?/legalCorpus? opcionales (literales de test siguen compilando)",
+        "Modo general no incluye tools legales; sin secretos en logs"
+      ],
+      "definitionOfDone": [
+        "Test: workspace off + caso linkeado => registry legal presente",
+        "Tests existentes de servicios verdes",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M2-wave6 tsc gate"
+    },
+    {
+      "id": "T20",
+      "title": "Turno legal en chatStore + vínculo + serialize + guard de export",
+      "status": "DONE",
+      "milestone": "M2",
+      "wave": 7,
+      "assignedTo": "builder-chat",
+      "allowedFiles": [
+        "src/domain/types/conversation.ts",
+        "src/domain/chat/serializeConversation.ts",
+        "src/domain/chat/serializeConversation.test.ts",
+        "src/features/chat/state/chatStore.ts",
+        "src/features/chat/state/chatStore.legal.test.ts",
+        "src/features/conversations/state/conversationsStore.ts",
+        "src/features/conversations/state/conversationsStore.test.ts"
+      ],
+      "dependencies": [
+        "T07",
+        "T11",
+        "T17",
+        "T19"
+      ],
+      "invariants": [
+        "legalMode = conversation.legalCaseId != null (independiente de settings.legal.enabled y de webSearchEnabled)",
+        "enableTools = webResearchMode || legalMode; scaffold de investigacion con webResearchMode real",
+        "brief via ephemeralSuffix con reservedTokens; nunca en history ni system",
+        "ConversationArchive.legalCaseId round-trip; conversationToMarkdown con guard+watermark en conversaciones legales",
+        "chatStore expone setLegalCase(caseId: string | null) con el mismo lifecycle que setResearchMode (incluye draft sin conversationId: estado pendiente y persistencia al crear)"
+      ],
+      "definitionOfDone": [
+        "Test: workspace off + caso linkeado => scaffold legal + tools legales + brief",
+        "Test: system sin brief ni pasajes; role tool con el brief; system byte-identico en 10 turnos",
+        "Test: setLegalCase en draft (conversationId null) se persiste al crear la conversacion",
+        "Test round-trip de legalCaseId en export/import",
+        "conversationContract real+fake verde",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M2 gate: tsc-b 0 + full suite 1234 + fix import no usado"
+    },
+    {
+      "id": "T21",
+      "title": "Guard de circulacion en render/copiar + preview de privacidad en el composer",
+      "status": "DONE",
+      "milestone": "M2",
+      "wave": 7,
+      "assignedTo": "builder-trust",
+      "allowedFiles": [
+        "src/features/chat/components/MessageList.tsx",
+        "src/features/chat/components/MessageActions.tsx",
+        "src/features/chat/components/Composer.tsx",
+        "src/features/legal/state/CitationGuardContext.tsx",
+        "src/features/legal/state/CitationGuardContext.test.tsx",
+        "src/i18n/dicts/legalTrust.ts"
+      ],
+      "dependencies": [
+        "T04",
+        "T07",
+        "T20"
+      ],
+      "invariants": [
+        "CopyButton copia el texto post-guard en contexto legal (sin cambiar su API)",
+        "Guard expuesto como hook useCitationGuard() en CitationGuardContext; ChatPage NO monta provider",
+        "Preview compacto 'que sale del dispositivo' y consentimiento antes del primer envio",
+        "Sin marcas ajenas ni emojis; i18n es/en"
+      ],
+      "definitionOfDone": [
+        "Test: en modo legal, copiar incluye [VERIFICAR] cuando corresponde",
+        "Smoke RTL del preview de privacidad y del consentimiento",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M2 gate: tsc-b 0 + 1247 tests"
+    },
+    {
+      "id": "T22",
+      "title": "Stores legales: expediente + analisis adversarial",
+      "status": "DONE",
+      "milestone": "M3",
+      "wave": 8,
+      "assignedTo": "builder-legal-state",
+      "allowedFiles": [
+        "src/features/legal/state/caseStore.ts",
+        "src/features/legal/state/analysisStore.ts",
+        "src/features/legal/state/CaseStoreContext.tsx",
+        "src/features/legal/state/AnalysisStoreContext.tsx",
+        "src/features/legal/state/legalStores.test.ts"
+      ],
+      "dependencies": [
+        "T09",
+        "T13",
+        "T14",
+        "T19"
+      ],
+      "invariants": [
+        "Deps inyectadas; errores de persistencia no tumban la UI",
+        "analysisStore: runStatus + claim token, AbortController en las 5 llamadas, Promise.allSettled y degradacion a N personas, catch de QuotaExceededError",
+        "Conversacion linkeada via update({legalCaseId})"
+      ],
+      "definitionOfDone": [
+        "Test con adapter fake: 4 llamadas con system identico + sintesis",
+        "Tests de doble click, abort a mitad, fallo de 1 persona y cuota excedida",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M3-wave8 tsc-b 0 + 1263 tests"
+    },
+    {
+      "id": "T25",
+      "title": "Activacion: onboarding legal + WorkModeSection",
+      "status": "DONE",
+      "milestone": "M3",
+      "wave": 8,
+      "assignedTo": "builder-activation",
+      "allowedFiles": [
+        "src/features/onboarding/state/wizardReducer.ts",
+        "src/features/onboarding/state/wizardReducer.test.ts",
+        "src/features/onboarding/components/OnboardingWizard.tsx",
+        "src/features/onboarding/components/LegalStep.tsx",
+        "src/features/onboarding/components/StepIndicator.tsx",
+        "src/features/onboarding/OnboardingPage.test.tsx",
+        "src/features/settings/components/WorkModeSection.tsx",
+        "src/features/settings/SettingsPage.tsx",
+        "src/features/settings/SettingsPage.test.tsx",
+        "src/i18n/dicts/settings.ts",
+        "src/i18n/dicts/onboarding.ts",
+        "src/i18n/dicts/legalSetup.ts"
+      ],
+      "dependencies": [
+        "T10",
+        "T18"
+      ],
+      "invariants": [
+        "needsOnboarding NO cambia; usuario existente entra por Settings",
+        "WIZARD_STEPS amplia el paso legal; reducer puro",
+        "Disclaimer no descartable y consentimiento en el setup",
+        "SettingsPage pasa a siete secciones con su test actualizado"
+      ],
+      "definitionOfDone": [
+        "Test: usuario con proveedor no es redirigido",
+        "Test: nuevo usuario completa el paso legal",
+        "SettingsPage.test.tsx verde con la seccion nueva",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M3-wave8 tsc-b 0 + 1263 tests"
+    },
+    {
+      "id": "T23",
+      "title": "Ruta #/legal + gestion de expedientes",
+      "status": "DONE",
+      "milestone": "M3",
+      "wave": 9,
+      "assignedTo": "builder-legal-ui",
+      "allowedFiles": [
+        "src/features/legal/LegalPage.tsx",
+        "src/features/legal/components/CaseForm.tsx",
+        "src/features/legal/components/CaseList.tsx",
+        "src/features/legal/components/CaseForm.test.tsx",
+        "src/app/routing.tsx",
+        "src/app/routing.test.ts",
+        "src/app/layout/TopBar.tsx",
+        "src/i18n/dicts/legalCases.ts"
+      ],
+      "dependencies": [
+        "T22",
+        "T20"
+      ],
+      "invariants": [
+        "Route legal incluye caseId y conversationId (compatibilidad con TopBar)",
+        "Ruta lazy; hash desconocido cae a #/chat",
+        "Contrato de scroll movil existente respetado"
+      ],
+      "definitionOfDone": [
+        "Test parseRoute('#/legal') y '#/legal/:caseId'",
+        "Smoke RTL de alta y listado de expedientes",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M3-wave9 tsc-b 0 + 1303 tests"
+    },
+    {
+      "id": "T24",
+      "title": "UI adversarial + estudio de documentos con export honesto",
+      "status": "DONE",
+      "milestone": "M3",
+      "wave": 9,
+      "assignedTo": "builder-legal-ui",
+      "allowedFiles": [
+        "src/features/legal/components/AdversarialPanel.tsx",
+        "src/features/legal/components/AnalysisView.tsx",
+        "src/features/legal/components/DocumentStudio.tsx",
+        "src/features/legal/components/AnalysisView.test.tsx",
+        "src/features/legal/components/DocumentStudio.test.tsx",
+        "src/i18n/dicts/legalAnalysis.ts",
+        "src/i18n/dicts/legalDocs.ts"
+      ],
+      "dependencies": [
+        "T22",
+        "T23"
+      ],
+      "invariants": [
+        "Ataque/defensa/juez/riesgos separados; ataque marcado como simulacion interna",
+        "Watermark y disclaimer en render y export; contador verified/unverified",
+        "Export bloqueado sin consentimiento + AcknowledgmentRecord; Android copia/comparte, web descarga .md/print",
+        "Sin parsers ni dependencias nuevas"
+      ],
+      "definitionOfDone": [
+        "Test: Markdown exportado contiene watermark y disclaimer",
+        "Test: export bloqueado sin acknowledgment",
+        "Smoke RTL de las 4 perspectivas y del estudio de documentos",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M3 gate: tsc-b 0 + 1319 tests"
+    },
+    {
+      "id": "T27",
+      "title": "ModesMenu + CaseLinkDialog: modos combinables en la cabecera del chat (D17, v2.1)",
+      "status": "DONE",
+      "milestone": "M3",
+      "wave": 9,
+      "assignedTo": "builder-modes",
+      "allowedFiles": [
+        "src/features/chat/components/ModesMenu.tsx",
+        "src/features/chat/components/ModesMenu.test.tsx",
+        "src/features/chat/components/CaseLinkDialog.tsx",
+        "src/features/chat/components/CaseLinkDialog.test.tsx",
+        "src/features/chat/ChatPage.tsx",
+        "src/features/chat/ChatPage.test.tsx",
+        "src/i18n/dicts/modes.ts"
+      ],
+      "dependencies": [
+        "T20",
+        "T22"
+      ],
+      "invariants": [
+        "Modos ortogonales y combinables; el menu DERIVA el estado (researchMode + legalCaseId != null); prohibido un enum de 'modo actual' o un booleano legalMode que duplique la fuente",
+        "IconButton con aria-haspopup='menu' y aria-expanded en la cabecera; ModesMenu con role='menu' y el patron de CommandMenu (absolute, max-h con scroll, sin desborde en viewport movil)",
+        "Toggles como role='menuitemcheckbox' con aria-checked; foco al abrir; cierre con Escape y click afuera",
+        "Encender legal sin caso abre CaseLinkDialog; apagar pone legalCaseId = null via chatStore.setLegalCase",
+        "El Switch de investigacion del Composer se mantiene y refleja la misma fuente (Conversation.researchMode): el menu es una segunda entrada, no una segunda fuente",
+        "Si el workspace legal no esta configurado, el menu ofrece 'Configurar modo legal' (navega a Ajustes) en vez de fallar",
+        "Usa stores existentes (chatStore de T20, caseStore de T22); no modifica chatStore ni caseStore"
+      ],
+      "definitionOfDone": [
+        "ModesMenu.test.tsx: render, toggles, combinacion Investigacion+Legal, aria-checked, cierre con Escape y click afuera",
+        "ChatPage.test.tsx: abrir el menu; encender legal sin caso abre/pide expediente",
+        "Test: encender un modo NO altera el otro y las 3 vias (onboarding/Ajustes/chat) convergen en el mismo estado persistido",
+        "Sin desborde del menu en viewport movil (test de clase/utilidad o smoke RTL)",
+        "tsc -b limpio"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M3-wave9 tsc-b 0 + 1303 tests"
+    },
+    {
+      "id": "T26",
+      "title": "Documentacion: curación de packs, licencia y mapa de arquitectura",
+      "status": "DONE",
+      "milestone": "M3",
+      "wave": 10,
+      "assignedTo": "builder-docs",
+      "allowedFiles": [
+        "docs/legal-packs.md",
+        "architecture.md",
+        "README.md"
+      ],
+      "dependencies": [
+        "T23",
+        "T24",
+        "T25"
+      ],
+      "invariants": [
+        "Sin secretos ni PII",
+        "Explica hash/licencia/curacion/actualizacion y el protocolo por fases",
+        "Actualiza el baseline de architecture.md a 91/956 y el mapa de archivos legal"
+      ],
+      "definitionOfDone": [
+        "docs coherentes con el codigo",
+        "licenseVerifiedAt o estado unverified documentado",
+        "tsc -b limpio y pnpm build OK"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "M3 gate: tsc-b 0 + 1319 tests + build OK"
+    },
+    {
+      "id": "G1",
+      "title": "Gate adversarial: Critic + Bug Hunter + Challenger",
+      "status": "DONE",
+      "milestone": "G1",
+      "wave": 11,
+      "assignedTo": "critic+bug-hunter+challenger",
+      "allowedFiles": [],
+      "dependencies": [
+        "T21",
+        "T22",
+        "T24",
+        "T25"
+      ],
+      "invariants": [
+        "Hallazgos criticos/mayores remediados con tests de regresion en el archivo del dueno"
+      ],
+      "definitionOfDone": [
+        "Ningun hallazgo CRITICAL/MAJOR abierto",
+        "tsc -b y test verdes tras remediar"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      },
+      "gate": "G1 verdict: RECHAZADO (critic+challenger) / APROBADO CON CAMBIOS (bug-hunter). Remediacion F01-F03."
+    },
+    {
+      "id": "G2",
+      "title": "Auditoria de integridad (exit codes + corpus + licencia + secretos + tamano)",
+      "status": "DONE",
+      "milestone": "G2",
+      "wave": 11,
+      "assignedTo": "auditor",
+      "allowedFiles": [],
+      "dependencies": [
+        "G1",
+        "F01",
+        "F02",
+        "F03"
+      ],
+      "invariants": [
+        "Exit codes reales, no simulados",
+        "0 secreto/PII en repo y fixtures",
+        "Corpus con fuente+fecha+hash; licencia documentada; <=500 KB; dist/legal auditado"
+      ],
+      "definitionOfDone": [
+        "tsc -b/test/build exit 0",
+        "Corpus fuera del bundle inicial",
+        "Informe de integridad con golden set >=80%"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      }
+    },
+    {
+      "id": "G3",
+      "title": "Aceptacion final del Evaluator",
+      "status": "DONE",
+      "milestone": "G3",
+      "wave": 12,
+      "assignedTo": "evaluator",
+      "allowedFiles": [],
+      "dependencies": [
+        "G2"
+      ],
+      "invariants": [
+        "DoD por hito y global"
+      ],
+      "definitionOfDone": [
+        "Veredicto ACCEPTED con evidencia"
+      ],
+      "bugAudit": {
+        "status": "PENDING",
+        "findings": []
+      },
+      "evaluatorVerdict": {
+        "status": "PENDING",
+        "reasons": []
+      }
+    },
+    {
+      "id": "F01",
+      "title": "Remediacion G1: brief redactado-first + consentimiento + eventos de tools",
+      "status": "DONE",
+      "milestone": "G1",
+      "wave": 11,
+      "assignedTo": "builder-privacy-core",
+      "dependencies": [
+        "G1"
+      ],
+      "allowedFiles": [
+        "src/domain/legal/brief.ts",
+        "src/domain/legal/brief.test.ts",
+        "src/domain/legal/redaction.ts",
+        "src/domain/legal/redaction.test.ts",
+        "src/features/chat/state/chatStore.ts",
+        "src/features/chat/state/chatStore.legal.test.ts",
+        "src/domain/agent/runAgent.ts",
+        "src/domain/agent/runAgent.test.ts"
+      ],
+      "invariants": [
+        "El brief se construye SOLO desde el caso redactado; ningun PII viaja al wire",
+        "setLegalCase valida existencia; toggles sin carrera",
+        "tool-end siempre con tool-start; ids de call unicos por intento"
+      ],
+      "dod": "chatStore.legal + brief + runAgent verdes; test 0-PII-en-wire",
+      "gate": "remediacion tsc-b 0 + 1356 tests"
+    },
+    {
+      "id": "F02",
+      "title": "Remediacion G1: fidelidad de citas + memo del corpus con hash",
+      "status": "DONE",
+      "milestone": "G1",
+      "wave": 11,
+      "assignedTo": "builder-trust-core",
+      "dependencies": [
+        "G1"
+      ],
+      "allowedFiles": [
+        "src/domain/legal/citation.ts",
+        "src/domain/legal/citation.test.ts",
+        "src/adapters/legal/LegalCorpus.ts",
+        "src/adapters/legal/legalAdapters.test.ts"
+      ],
+      "invariants": [
+        "Comillas simples, ventana de proximidad y qualificadores (inc./bis) cubiertos",
+        "Memo de ensureIndex incluye hashes de packs"
+      ],
+      "dod": "citation + legalAdapters verdes",
+      "gate": "remediacion tsc-b 0 + 1356 tests"
+    },
+    {
+      "id": "F03",
+      "title": "Remediacion G1: wiring (guard, composer, LegalPage, unlink)",
+      "status": "DONE",
+      "milestone": "G1",
+      "wave": 11,
+      "assignedTo": "builder-wiring",
+      "dependencies": [
+        "G1"
+      ],
+      "allowedFiles": [
+        "src/features/chat/ChatPage.tsx",
+        "src/features/chat/ChatPage.test.tsx",
+        "src/features/legal/LegalPage.tsx",
+        "src/features/legal/LegalPage.test.tsx",
+        "src/features/legal/state/caseStore.ts",
+        "src/features/legal/state/legalStores.test.ts",
+        "src/features/chat/components/MessageList.tsx"
+      ],
+      "invariants": [
+        "CitationGuardProvider montado en ChatPage y LegalPage; MessageList aplica guard SOLO en modo legal",
+        "Composer recibe prop legal con preview+consentimiento; consentimiento persiste en el caso",
+        "LegalPage monta AdversarialPanel+DocumentStudio y dispara syncFromManifest",
+        "caseStore.remove desvincula conversaciones"
+      ],
+      "dod": "ChatPage + LegalPage + legalStores verdes",
+      "gate": "remediacion tsc-b 0 + 1356 tests"
+    }
+  ],
+  "resolvedDecisions": [
+    {
+      "id": "R1",
+      "question": "Modo global vs por conversacion",
+      "resolution": "RESUELTA por D17 (v2.1): per-conversacion con defaults globales. Fuente de verdad en runtime = Conversation.researchMode (Investigacion) y Conversation.legalCaseId (Legal), ortogonales y combinables; settings.legal.enabled y los default* solo definen conversaciones nuevas. Tres vias de activacion no excluyentes: onboarding, Ajustes (WorkModeSection) y ModesMenu del chat."
+    }
+  ],
+  "openDecisions": [
+    {
+      "id": "Q1",
+      "question": "Jurisdiccion del MVP",
+      "recommended": "nacional + CABA"
+    },
+    {
+      "id": "Q2",
+      "question": "Licencia del corpus (A10)",
+      "recommended": "verificar InfoLEG; si no se confirma, usar Boletin Oficial y registrar licenseVerifiedAt; bloquea G2"
+    },
+    {
+      "id": "Q3",
+      "question": "Anonimizacion",
+      "recommended": "obligatoria por defecto con opt-out consentido"
+    },
+    {
+      "id": "Q4",
+      "question": "Importar jurisprudencia propia",
+      "recommended": "fase 2, con fuente y licencia, sin redistribuir"
+    },
+    {
+      "id": "Q5",
+      "question": "Export de documentos",
+      "recommended": "Android portapapeles/compartir; .md+print en web/desktop; sin dependencias nuevas"
+    },
+    {
+      "id": "Q6",
+      "question": "Proveedor/modelo sugerido en el setup",
+      "recommended": "sugerir (tool calling + cache), no bloquear"
+    },
+    {
+      "id": "Q7",
+      "question": "Profundidad adversarial",
+      "recommended": "4 personas + sintesis con degradacion visible a N"
+    },
+    {
+      "id": "Q8",
+      "question": "Ferias judiciales",
+      "recommended": "calendario editable; pre-cargar solo nacionales verificadas"
+    },
+    {
+      "id": "Q9",
+      "question": "Distribucion de packs",
+      "recommended": "public/legal/packs + manifiesto revalidable; remoto en fase 2"
+    },
+    {
+      "id": "Q10",
+      "question": "Presupuesto de corpus del APK",
+      "recommended": "<=500 KB en MVP; packs pesados descargables en fase 2"
+    }
+  ]
+}

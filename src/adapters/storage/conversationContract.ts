@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
 import type { ChatMessage, MessageStatus } from '@/domain/types/chat';
+import type { Conversation } from '@/domain/types/conversation';
 
 export interface ConversationRepositoryHarness {
   readonly repo: ConversationRepository;
@@ -40,6 +41,8 @@ export function describeConversationRepositoryContract(
         lastMessagePreview: '',
         status: 'active',
       });
+      // El vínculo legal no se puebla al crear: la clave debe estar ausente.
+      expect(created).not.toHaveProperty('legalCaseId');
       expect(await harness.repo.get(created.id)).toEqual(created);
     });
 
@@ -168,6 +171,27 @@ export function describeConversationRepositoryContract(
       expect((await harness.repo.listMessages(b.id)).map((message) => message.id)).toEqual(['b2']);
     });
 
+    it('vincula y desvincula el caso legal con update sin tocar createdAt', async () => {
+      harness.setNow(100);
+      const created = await harness.repo.create({ title: 'A' });
+      expect(created).not.toHaveProperty('legalCaseId');
+      expect(readLegalCaseId(created)).toBeUndefined();
+
+      harness.setNow(200);
+      const linked = await harness.repo.update(created.id, legalLinkPatch('case-1'));
+      expect(readLegalCaseId(linked)).toBe('case-1');
+      expect(linked.createdAt).toBe(100);
+      expect(linked.updatedAt).toBe(200);
+      expect(readLegalCaseId(await harness.repo.get(created.id))).toBe('case-1');
+
+      harness.setNow(300);
+      const unlinked = await harness.repo.update(created.id, legalLinkPatch(null));
+      expect(readLegalCaseId(unlinked)).toBeNull();
+      expect(unlinked.createdAt).toBe(100);
+      expect(unlinked.updatedAt).toBe(300);
+      expect(readLegalCaseId(await harness.repo.get(created.id))).toBeNull();
+    });
+
     it('recoverInterrupted pasa streaming a aborted, conserva el texto y devuelve ids únicos', async () => {
       const a = await harness.repo.create({ title: 'A' });
       const b = await harness.repo.create({ title: 'B' });
@@ -203,4 +227,17 @@ function makeMessage(
     createdAt,
     updatedAt: createdAt,
   };
+}
+
+/** Tipo del patch de `update` (sin `id` ni `createdAt`). */
+type ConversationPatch = Parameters<ConversationRepository['update']>[1];
+
+/** Construye el patch de vínculo sin acoplar el contrato al orden de llegada de T20. */
+function legalLinkPatch(value: string | null): ConversationPatch {
+  return { legalCaseId: value } as unknown as ConversationPatch;
+}
+
+/** Lee el vínculo como dato (la clave aún no existe en el tipo de dominio). */
+function readLegalCaseId(conversation: Conversation | null): string | null | undefined {
+  return (conversation as unknown as { legalCaseId?: string | null } | null)?.legalCaseId;
 }

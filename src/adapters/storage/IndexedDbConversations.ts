@@ -9,6 +9,7 @@ import { getDb } from './idb';
 export interface ConversationStorageDeps {
   newId: () => string;
   now: () => number;
+  ownerId?: string | null;
 }
 
 const DEFAULT_DEPS: ConversationStorageDeps = { newId, now: () => Date.now() };
@@ -18,20 +19,22 @@ export type CreateConversationInput = { title?: string; providerId?: string | nu
 export class IndexedDbConversations implements ConversationRepository {
   private readonly newId: () => string;
   private readonly now: () => number;
+  private readonly ownerId: string | null;
 
   constructor(deps: Partial<ConversationStorageDeps> = {}) {
     this.newId = deps.newId ?? DEFAULT_DEPS.newId;
     this.now = deps.now ?? DEFAULT_DEPS.now;
+    this.ownerId = deps.ownerId ?? null;
   }
 
   async list(): Promise<Conversation[]> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     const conversations = await db.getAllFromIndex('conversations', 'updatedAt');
     return conversations.reverse();
   }
 
   async get(id: string): Promise<Conversation | null> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     return (await db.get('conversations', id)) ?? null;
   }
 
@@ -50,13 +53,13 @@ export class IndexedDbConversations implements ConversationRepository {
       lastMessagePreview: '',
       status: 'active',
     };
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     await db.put('conversations', conversation);
     return conversation;
   }
 
   async update(id: string, patch: Partial<Omit<Conversation, 'id' | 'createdAt'>>): Promise<Conversation> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     const tx = db.transaction('conversations', 'readwrite');
     const existing = await tx.store.get(id);
     if (existing === undefined) throw new Error(`Conversation not found: ${id}`);
@@ -67,7 +70,7 @@ export class IndexedDbConversations implements ConversationRepository {
   }
 
   async remove(id: string): Promise<void> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     const tx = db.transaction(['conversations', 'messages'], 'readwrite');
     const messages = tx.objectStore('messages');
     const keys = await messages.index('byConversation').getAllKeys(conversationRange(id));
@@ -77,13 +80,13 @@ export class IndexedDbConversations implements ConversationRepository {
   }
 
   async listMessages(conversationId: string): Promise<ChatMessage[]> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     const messages = await db.getAllFromIndex('messages', 'byConversation', conversationRange(conversationId));
     return messages.sort(compareMessages);
   }
 
   async appendMessage(message: ChatMessage): Promise<void> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     await db.put('messages', message);
   }
 
@@ -91,7 +94,7 @@ export class IndexedDbConversations implements ConversationRepository {
     id: string,
     patch: Partial<Omit<ChatMessage, 'id' | 'conversationId' | 'createdAt'>>,
   ): Promise<void> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     const tx = db.transaction('messages', 'readwrite');
     const existing = await tx.store.get(id);
     if (existing === undefined) throw new Error(`Message not found: ${id}`);
@@ -105,7 +108,7 @@ export class IndexedDbConversations implements ConversationRepository {
    * existe o pertenece a otra conversación es no-op. Todo en una transacción.
    */
   async deleteMessagesFrom(conversationId: string, messageId: string): Promise<void> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     const tx = db.transaction('messages', 'readwrite');
     const store = tx.objectStore('messages');
     const messages = (
@@ -119,7 +122,7 @@ export class IndexedDbConversations implements ConversationRepository {
   }
 
   async recoverInterrupted(): Promise<string[]> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     const tx = db.transaction('messages', 'readwrite');
     const store = tx.objectStore('messages');
     const affected = new Set<string>();
@@ -141,7 +144,7 @@ export class IndexedDbConversations implements ConversationRepository {
   }
 
   async searchMessages(query: string, limit: number): Promise<MessageSearchHit[]> {
-    const db = await getDb();
+    const db = await getDb(this.ownerId);
     const messages = await db.getAll('messages');
     return searchInMessages(messages, query, limit);
   }

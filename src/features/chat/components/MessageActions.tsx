@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import type { Role } from '@/domain/types/chat';
+import { useCitationGuard } from '@/features/legal/state/CitationGuardContext';
 import { useT } from '@/i18n/useT';
 import { Pencil, Play, RefreshCw, Trash } from '@/shared/icons';
 import { CopyButton } from '@/shared/markdown/CopyButton';
@@ -31,10 +32,15 @@ export function MessageActions({
   onDelete,
 }: MessageActionsProps) {
   const t = useT();
+  // En contexto legal el copiar usa el texto post-guard (con los `[VERIFICAR]`
+  // visibles); fuera del provider el guard es identidad y no cambia nada. La API
+  // pública no cambia: `CopyButton` sigue recibiendo `text` (vive en otro archivo).
+  const guard = useCitationGuard();
+  const copyText = guard.mark(text);
 
   return (
     <div className="flex items-center gap-0.5">
-      <CopyButton text={text} label={t('chat.copy')} copiedLabel={t('chat.copied')} />
+      <CopyButton text={copyText} label={t('chat.copy')} copiedLabel={t('chat.copied')} />
       {role === 'assistant' && onContinue !== undefined ? (
         <IconButton
           size="sm"

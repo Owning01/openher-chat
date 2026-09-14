@@ -1,9 +1,13 @@
 import type { ModelInfo, ProviderConfig } from '@/domain/types/provider';
 
 /** Pasos del wizard de onboarding, en orden. */
-export type WizardStep = 'provider' | 'key' | 'model';
+export type WizardStep = 'provider' | 'key' | 'model' | 'legal';
 
-export const WIZARD_STEPS = ['provider', 'key', 'model'] as const satisfies readonly WizardStep[];
+/**
+ * El paso legal va al final, tras elegir modelo: la preconfiguración jurídica es
+ * opt-in e informativa y no debe interrumpir el flujo crítico de proveedor.
+ */
+export const WIZARD_STEPS = ['provider', 'key', 'model', 'legal'] as const satisfies readonly WizardStep[];
 
 /** Elección del paso 1: una plantilla del catálogo o un proveedor propio. */
 export type ProviderChoice = { kind: 'template'; templateId: string } | { kind: 'custom' };
@@ -26,6 +30,10 @@ export interface WizardState {
   /** Modelos devueltos por la última prueba de conexión exitosa. */
   models: ModelInfo[];
   selectedModelId: string | null;
+  /** Preconfiguración del modo legal (paso final, opt-in). */
+  legalEnabled: boolean;
+  /** Consentimiento de secreto profesional + datos sensibles; solo exigible si se activa. */
+  legalConsent: boolean;
 }
 
 export type WizardAction =
@@ -37,6 +45,7 @@ export type WizardAction =
   | { type: 'testSucceeded'; models: ModelInfo[] }
   | { type: 'testFailed'; message: string }
   | { type: 'selectModel'; modelId: string }
+  | { type: 'setLegal'; enabled?: boolean; consent?: boolean }
   | { type: 'next' }
   | { type: 'skipKey' }
   | { type: 'back' };
@@ -53,6 +62,8 @@ export function createWizardState(): WizardState {
     test: { status: 'idle' },
     models: [],
     selectedModelId: null,
+    legalEnabled: false,
+    legalConsent: false,
   };
 }
 
@@ -65,7 +76,9 @@ export function keySatisfied(state: WizardState): boolean {
 export function canAdvance(state: WizardState): boolean {
   if (state.step === 'provider') return state.choice !== null;
   if (state.step === 'key') return keySatisfied(state);
-  return state.selectedModelId !== null;
+  if (state.step === 'model') return state.selectedModelId !== null;
+  // Paso legal informativo + opt-in: avanza siempre salvo que se active sin consentir.
+  return !state.legalEnabled || state.legalConsent;
 }
 
 /**
@@ -120,9 +133,18 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       if (!state.models.some((model) => model.id === action.modelId)) return state;
       return { ...state, selectedModelId: action.modelId };
 
+    case 'setLegal': {
+      const legalEnabled = action.enabled ?? state.legalEnabled;
+      // El consentimiento solo tiene sentido con el modo activado: al apagar se
+      // limpia para exigir un consentimiento fresco si se vuelve a encender.
+      const legalConsent = legalEnabled ? (action.consent ?? state.legalConsent) : false;
+      return { ...state, legalEnabled, legalConsent };
+    }
+
     case 'next':
-      if (state.step !== 'key' || !keySatisfied(state)) return state;
-      return { ...state, step: 'model' };
+      if (state.step === 'key' && keySatisfied(state)) return { ...state, step: 'model' };
+      if (state.step === 'model' && state.selectedModelId !== null) return { ...state, step: 'legal' };
+      return state;
 
     case 'skipKey':
       if (state.step !== 'key' || state.providerRequiresKey) return state;
@@ -131,6 +153,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     case 'back':
       if (state.step === 'key') return { ...state, step: 'provider' };
       if (state.step === 'model') return { ...state, step: 'key' };
+      if (state.step === 'legal') return { ...state, step: 'model' };
       return state;
 
     default:

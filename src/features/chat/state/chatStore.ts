@@ -8,6 +8,13 @@ import { compactMessages, preserveRecentBudget, shouldCompact } from '@/domain/a
 import { runAgent } from '@/domain/agent/runAgent';
 import type { RunAgentParams } from '@/domain/agent/runAgent';
 import { buildSystemPrompt } from '@/domain/agent/systemPrompt';
+import { truncateText } from '@/domain/chat/truncateText';
+import { buildCaseBrief, buildLegalBriefMessages } from '@/domain/legal/brief';
+import { buildLegalSystemPrompt } from '@/domain/legal/prompt';
+import { redactLegalCase } from '@/domain/legal/redaction';
+import type { RedactionMapping } from '@/domain/legal/redaction';
+import { estimateLegalTokens, searchLegalPassages } from '@/domain/legal/retrieval';
+import type { LegalPassage } from '@/domain/types/legal';
 import { createAssistantMessage, createUserMessage, finalizeMessage } from '@/domain/chat/messageFactory';
 import { messagePlainText } from '@/domain/chat/messageSearch';
 import { resolveCapabilities } from '@/domain/providers/capabilities';
@@ -76,6 +83,20 @@ export interface ChatState {
   liveSteps: AgentStep[];
   lastError: MessageError | null;
   researchMode: boolean;
+  /** Caso legal vinculado (pendiente o persistido); `null` = modo general. */
+  legalCaseId: string | null;
+  /**
+   * Mappings de pseudonimización por conversación (R-1): sólo memoria del
+   * store, JAMÁS persistidos (el repo sólo recibe mensajes y campos de la
+   * conversación). La UI los consume vía `getRedactionMapping` para
+   * `deanonymize` en render.
+   */
+  redactionMappings: Record<string, RedactionMapping>;
+  /**
+   * Mapping para deanonymize en render; `null` si la conversación no tiene
+   * caso redactado en esta sesión (o si el id es `null`). Referencia estable.
+   */
+  getRedactionMapping(conversationId: string | null): RedactionMapping | null;
   /** Tool que espera autorización (null si no hay ninguna pendiente). */
   pendingApproval: ToolApprovalRequest | null;
   load(conversationId: string): Promise<void>;
@@ -92,6 +113,8 @@ export interface ChatState {
   deleteMessage(messageId: string): Promise<void>;
   retryLast(): Promise<void>;
   setResearchMode(enabled: boolean): Promise<void>;
+  /** Vincula/desvincula el expediente legal (mismo lifecycle que `setResearchMode`). */
+  setLegalCase(caseId: string | null): Promise<void>;
   /** Fija proveedor/modelo de la conversación (y el último usado) desde el chat. */
   setModel(providerId: string, modelId: string): Promise<void>;
 }
@@ -226,7 +249,12 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
   let titleController: AbortController | null = null;
   let compactionController: AbortController | null = null;
   let generation = 0;
-  let toggleSeq = 0;
+  // B20/B26: secuencias separadas por dimensión ortogonal (research vs legal).
+  // Compartir un único `toggleSeq` hacía que toggles concurrentes de dimensiones
+  // distintas se suprimieran el `publish` entre sí; con secuencias propias cada
+  // dimensión sólo compite con sus propios toggles rápidos (last-write-wins).
+  let researchToggleSeq = 0;
+  let legalToggleSeq = 0;
   const publishConversation = deps.onConversationUpdated;
 
   return create<ChatState>((set, get) => {
@@ -428,6 +456,10 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       if (get().researchMode) {
         created = await repo.update(created.id, { researchMode: true });
       }
+      const pendingLegal = get().legalCaseId;
+      if (pendingLegal != null) {
+        created = await repo.update(created.id, { legalCaseId: pendingLegal });
+      }
       if (!isCurrent(token)) {
         void repo.remove(created.id).catch(() => undefined);
         return null;
@@ -466,10 +498,91 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
     }
 
     /** Registry de tools del run: override de tests, seam de `AppServices` o fallback directo. */
-    function resolveToolRegistry(settings: AppSettings): ToolRegistry {
+    function resolveToolRegistry(
+      settings: AppSettings,
+      conversationId: string,
+      legalCaseId: string | null,
+    ): ToolRegistry {
       if (deps.tools !== undefined) return deps.tools;
-      if (services.createTools !== undefined) return services.createTools(settings);
+      if (services.createTools !== undefined) {
+        return services.createTools(settings, { conversationId, legalCaseId });
+      }
       return createToolRegistry(settings, { http: services.http, keys: services.keys, now: clock });
+    }
+
+    /**
+     * Arma el brief del expediente como sufijo efímero (sólo wire).
+     * R-1 (redactado-first): el caso se pseudonimiza con `redactLegalCase`
+     * ANTES de armar el brief, así título, partes, hechos y fechas clave viajan
+     * con tokens y ningún valor del mapping llega al proveedor. El apéndice de
+     * texto libre (`redactedText`) queda en `undefined`: hoy no hay texto extra
+     * que adjuntar y el brief ya contiene el caso redactado completo.
+     * El mapping se guarda sólo en memoria (`redactionMappings`, nunca
+     * persistido) para `deanonymize` en render. Nunca toca `history` ni lo
+     * persistido; degrada a `undefined` (turno sin brief) sin romper el turno
+     * general: nunca lanza.
+     */
+    async function buildLegalEphemeralSuffix(input: {
+      conversationId: string;
+      legalCaseId: string | null;
+      userMessage: ChatMessage;
+      settings: AppSettings;
+      toolCalling: boolean;
+      supportsToolsModel: boolean;
+      contextWindow?: number;
+    }): Promise<ChatMessage[] | undefined> {
+      try {
+        const caseId = input.legalCaseId;
+        if (caseId === null || caseId.trim() === '') return undefined;
+        const cases = services.legalCases;
+        if (cases === undefined) return undefined;
+        const legalCase = await cases.get(caseId).catch(() => null);
+        if (legalCase === null) return undefined;
+
+        const redacted = redactLegalCase(legalCase);
+
+        const budget = input.settings.legal.retrieval;
+        let passages: LegalPassage[] = [];
+        let corpusReady = false;
+        try {
+          const corpus = services.legalCorpus;
+          if (corpus !== undefined) {
+            const index = await corpus.ensureIndex();
+            corpusReady = index.size > 0;
+            if (corpusReady) {
+              const query = composeLegalQuery(input.userMessage, legalCase.title);
+              passages = searchLegalPassages(index, query, budget.maxPassages)
+                .slice(0, Math.max(0, budget.maxPassages))
+                .map((passage) => truncateLegalPassage(passage, budget.maxPassageChars));
+            }
+          }
+        } catch {
+          passages = [];
+          corpusReady = false;
+        }
+
+        const brief = capBriefToBudget(
+          buildCaseBrief({ case: redacted.redacted, passages, redactedText: undefined }),
+          budget.maxBriefTokens,
+          input.contextWindow,
+        );
+        const supportsTools = input.toolCalling && input.supportsToolsModel && corpusReady;
+        const now = clock();
+        const id = generateId();
+        const messages = buildLegalBriefMessages({
+          brief,
+          supportsTools,
+          id,
+          conversationId: input.conversationId,
+          now,
+        }).messages;
+        set((state) => ({
+          redactionMappings: { ...state.redactionMappings, [input.conversationId]: redacted.mapping },
+        }));
+        return messages;
+      } catch {
+        return undefined;
+      }
     }
 
     async function runTurn(
@@ -495,13 +608,18 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
 
       // Modo efectivo: intención de la conversación + settings + capacidades reales del
       // modelo/adapter. Así el system prompt no anuncia tools que `runAgent` ocultaría.
+      // El modo legal se deriva sólo de `legalCaseId` (independiente del workspace
+      // global y de `webSearchEnabled`); ambos modos son ortogonales y combinables.
       const capabilities = resolveCapabilities(target.provider, target.model);
-      const researchMode =
+      const webResearchMode =
         input.conversation.researchMode &&
         settings.tools.webSearchEnabled &&
         capabilities.toolCalling &&
         adapter.capabilities().toolCalling;
-      const tools = researchMode ? resolveToolRegistry(settings) : EMPTY_TOOL_REGISTRY;
+      const legalMode = input.conversation.legalCaseId != null;
+      const enableTools = webResearchMode || legalMode;
+      const legalCaseId = input.conversation.legalCaseId ?? null;
+      const tools = enableTools ? resolveToolRegistry(settings, conversationId, legalCaseId) : EMPTY_TOOL_REGISTRY;
 
       const conversation =
         input.conversation.providerId === target.provider.id && input.conversation.modelId === target.modelId
@@ -541,16 +659,29 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           providerId: target.provider.id,
           modelId: target.modelId,
           conversationId,
-          systemPrompt: composeSystemPrompt(conversation, settings, clock(), researchMode),
+          systemPrompt: composeSystemPrompt(conversation, settings, clock(), webResearchMode, legalMode),
           history: applyCompaction(input.history, conversation),
           userMessage: input.userMessage,
           defaults: { temperature: settings.chat.temperature, maxOutputTokens: settings.chat.maxOutputTokens },
           budget: settings.agent,
           historyBudget: settings.history,
-          researchMode,
+          researchMode: webResearchMode,
+          enableTools,
           signal: runController.signal,
         };
         if (target.model !== undefined) params.model = target.model;
+        const legalSuffix = legalMode
+          ? await buildLegalEphemeralSuffix({
+              conversationId,
+              legalCaseId,
+              userMessage: input.userMessage,
+              settings,
+              toolCalling: capabilities.toolCalling && adapter.capabilities().toolCalling,
+              supportsToolsModel: target.model?.supportsTools !== false,
+              contextWindow: target.model?.contextWindow,
+            })
+          : undefined;
+        if (legalSuffix !== undefined && legalSuffix.length > 0) params.ephemeralSuffix = legalSuffix;
 
         const permissions = settings.tools.requireApproval ? createPermissionGate() : undefined;
         for await (const event of runAgent(params, {
@@ -684,19 +815,31 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       liveSteps: [],
       lastError: null,
       researchMode: false,
+      legalCaseId: null,
+      redactionMappings: {},
+      getRedactionMapping(conversationId) {
+        if (conversationId === null) return null;
+        return get().redactionMappings[conversationId] ?? null;
+      },
       pendingApproval: null,
 
       async load(conversationId) {
         abortRun();
         generation += 1;
         const token = generation;
-        set({ conversationId, messages: [], runStatus: 'idle', liveSteps: [], lastError: null, researchMode: false });
+        set({ conversationId, messages: [], runStatus: 'idle', liveSteps: [], lastError: null, researchMode: false, legalCaseId: null });
         try {
           const [messages, conversation] = await Promise.all([
             repo.listMessages(conversationId),
             repo.get(conversationId),
           ]);
-          if (isCurrent(token)) set({ messages, researchMode: conversation?.researchMode ?? false });
+          if (isCurrent(token)) {
+            set({
+              messages,
+              researchMode: conversation?.researchMode ?? false,
+              legalCaseId: conversation?.legalCaseId ?? null,
+            });
+          }
         } catch (cause) {
           if (isCurrent(token)) set({ lastError: toMessageError(cause) });
         }
@@ -857,10 +1000,10 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       },
 
       async setResearchMode(enabled) {
-        const token = ++toggleSeq;
+        const token = ++researchToggleSeq;
         if (enabled) {
           const settings = await services.settings.load().catch(() => null);
-          if (token !== toggleSeq) return;
+          if (token !== researchToggleSeq) return;
           if (settings === null || !settings.tools.webSearchEnabled) return;
         }
         set({ researchMode: enabled });
@@ -868,9 +1011,52 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         if (conversationId === null) return;
         try {
           const updated = await repo.update(conversationId, { researchMode: enabled });
-          if (token === toggleSeq) publishConversation?.(updated);
+          if (token === researchToggleSeq) publishConversation?.(updated);
         } catch {
           // Persistencia best-effort: el estado local ya refleja el toggle.
+        }
+      },
+
+      async setLegalCase(caseId) {
+        const token = ++legalToggleSeq;
+        // B19: un id no-nulo se valida contra el repo cuando el servicio existe.
+        // Decisión documentada: si el caso no existe (o la lectura falla), NO se
+        // setea el vínculo —un modo legal fantasma (scaffold + tools sin brief)
+        // es peor que un error visible— y el motivo queda en `lastError`.
+        if (caseId !== null) {
+          const cases = services.legalCases;
+          if (cases !== undefined) {
+            const existing = await cases.get(caseId).catch(() => null);
+            if (token !== legalToggleSeq) return;
+            if (existing === null) {
+              set({
+                lastError: {
+                  code: 'invalid_request',
+                  message: 'The legal case does not exist.',
+                  retryable: false,
+                },
+              });
+              return;
+            }
+          } else if (token !== legalToggleSeq) return;
+        }
+        set({ legalCaseId: caseId });
+        const conversationId = get().conversationId;
+        if (caseId === null && conversationId !== null) {
+          // Higiene de memoria: al desvincular se descarta el mapping asociado.
+          set((state) => {
+            if (state.redactionMappings[conversationId] === undefined) return state;
+            const redactionMappings = { ...state.redactionMappings };
+            delete redactionMappings[conversationId];
+            return { redactionMappings };
+          });
+        }
+        if (conversationId === null) return;
+        try {
+          const updated = await repo.update(conversationId, { legalCaseId: caseId });
+          if (token === legalToggleSeq) publishConversation?.(updated);
+        } catch {
+          // Persistencia best-effort: el estado local ya refleja el vínculo.
         }
       },
 
@@ -953,11 +1139,61 @@ function resolveProviderTarget(
   return model === undefined ? { provider, modelId: target.modelId } : { provider, modelId: target.modelId, model };
 }
 
-function composeSystemPrompt(conversation: Conversation, settings: AppSettings, now: number, researchMode: boolean): string {
+function composeSystemPrompt(
+  conversation: Conversation,
+  settings: AppSettings,
+  now: number,
+  webResearchMode: boolean,
+  legalMode: boolean,
+): string {
   const override = conversation.systemPromptOverride;
   const persona = (override !== null && override.trim() !== '' ? override : settings.chat.systemPrompt).trim();
-  const scaffold = buildSystemPrompt({ researchMode, now, locale: settings.locale });
-  return persona === '' ? scaffold : `${persona}\n\n${scaffold}`;
+  const scaffold = buildSystemPrompt({ researchMode: webResearchMode, now, locale: settings.locale });
+  // El scaffold legal se agrega sólo en modo legal; mismos inputs ⇒ mismo string.
+  const legal =
+    legalMode === false
+      ? ''
+      : buildLegalSystemPrompt({
+          locale: settings.locale,
+          perspectives: settings.legal.perspectives,
+          today: new Date(now).toISOString(),
+        });
+  const combined = legal === '' ? scaffold : `${scaffold}\n\n${legal}`;
+  return persona === '' ? combined : `${persona}\n\n${combined}`;
+}
+
+/** Consulta de recuperación: título del caso + texto del usuario (sin PII extra). */
+function composeLegalQuery(userMessage: ChatMessage, caseTitle: string): string {
+  const text = messagePlainText(userMessage).trim();
+  const title = caseTitle.trim();
+  if (title === '' || text === '') return title !== '' ? title : text;
+  return `${title}\n${text}`;
+}
+
+/** Acota cada pasaje a `maxPassageChars` (copia; la provisión original no se muta). */
+function truncateLegalPassage(passage: LegalPassage, maxPassageChars: number): LegalPassage {
+  if (!Number.isFinite(maxPassageChars) || maxPassageChars <= 0) return passage;
+  const limit = Math.max(0, Math.floor(maxPassageChars));
+  const text = passage.provision.text;
+  const truncated = truncateText(text, limit);
+  if (truncated === text) return passage;
+  return { ...passage, provision: { ...passage.provision, text: truncated } };
+}
+
+/**
+ * Capa el brief a `min(maxBriefTokens, 25% de la ventana)` con marcador
+ * `[brief truncado]`; la reserva del wire la calcula `runAgent` desde el
+ * sufijo (este cap sólo acota el contenido).
+ */
+function capBriefToBudget(brief: string, maxBriefTokens: number, contextWindow?: number): string {
+  const cap = Number.isFinite(maxBriefTokens) && maxBriefTokens > 0 ? Math.floor(maxBriefTokens) : 0;
+  if (cap <= 0) return brief;
+  let allowed = cap;
+  if (typeof contextWindow === 'number' && Number.isFinite(contextWindow) && contextWindow > 0) {
+    allowed = Math.min(allowed, Math.floor(contextWindow * 0.25));
+  }
+  if (allowed <= 0 || estimateLegalTokens(brief) <= allowed) return brief;
+  return `${truncateText(brief, allowed * 3)}\n[brief truncado]`;
 }
 
 function appendContentDelta(

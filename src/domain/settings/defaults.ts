@@ -1,5 +1,10 @@
 import type { AgentBudget } from '../types/agent';
 import type {
+  LegalAnalysisBudget,
+  LegalRetrievalBudget,
+  LegalSettings,
+} from '../types/legal';
+import type {
   AppSettings,
   ChatDefaults,
   HistoryBudget,
@@ -62,6 +67,44 @@ export const DEFAULT_UI_SETTINGS: UiSettings = {
   autoCheckUpdates: true,
 };
 
+/**
+ * Presupuesto de recuperación léxica del brief: pocos pasajes y cortos para
+ * mantener el sufijo efímero acotado; 8 pasajes de 1200 caracteres cubren un
+ * escrito típico sin saturar el wire.
+ */
+export const DEFAULT_LEGAL_RETRIEVAL_BUDGET: LegalRetrievalBudget = {
+  maxPassages: 8,
+  maxPassageChars: 1200,
+  maxBriefTokens: 6000,
+};
+
+/**
+ * Presupuesto del análisis adversarial: 4 personas en paralelo + 1 síntesis.
+ * El tope total (60000) y el reloj (120 s) siguen el orden del presupuesto del
+ * agente; la salida por persona se acota para que la síntesis no desborde.
+ */
+export const DEFAULT_LEGAL_ANALYSIS_BUDGET: LegalAnalysisBudget = {
+  maxCalls: 5,
+  maxTotalTokens: 60000,
+  maxWallClockMs: 120000,
+  maxParallel: 4,
+  maxOutputTokensPerPersona: 1500,
+};
+
+/** Defaults del modo legal: apagado y sin expediente preconfigurado; anonimización obligatoria. */
+export const DEFAULT_LEGAL_SETTINGS: LegalSettings = {
+  enabled: false,
+  defaultJurisdiction: 'national',
+  defaultCourt: '',
+  defaultMatter: 'civil-commercial',
+  retrieval: DEFAULT_LEGAL_RETRIEVAL_BUDGET,
+  analysis: DEFAULT_LEGAL_ANALYSIS_BUDGET,
+  anonymization: 'required',
+  perspectives: ['defense', 'attack', 'judge', 'risk'],
+  defaultTemplates: {},
+  setupCompleted: false,
+};
+
 /** Base de settings sin `updatedAt`: usar `createDefaultSettings(now)` para obtener un AppSettings completo. */
 export const DEFAULT_SETTINGS: Omit<AppSettings, 'updatedAt'> = {
   schemaVersion: SETTINGS_SCHEMA_VERSION,
@@ -76,6 +119,7 @@ export const DEFAULT_SETTINGS: Omit<AppSettings, 'updatedAt'> = {
   search: DEFAULT_SEARCH_SETTINGS,
   proxy: DEFAULT_PROXY_SETTINGS,
   ui: DEFAULT_UI_SETTINGS,
+  legal: DEFAULT_LEGAL_SETTINGS,
   onboardingCompleted: false,
 };
 
@@ -91,6 +135,13 @@ export function createDefaultSettings(now: number): AppSettings {
     search: { ...DEFAULT_SEARCH_SETTINGS },
     proxy: { ...DEFAULT_PROXY_SETTINGS },
     ui: { ...DEFAULT_UI_SETTINGS },
+    legal: {
+      ...DEFAULT_LEGAL_SETTINGS,
+      retrieval: { ...DEFAULT_LEGAL_SETTINGS.retrieval },
+      analysis: { ...DEFAULT_LEGAL_SETTINGS.analysis },
+      perspectives: [...DEFAULT_LEGAL_SETTINGS.perspectives],
+      defaultTemplates: { ...DEFAULT_LEGAL_SETTINGS.defaultTemplates },
+    },
     updatedAt: now,
   };
 }

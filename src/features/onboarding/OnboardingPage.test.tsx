@@ -91,7 +91,7 @@ describe('OnboardingPage', () => {
     renderPage();
 
     expect(await screen.findByTestId('onboarding-wizard')).toBeInTheDocument();
-    expect(screen.getByText(t('onboarding.stepLabel', { current: 1, total: 3 }))).toBeInTheDocument();
+    expect(screen.getByText(t('onboarding.stepLabel', { current: 1, total: 4 }))).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Groq/ })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByRole('button', { name: /Ollama/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Personalizado/ })).toBeInTheDocument();
@@ -112,9 +112,14 @@ describe('OnboardingPage', () => {
     expect(await keys.get('provider:groq')).toBe('sk-test');
 
     fireEvent.click(screen.getByRole('button', { name: t('common.next') }));
-    expect(await screen.findByText(t('onboarding.stepLabel', { current: 3, total: 3 }))).toBeInTheDocument();
+    expect(await screen.findByText(t('onboarding.stepLabel', { current: 3, total: 4 }))).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('radio', { name: /Model B/ }));
+    fireEvent.click(screen.getByRole('button', { name: t('onboarding.finish') }));
+
+    // El paso final es el legal (opt-in): sin activar, finaliza apagado pero marcado.
+    expect(await screen.findByText(t('onboarding.stepLabel', { current: 4, total: 4 }))).toBeInTheDocument();
+    expect(screen.getByText(t('legalSetup.title'))).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: t('onboarding.finish') }));
 
     await waitFor(async () => {
@@ -122,6 +127,45 @@ describe('OnboardingPage', () => {
       expect(settings.onboardingCompleted).toBe(true);
       expect(settings.activeProviderId).toBe('groq');
       expect(settings.lastModelByProvider['groq']).toBe('model-b');
+      expect(settings.legal.enabled).toBe(false);
+      expect(settings.legal.setupCompleted).toBe(true);
+    });
+    expect(isOnboardingResolvedThisSession()).toBe(true);
+    await waitFor(() => expect(window.location.hash).toBe('#/chat'));
+  });
+
+  it('activa el modo legal con consentimiento y lo persiste junto al onboarding', async () => {
+    const { settingsRepo } = renderPage();
+
+    await selectTemplate(/Groq/);
+
+    const keyInput = await screen.findByLabelText(t('settings.apiKeyLabel'));
+    fireEvent.change(keyInput, { target: { value: 'sk-test' } });
+    fireEvent.click(screen.getByRole('button', { name: t('onboarding.testConnection') }));
+
+    expect(await screen.findByText(t('onboarding.testSuccess', { count: MODELS.length }))).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: t('common.next') }));
+    expect(await screen.findByText(t('onboarding.stepLabel', { current: 3, total: 4 }))).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: /Model A/ }));
+    fireEvent.click(screen.getByRole('button', { name: t('onboarding.finish') }));
+    expect(await screen.findByText(t('onboarding.stepLabel', { current: 4, total: 4 }))).toBeInTheDocument();
+
+    // Activado sin consentimiento, el finish queda bloqueado.
+    fireEvent.click(screen.getByRole('switch', { name: t('legalSetup.enableLabel') }));
+    expect(screen.getByRole('button', { name: t('onboarding.finish') })).toBeDisabled();
+
+    fireEvent.click(screen.getByLabelText(t('legalSetup.consentLabel')));
+    const finishButton = screen.getByRole('button', { name: t('onboarding.finish') });
+    expect(finishButton).not.toBeDisabled();
+    fireEvent.click(finishButton);
+
+    await waitFor(async () => {
+      const settings = await settingsRepo.load();
+      expect(settings.onboardingCompleted).toBe(true);
+      expect(settings.legal.enabled).toBe(true);
+      expect(settings.legal.setupCompleted).toBe(true);
     });
     expect(isOnboardingResolvedThisSession()).toBe(true);
     await waitFor(() => expect(window.location.hash).toBe('#/chat'));
@@ -150,11 +194,11 @@ describe('OnboardingPage', () => {
 
     await selectTemplate(/Ollama/);
 
-    expect(await screen.findByText(t('onboarding.stepLabel', { current: 2, total: 3 }))).toBeInTheDocument();
+    expect(await screen.findByText(t('onboarding.stepLabel', { current: 2, total: 4 }))).toBeInTheDocument();
     expect(screen.queryByLabelText(t('settings.apiKeyLabel'))).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: t('onboarding.skipKey') }));
-    expect(await screen.findByText(t('onboarding.stepLabel', { current: 3, total: 3 }))).toBeInTheDocument();
+    expect(await screen.findByText(t('onboarding.stepLabel', { current: 3, total: 4 }))).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: t('onboarding.skipForNow') }));
 
@@ -177,7 +221,7 @@ describe('OnboardingPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: t('common.save') }));
 
-    expect(await screen.findByText(t('onboarding.stepLabel', { current: 2, total: 3 }))).toBeInTheDocument();
+    expect(await screen.findByText(t('onboarding.stepLabel', { current: 2, total: 4 }))).toBeInTheDocument();
     const settings = await settingsRepo.load();
     expect(settings.activeProviderId).not.toBeNull();
     expect(localStorage.getItem('openher.providers.v1') ?? '').toContain('https://api.local/v1');

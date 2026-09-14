@@ -73,15 +73,31 @@ class FailingRemoveVault extends MemoryKeyVault {
 }
 
 describe('SettingsPage', () => {
-  it('muestra las seis secciones de ajustes', async () => {
+  it('muestra las siete secciones de ajustes', async () => {
     renderPage();
 
     expect(await screen.findByText(t('settings.sectionProviders'))).toBeInTheDocument();
     expect(screen.getByText(t('settings.sectionChat'))).toBeInTheDocument();
     expect(screen.getByText(t('settings.sectionAgent'))).toBeInTheDocument();
     expect(screen.getByText(t('settings.sectionSearch'))).toBeInTheDocument();
+    expect(screen.getByText(t('settings.sectionWorkMode'))).toBeInTheDocument();
     expect(screen.getByText(t('settings.sectionAppearance'))).toBeInTheDocument();
     expect(screen.getByText(t('updates.title'))).toBeInTheDocument();
+  });
+
+  it('el switch del workspace legal persiste y marca el setup como ofrecido', async () => {
+    const { settingsRepo } = renderPage();
+    const toggle = await screen.findByRole('switch', { name: t('settings.workModeLegalLabel') });
+    expect(toggle).not.toBeChecked();
+
+    fireEvent.click(toggle);
+
+    await waitFor(async () => {
+      const settings = await settingsRepo.load();
+      expect(settings.legal.enabled).toBe(true);
+      expect(settings.legal.setupCompleted).toBe(true);
+    });
+    expect(screen.getByRole('switch', { name: t('settings.workModeLegalLabel') })).toBeChecked();
   });
 
   it('detecta y ofrece descargar una versión nueva', async () => {

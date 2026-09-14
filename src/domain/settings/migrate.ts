@@ -1,5 +1,14 @@
 import type { AgentBudget } from '../types/agent';
 import type {
+  AdversarialPerspective,
+  DocumentKind,
+  LegalAnalysisBudget,
+  LegalJurisdiction,
+  LegalMatter,
+  LegalRetrievalBudget,
+  LegalSettings,
+} from '../types/legal';
+import type {
   AppSettings,
   ChatDefaults,
   Freshness,
@@ -20,6 +29,24 @@ const LOCALES: readonly Locale[] = ['es', 'en'];
 const THEMES: readonly ThemeMode[] = ['light', 'dark', 'system'];
 const SEARCH_MODES: readonly SearchMode[] = ['auto', 'brave', 'tavily', 'duckduckgo', 'exa'];
 const FRESHNESS: readonly Freshness[] = ['any', 'day', 'week', 'month', 'year'];
+
+const LEGAL_JURISDICTIONS: readonly LegalJurisdiction[] = ['national', 'caba', 'pba', 'cordoba'];
+const LEGAL_MATTERS: readonly LegalMatter[] = ['civil', 'commercial', 'civil-commercial'];
+const LEGAL_ANONYMIZATION: readonly LegalSettings['anonymization'][] = ['required', 'optional'];
+const ADVERSARIAL_PERSPECTIVES: readonly AdversarialPerspective[] = ['defense', 'attack', 'judge', 'risk'];
+const DOCUMENT_KINDS: readonly DocumentKind[] = [
+  'claim',
+  'answer',
+  'prior-exceptions',
+  'counterclaim',
+  'cautelar',
+  'evidence',
+  'closing',
+  'appeal',
+  'demand-letter',
+  'contract',
+  'bylaws',
+];
 
 /**
  * Migra settings desconocidos a un `AppSettings` válido. Nunca lanza: cualquier
@@ -50,6 +77,7 @@ function buildSettings(raw: unknown, now: number): AppSettings {
     search: migrateSearch(source['search'], base.search),
     proxy: migrateProxy(source['proxy'], base.proxy),
     ui: migrateUi(source['ui'], base.ui),
+    legal: migrateLegal(source['legal'], base.legal),
     onboardingCompleted: readBoolean(source, 'onboardingCompleted', base.onboardingCompleted),
     updatedAt: readTimestamp(source['updatedAt'], now),
   };
@@ -123,6 +151,82 @@ function migrateUi(value: unknown, fallback: UiSettings): UiSettings {
   };
 }
 
+/**
+ * Sanea la sección legal sin lanzar: enums contra listas derivadas de los tipos,
+ * claves de plantillas contra `DocumentKind`, personas filtradas y deduplicadas,
+ * y topes numéricos acotados. Idempotente.
+ */
+export function migrateLegal(value: unknown, fallback: LegalSettings): LegalSettings {
+  const source = asRecord(value);
+  return {
+    enabled: readBoolean(source, 'enabled', fallback.enabled),
+    defaultJurisdiction: readEnum(source, 'defaultJurisdiction', LEGAL_JURISDICTIONS, fallback.defaultJurisdiction),
+    defaultCourt: readText(source['defaultCourt'], fallback.defaultCourt),
+    defaultMatter: readEnum(source, 'defaultMatter', LEGAL_MATTERS, fallback.defaultMatter),
+    retrieval: migrateRetrieval(source['retrieval'], fallback.retrieval),
+    analysis: migrateAnalysis(source['analysis'], fallback.analysis),
+    anonymization: readEnum(source, 'anonymization', LEGAL_ANONYMIZATION, fallback.anonymization),
+    perspectives: readPerspectives(source['perspectives'], fallback.perspectives),
+    defaultTemplates: readDefaultTemplates(source['defaultTemplates'], fallback.defaultTemplates),
+    setupCompleted: readBoolean(source, 'setupCompleted', fallback.setupCompleted),
+  };
+}
+
+function migrateRetrieval(value: unknown, fallback: LegalRetrievalBudget): LegalRetrievalBudget {
+  const source = asRecord(value);
+  return {
+    maxPassages: readBudgetInt(source['maxPassages'], fallback.maxPassages, 1, 50),
+    maxPassageChars: readBudgetInt(source['maxPassageChars'], fallback.maxPassageChars, 200, 20_000),
+    maxBriefTokens: readBudgetInt(source['maxBriefTokens'], fallback.maxBriefTokens, 500, 200_000),
+  };
+}
+
+function migrateAnalysis(value: unknown, fallback: LegalAnalysisBudget): LegalAnalysisBudget {
+  const source = asRecord(value);
+  return {
+    maxCalls: readBudgetInt(source['maxCalls'], fallback.maxCalls, 1, 20),
+    maxTotalTokens: readBudgetInt(source['maxTotalTokens'], fallback.maxTotalTokens, 1000, 2_000_000),
+    maxWallClockMs: readBudgetInt(source['maxWallClockMs'], fallback.maxWallClockMs, 1000, 1_800_000),
+    maxParallel: readBudgetInt(source['maxParallel'], fallback.maxParallel, 1, 8),
+    maxOutputTokensPerPersona: readBudgetInt(
+      source['maxOutputTokensPerPersona'],
+      fallback.maxOutputTokensPerPersona,
+      100,
+      32_000,
+    ),
+  };
+}
+
+function readPerspectives(value: unknown, fallback: readonly AdversarialPerspective[]): AdversarialPerspective[] {
+  if (!Array.isArray(value)) return [...fallback];
+  const result: AdversarialPerspective[] = [];
+  for (const entry of value) {
+    if (typeof entry !== 'string') continue;
+    if (!(ADVERSARIAL_PERSPECTIVES as readonly string[]).includes(entry)) continue;
+    const perspective = entry as AdversarialPerspective;
+    if (!result.includes(perspective)) result.push(perspective);
+  }
+  return result;
+}
+
+function readDefaultTemplates(
+  value: unknown,
+  fallback: LegalSettings['defaultTemplates'],
+): LegalSettings['defaultTemplates'] {
+  if (!isRecord(value)) return { ...fallback };
+  const result: LegalSettings['defaultTemplates'] = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (!(DOCUMENT_KINDS as readonly string[]).includes(key)) continue;
+    if (typeof entry !== 'string' || entry.trim().length === 0) continue;
+    result[key as DocumentKind] = entry;
+  }
+  return result;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function asRecord(value: unknown): UnknownRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as UnknownRecord) : {};
 }
@@ -150,6 +254,21 @@ function readEnum<T extends string>(source: UnknownRecord, key: string, allowed:
 
 function readNonEmptyString(value: unknown, fallback: string): string {
   return typeof value === 'string' && value.trim().length > 0 ? value : fallback;
+}
+
+/**
+ * Tope numérico entero: cualquier valor no finito o por debajo de `min` cae al
+ * default (un presupuesto 0 o negativo no tiene sentido); los excesos se acotan
+ * al máximo en vez de caer al default.
+ */
+function readBudgetInt(value: unknown, fallback: number, min: number, max: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < min) return fallback;
+  return Math.min(max, Math.round(value));
+}
+
+/** Texto libre saneado (recorta espacios); un valor no string cae al default. */
+function readText(value: unknown, fallback: string): string {
+  return typeof value === 'string' ? value.trim() : fallback;
 }
 
 function readNullableId(value: unknown): string | null {

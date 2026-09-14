@@ -1,0 +1,81 @@
+{
+  "schema": "openher.legal.pack/1",
+  "id": "ar-ldc-core",
+  "title": "Ley de Defensa del Consumidor — núcleo",
+  "version": "1.0.0",
+  "publishedAt": "2026-09-14",
+  "jurisdiction": "national",
+  "matter": "civil-commercial",
+  "license": {
+    "name": "CC BY 2.5 AR (InfoLEG)",
+    "url": "http://www.infoleg.gob.ar/",
+    "attribution": "InfoLEG — Ministerio de Justicia de la Nación",
+    "verifiedAt": "2026-09-14"
+  },
+  "sources": [
+    {
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-24240-638/actualizacion",
+      "retrievedAt": "2026-09-14",
+      "note": "Texto consolidado de la Ley 24.240 (Defensa del Consumidor) publicado por el Estado Nacional."
+    }
+  ],
+  "norms": [
+    {
+      "id": "LDC",
+      "short": "LDC",
+      "long": "Ley de Defensa del Consumidor",
+      "aliases": [
+        "Ley 24.240"
+      ],
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24240-638/actualizacion"
+    }
+  ],
+  "provisions": [
+    {
+      "id": "LDC-50",
+      "normId": "LDC",
+      "article": "50",
+      "title": "Prescripción de sanciones",
+      "text": "Las sanciones emergentes de la presente ley prescriben en el término de TRES (3) años. La prescripción se interrumpe por la comisión de nuevas infracciones o por el inicio de las actuaciones administrativas.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24240-638/actualizacion",
+      "sourceDate": "2026-09-14",
+      "textHash": "257f9550c0d9d9d324176683b0a1e4613119c7af6802f40f8cde179d2fdf4538",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "consumo",
+        "prescripcion"
+      ],
+      "synonyms": [
+        "prescribir",
+        "prescribe",
+        "prescripto",
+        "prescripción"
+      ],
+      "verified": true
+    },
+    {
+      "id": "LDC-52 bis",
+      "normId": "LDC",
+      "article": "52 bis",
+      "title": "Daño punitivo",
+      "text": "Al proveedor que no cumpla sus obligaciones legales o contractuales con el consumidor, a instancia del damnificado, el juez podrá aplicar una multa civil a favor del consumidor, la que se graduará en función de la gravedad del hecho y demás circunstancias del caso, independientemente de otras indemnizaciones que correspondan. La multa civil que se imponga no podrá superar el máximo de la sanción de multa prevista en el artículo 47, inciso b) de esta ley.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24240-638/actualizacion",
+      "sourceDate": "2026-09-14",
+      "textHash": "c66134424df28cdd463ab8785bc702008fb782e3c0ce1867f945423ef3110d53",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "consumo",
+        "dano-punitivo"
+      ],
+      "verified": true
+    }
+  ],
+  "hash": "8fe147421937b5cfb16d57a93cf10fd2c99b68de61fe1c5cf4d412b2cd7eccaf"
+}

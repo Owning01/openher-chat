@@ -24,6 +24,15 @@ export interface SelectHistoryByBudgetInput {
   system?: string;
   budget: HistoryBudget;
   contextWindow?: number;
+  /**
+   * AMEND §A6 (aditivo): tokens reservados para contenido que viaja al wire fuera
+   * del historial seleccionado (p. ej. `ephemeralSuffix`). Fórmula:
+   * `presupuestoEfectivo = max(0, resolvePromptBudget(budget, contextWindow) - reservedTokens)`.
+   * El historial se elige contra ese presupuesto efectivo y `estimatedPromptTokens`
+   * no lo incluye (mide sólo lo persistido). `undefined`/no finito/≤ 0 ⇒ 0, de modo
+   * que el cálculo previo queda idéntico.
+   */
+  reservedTokens?: number;
 }
 
 export interface HistorySelection {
@@ -97,13 +106,17 @@ export function truncateMessageForWire(message: ChatMessage, maxTokens: number):
  * - Un mensaje > truncateMessageAtPercent del presupuesto se recorta (copia) para el wire.
  * - `mode:'auto'`: contextWindow * 0.65 - reservedOutputTokens (fallback 8192); mínimo 512.
  * - Valores no finitos/fuera de rango se sanean con los fallbacks documentados.
+ * - `reservedTokens` (aditivo) se resta del presupuesto resuelto antes de elegir
+ *   historial: `efectivo = max(0, promptBudget - reservedTokens)`.
  */
 export function selectHistoryByBudget(input: SelectHistoryByBudgetInput): HistorySelection {
   const { budget, system, contextWindow, userMessage } = input;
   const history = input.history.filter((message) => message.id !== userMessage.id);
   const promptBudget = resolvePromptBudget(budget, contextWindow);
+  // AMEND §A6: reserva para el sufijo efímero; nunca negativa ni no finita.
+  const effectiveBudget = Math.max(0, promptBudget - sanitizeReservedTokens(input.reservedTokens));
   const percent = sanitizeTruncateMessagePercent(budget.truncateMessageAtPercent);
-  const maxMessageTokens = Math.max(1, Math.floor(promptBudget * percent));
+  const maxMessageTokens = Math.max(1, Math.floor(effectiveBudget * percent));
 
   const systemTokens = system !== undefined && system.length > 0 ? estimateTokens(system) : 0;
   const userTokens = estimateMessageTokens(truncateMessageForWire(userMessage, maxMessageTokens));
@@ -113,7 +126,7 @@ export function selectHistoryByBudget(input: SelectHistoryByBudgetInput): Histor
   const keepLastTurns = Math.min(sanitizeKeepLastTurns(budget.keepLastTurns), turns.length);
   const mandatoryStart = turns.length - keepLastTurns;
 
-  let remaining = promptBudget - systemTokens - userTokens;
+  let remaining = effectiveBudget - systemTokens - userTokens;
   for (let index = mandatoryStart; index < turns.length; index += 1) {
     remaining -= turnCosts[index] ?? 0;
   }
@@ -150,6 +163,11 @@ export function selectHistoryByBudget(input: SelectHistoryByBudgetInput): Histor
 
 function sanitizeReservedOutputTokens(value: number): number {
   return Number.isFinite(value) && value >= 0 ? value : FALLBACK_RESERVED_OUTPUT_TOKENS;
+}
+
+/** `reservedTokens` aditivo: no finito/negativo/ausente ⇒ 0 (sin reserva). */
+function sanitizeReservedTokens(value: number | undefined): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 }
 
 function sanitizeKeepLastTurns(value: number): number {

@@ -1,0 +1,167 @@
+{
+  "schema": "openher.legal.golden-set/1",
+  "generatedAt": "2026-09-14",
+  "note": "Consultas tipicas de escritos para medir recall del indice local. `expect` indica la provision que el retrieval debe resolver; `expect: null` marca consultas que HOY no resuelven y alimentan el gap report (T16/F3).",
+  "queries": [
+    {
+      "id": "gs-01",
+      "query": "prescripción de daños",
+      "expect": { "normId": "CCyC", "article": "2560" }
+    },
+    {
+      "id": "gs-02",
+      "query": "art. 330 CPCCN",
+      "expect": { "normId": "CPCCN", "article": "330" }
+    },
+    {
+      "id": "gs-03",
+      "query": "daño punitivo",
+      "expect": { "normId": "LDC", "article": "52 bis" }
+    },
+    {
+      "id": "gs-04",
+      "query": "caducidad de instancia",
+      "expect": { "normId": "CPCCN", "article": "310" }
+    },
+    {
+      "id": "gs-05",
+      "query": "costas al vencido",
+      "expect": { "normId": "CPCCN", "article": "68" }
+    },
+    {
+      "id": "gs-06",
+      "query": "carga de la prueba",
+      "expect": { "normId": "CPCCN", "article": "377" }
+    },
+    {
+      "id": "gs-07",
+      "query": "excepciones previas",
+      "expect": { "normId": "CPCCN", "article": "347" }
+    },
+    {
+      "id": "gs-08",
+      "query": "requisitos de la demanda",
+      "expect": { "normId": "CPCCN", "article": "330" }
+    },
+    {
+      "id": "gs-09",
+      "query": "cómputo de la caducidad de instancia",
+      "expect": { "normId": "CPCCN", "article": "311" }
+    },
+    {
+      "id": "gs-10",
+      "query": "plazo genérico de prescripción cinco años",
+      "expect": { "normId": "CCyC", "article": "2560" }
+    },
+    {
+      "id": "gs-11",
+      "query": "prescripción dos años",
+      "expect": { "normId": "CCyC", "article": "2562" }
+    },
+    {
+      "id": "gs-12",
+      "query": "prescripción un año",
+      "expect": { "normId": "CCyC", "article": "2564" }
+    },
+    {
+      "id": "gs-13",
+      "query": "comienzo del cómputo de la prescripción",
+      "expect": { "normId": "CCyC", "article": "2554" }
+    },
+    {
+      "id": "gs-14",
+      "query": "prescripción de sanciones LDC",
+      "expect": { "normId": "LDC", "article": "50" }
+    },
+    {
+      "id": "gs-15",
+      "query": "multa civil al proveedor",
+      "expect": { "normId": "LDC", "article": "52 bis" }
+    },
+    {
+      "id": "gs-16",
+      "query": "defecto legal en el modo de proponer la demanda",
+      "expect": { "normId": "CPCCN", "article": "347" }
+    },
+    {
+      "id": "gs-17",
+      "query": "plazo de caducidad en primera instancia",
+      "expect": { "normId": "CPCCN", "article": "310" }
+    },
+    {
+      "id": "gs-18",
+      "query": "prescribe a los cinco años",
+      "expect": { "normId": "CCyC", "article": "2560" }
+    },
+    {
+      "id": "gs-19",
+      "query": "cosa juzgada excepción de previo pronunciamiento",
+      "expect": { "normId": "CPCCN", "article": "347" }
+    },
+    {
+      "id": "gs-20",
+      "query": "acciones posesorias prescripción",
+      "expect": { "normId": "CCyC", "article": "2564" }
+    },
+    {
+      "id": "gs-21",
+      "query": "responsabilidad civil por daño moral",
+      "expect": null,
+      "gap": "responsabilidad civil (régimen general del CCyC)"
+    },
+    {
+      "id": "gs-22",
+      "query": "contrato de locación de obra",
+      "expect": null,
+      "gap": "contratos en particular (contratos)"
+    },
+    {
+      "id": "gs-23",
+      "query": "Ley de Sociedades responsabilidad de directores",
+      "expect": null,
+      "gap": "Ley General de Sociedades (LGS)"
+    },
+    {
+      "id": "gs-24",
+      "query": "concurso preventivo verificación de créditos",
+      "expect": null,
+      "gap": "concursos y quiebras"
+    },
+    {
+      "id": "gs-25",
+      "query": "divorcio incausado y compensación económica",
+      "expect": null,
+      "gap": "derecho de familia"
+    },
+    {
+      "id": "gs-26",
+      "query": "usucapión veinte años",
+      "expect": null,
+      "gap": "derechos reales y usucapión"
+    },
+    {
+      "id": "gs-27",
+      "query": "código procesal de la Provincia de Buenos Aires notificación",
+      "expect": null,
+      "gap": "códigos procesales provinciales"
+    },
+    {
+      "id": "gs-28",
+      "query": "jurisprudencia CSJN fallo daño punitivo",
+      "expect": null,
+      "gap": "jurisprudencia (no se publica en el corpus MVP)"
+    },
+    {
+      "id": "gs-29",
+      "query": "contrato de leasing incumplimiento",
+      "expect": null,
+      "gap": "contratos en particular (leasing)"
+    },
+    {
+      "id": "gs-30",
+      "query": "sucesiones declaratoria de herederos",
+      "expect": null,
+      "gap": "derecho sucesorio"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+# Configuración de pnpm. En pnpm 12 estas claves se leen desde aquí, no desde
+# package.json. Denegamos explícitamente los postinstall de dependencias
+# transitivas de firebase: no hacen falta para Auth y evitan ejecutar scripts
+# de terceros (supply-chain).
+allowBuilds:
+  '@firebase/util': false
+  protobufjs: false

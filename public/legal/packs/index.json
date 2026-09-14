@@ -1,0 +1,29 @@
+{
+  "schema": "openher.legal.packs/1",
+  "packs": [
+    {
+      "id": "ar-ccyc-core",
+      "version": "1.0.0",
+      "hash": "536f158febfd1be22ef9b04c33a1a8d1e4fa3026c19d15244196adc05b4a0fb1",
+      "url": "legal/packs/ar-ccyc-core.json",
+      "available": true,
+      "bytes": 5251
+    },
+    {
+      "id": "ar-cpccn-core",
+      "version": "1.0.0",
+      "hash": "b8beeac27a21ab09449d0cf63c978960167306b8d1e59f49d00afb757f8b668c",
+      "url": "legal/packs/ar-cpccn-core.json",
+      "available": true,
+      "bytes": 7298
+    },
+    {
+      "id": "ar-ldc-core",
+      "version": "1.0.0",
+      "hash": "8fe147421937b5cfb16d57a93cf10fd2c99b68de61fe1c5cf4d412b2cd7eccaf",
+      "url": "legal/packs/ar-ldc-core.json",
+      "available": true,
+      "bytes": 3077
+    }
+  ]
+}

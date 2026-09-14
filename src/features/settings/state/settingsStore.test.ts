@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { KeyVault } from '@/domain/ports/KeyVault';
 import type { ProviderAdapter } from '@/domain/ports/ProviderAdapter';
 import { createDefaultSettings } from '@/domain/settings/defaults';
+import type { LegalSettings } from '@/domain/types/legal';
 import type { ModelInfo, ProviderConfig } from '@/domain/types/provider';
 import { MemoryKeyVault, MemorySettingsRepository } from '@/test/fakes/MemoryRepos';
 
@@ -591,5 +592,58 @@ describe('settingsStore', () => {
     expect(result).toEqual({ added: 0, skipped: 0 });
     expect(store.getState().providers).toEqual([]);
     await expect(providerRepo.load()).resolves.toEqual([]);
+  });
+
+  it('patch legal parcial persiste sin resetear el resto de la sección', async () => {
+    const { store, repo } = createHarness();
+    await store.getState().load();
+    const before = store.getState().settings.legal;
+
+    await store.getState().patch({ legal: { enabled: true } });
+
+    const legal = store.getState().settings.legal;
+    expect(legal.enabled).toBe(true);
+    // El merge conserva los valores no tocados por el patch.
+    expect(legal.defaultJurisdiction).toBe(before.defaultJurisdiction);
+    expect(legal.retrieval).toEqual(before.retrieval);
+    expect(legal.analysis).toEqual(before.analysis);
+    expect(legal.anonymization).toBe(before.anonymization);
+    expect((await repo.load()).legal.enabled).toBe(true);
+  });
+
+  it('patches legales sucesivos acumulan sin destruirse entre sí', async () => {
+    const { store } = createHarness();
+    await store.getState().load();
+
+    await store.getState().patch({ legal: { defaultJurisdiction: 'caba' } });
+    await store.getState().patch({ legal: { enabled: true } });
+
+    const legal = store.getState().settings.legal;
+    expect(legal.defaultJurisdiction).toBe('caba');
+    expect(legal.enabled).toBe(true);
+  });
+
+  it('patch legal con valores inválidos se sanea vía migrateSettings', async () => {
+    const { store } = createHarness();
+    await store.getState().load();
+
+    await store.getState().patch({ legal: { anonymization: 'optional' } });
+    expect(store.getState().settings.legal.anonymization).toBe('optional');
+
+    const invalida = 'nunca' as unknown as LegalSettings['anonymization'];
+    await store.getState().patch({ legal: { anonymization: invalida } });
+
+    expect(store.getState().settings.legal.anonymization).toBe('required');
+  });
+
+  it('el helper legal devuelve la sección actual', async () => {
+    const { store } = createHarness();
+    await store.getState().load();
+
+    await store.getState().patch({ legal: { enabled: true, defaultJurisdiction: 'caba' } });
+
+    expect(store.getState().legal()).toEqual(store.getState().settings.legal);
+    expect(store.getState().legal().enabled).toBe(true);
+    expect(store.getState().legal().defaultJurisdiction).toBe('caba');
   });
 });

@@ -14,8 +14,10 @@
   },
   "dependencies": {
     "@capacitor-community/speech-recognition": "7.0.1",
+    "@capacitor-firebase/authentication": "^8.5.1",
     "@capacitor/android": "8.5.0",
     "@capacitor/core": "8.5.0",
+    "firebase": "^12.19.0",
     "highlight.js": "^11.12.0",
     "idb": "^8.0.3",
     "lucide-react": "^1.44.0",

@@ -7,6 +7,12 @@ export interface Conversation {
   modelId: string | null;
   systemPromptOverride: string | null;
   researchMode: boolean;
+  /**
+   * Vínculo único caso↔conversación (fuente del modo legal).
+   * `!= null` = conversación legal; ausente/`null` = general.
+   * `create()` nunca lo puebla (contrato T14).
+   */
+  legalCaseId?: string | null;
   messageCount: number;
   lastMessagePreview: string;
   status: 'active' | 'archived';

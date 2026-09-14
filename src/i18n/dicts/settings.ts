@@ -14,6 +14,8 @@ export const settings = defineDict({
     sectionAgentDescription: 'Límites del loop de investigación.',
     sectionSearch: 'Búsqueda',
     sectionSearchDescription: 'Herramientas web y proveedores de búsqueda.',
+    sectionWorkMode: 'Modo de trabajo',
+    sectionWorkModeDescription: 'Workspace jurídico y valores por defecto de expedientes nuevos.',
     sectionAppearance: 'Apariencia',
     sectionAppearanceDescription: 'Tema e idioma de la interfaz.',
 
@@ -157,6 +159,19 @@ export const settings = defineDict({
     appearanceLocale: 'Idioma',
     localeEs: 'Español',
     localeEn: 'English',
+
+    workModeLegalLabel: 'Workspace legal',
+    workModeLegalHint: 'Define si las conversaciones nuevas arrancan en modo legal; las existentes no cambian.',
+    workModeJurisdiction: 'Jurisdicción por defecto',
+    workModeJurisdictionNational: 'Nacional',
+    workModeJurisdictionCaba: 'CABA',
+    workModeJurisdictionPba: 'PBA',
+    workModeJurisdictionCordoba: 'Córdoba',
+    workModeMatter: 'Materia por defecto',
+    workModeMatterCivil: 'Civil',
+    workModeMatterCommercial: 'Comercial',
+    workModeMatterCivilCommercial: 'Civil y comercial',
+    workModeSetupHint: 'Los expedientes se gestionan desde el modo legal; el corpus se instala por packs versionados.',
   },
   en: {
     description: 'Configure providers, models and application preferences.',
@@ -171,6 +186,8 @@ export const settings = defineDict({
     sectionAgentDescription: 'Research loop limits.',
     sectionSearch: 'Search',
     sectionSearchDescription: 'Web tools and search providers.',
+    sectionWorkMode: 'Work mode',
+    sectionWorkModeDescription: 'Legal workspace and defaults for new cases.',
     sectionAppearance: 'Appearance',
     sectionAppearanceDescription: 'Interface theme and language.',
 
@@ -314,6 +331,19 @@ export const settings = defineDict({
     appearanceLocale: 'Language',
     localeEs: 'Spanish',
     localeEn: 'English',
+
+    workModeLegalLabel: 'Legal workspace',
+    workModeLegalHint: 'Whether new conversations start in legal mode; existing ones are unchanged.',
+    workModeJurisdiction: 'Default jurisdiction',
+    workModeJurisdictionNational: 'National',
+    workModeJurisdictionCaba: 'CABA',
+    workModeJurisdictionPba: 'PBA',
+    workModeJurisdictionCordoba: 'Córdoba',
+    workModeMatter: 'Default matter',
+    workModeMatterCivil: 'Civil',
+    workModeMatterCommercial: 'Commercial',
+    workModeMatterCivilCommercial: 'Civil and commercial',
+    workModeSetupHint: 'Cases are managed from legal mode; the corpus installs as versioned packs.',
   },
 });
 

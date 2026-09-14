@@ -9,6 +9,7 @@ import type { ProviderTemplate } from '@/domain/providers/catalog';
 import { createDefaultSettings } from '@/domain/settings/defaults';
 import { migrateSettings } from '@/domain/settings/migrate';
 import type { AgentBudget } from '@/domain/types/agent';
+import type { LegalSettings } from '@/domain/types/legal';
 import type { ModelInfo, ProviderConfig, ProviderKind, ProviderQuirks } from '@/domain/types/provider';
 import type {
   AppSettings,
@@ -70,6 +71,7 @@ export type SettingsPatch = Partial<
   search?: Partial<SearchSettings>;
   proxy?: Partial<ProxySettings>;
   ui?: Partial<UiSettings>;
+  legal?: Partial<LegalSettings>;
 };
 
 /** Dependencias del store: `AppServices` es estructuralmente asignable. */
@@ -110,6 +112,7 @@ export interface SettingsState {
   historyBudget(): HistoryBudget;
   search(): SearchSettings;
   proxy(): ProxySettings;
+  legal(): LegalSettings;
   appearance(): { theme: ThemeMode; locale: Locale };
 }
 
@@ -399,6 +402,7 @@ export function createSettingsStore(services: SettingsStoreServices, options: Se
     historyBudget: () => get().settings.history,
     search: () => get().settings.search,
     proxy: () => get().settings.proxy,
+    legal: () => get().settings.legal,
     appearance: () => ({ theme: get().settings.theme, locale: get().settings.locale }),
   }));
 }
@@ -522,6 +526,7 @@ function mergeSettings(current: AppSettings, patch: SettingsPatch, timestamp: nu
     search: patch.search === undefined ? current.search : mergeSection(current.search, patch.search),
     proxy: patch.proxy === undefined ? current.proxy : mergeSection(current.proxy, patch.proxy),
     ui: patch.ui === undefined ? current.ui : mergeSection(current.ui, patch.ui),
+    legal: patch.legal === undefined ? current.legal : mergeSection(current.legal, patch.legal),
     updatedAt: timestamp,
   };
 }

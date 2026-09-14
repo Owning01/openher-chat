@@ -3,7 +3,7 @@ import { setLocale } from '@/i18n';
 import { applyTheme } from '@/shared/hooks/theme';
 
 import { createServices } from './services';
-import type { AppServices, CreateServicesOverrides } from './services';
+import type { AppServices, CreateServicesOptions, CreateServicesOverrides } from './services';
 
 export interface BootstrappedApp {
   services: AppServices;
@@ -15,10 +15,14 @@ export interface BootstrappedApp {
 /**
  * Arranque de la aplicación: servicios reales, settings persistidos, tema e idioma
  * aplicados y recuperación de mensajes interrumpidos. Un fallo de IndexedDB no
- * tumba el arranque: se reporta en `storageError`.
+ * tumba el arranque: se reporta en `storageError`. Con `options.userId` los
+ * repos reales leen la partición de ese usuario; sin él usan la legacy.
  */
-export async function bootstrapApp(overrides: CreateServicesOverrides = {}): Promise<BootstrappedApp> {
-  const services = createServices(overrides);
+export async function bootstrapApp(
+  overrides: CreateServicesOverrides = {},
+  options: CreateServicesOptions = {},
+): Promise<BootstrappedApp> {
+  const services = createServices(overrides, options);
   const settings = await services.settings.load();
 
   setLocale(settings.locale);

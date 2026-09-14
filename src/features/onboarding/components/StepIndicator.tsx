@@ -10,6 +10,7 @@ const STEP_MESSAGE_KEYS = {
   provider: 'onboarding.stepProvider',
   key: 'onboarding.stepConnection',
   model: 'onboarding.stepModel',
+  legal: 'onboarding.stepLegal',
 } as const satisfies Record<WizardStep, MessageKey>;
 
 export interface StepIndicatorProps {

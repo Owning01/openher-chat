@@ -1,0 +1,139 @@
+{
+  "schema": "openher.legal.pack/1",
+  "id": "ar-ccyc-core",
+  "title": "Código Civil y Comercial de la Nación — núcleo de prescripción",
+  "version": "1.0.0",
+  "publishedAt": "2026-09-14",
+  "jurisdiction": "national",
+  "matter": "civil-commercial",
+  "license": {
+    "name": "CC BY 2.5 AR (InfoLEG)",
+    "url": "http://www.infoleg.gob.ar/",
+    "attribution": "InfoLEG — Ministerio de Justicia de la Nación",
+    "verifiedAt": "2026-09-14"
+  },
+  "sources": [
+    {
+      "url": "https://servicios.infoleg.gob.ar/infolegInternet/anexos/235000-239999/235975/texact.htm",
+      "retrievedAt": "2026-09-14",
+      "note": "Texto consolidado del CCyC publicado por InfoLEG (texto vigente)."
+    }
+  ],
+  "norms": [
+    {
+      "id": "CCyC",
+      "short": "CCyC",
+      "long": "Código Civil y Comercial de la Nación",
+      "aliases": [
+        "CCCN",
+        "Código Civil y Comercial",
+        "Ley 26.994"
+      ],
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/anexos/235000-239999/235975/texact.htm"
+    }
+  ],
+  "provisions": [
+    {
+      "id": "CCyC-2554",
+      "normId": "CCyC",
+      "article": "2554",
+      "title": "Comienzo del cómputo",
+      "text": "El transcurso del plazo de prescripción comienza el día en que la prestación es exigible.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/anexos/235000-239999/235975/texact.htm",
+      "sourceDate": "2026-09-14",
+      "textHash": "02609b3d309a2eae14c750af667597025ad2f680cf8fe637431695bb8e6982c2",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "prescripcion",
+        "computo"
+      ],
+      "synonyms": [
+        "prescribir",
+        "prescribe",
+        "prescripto",
+        "prescripción"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CCyC-2560",
+      "normId": "CCyC",
+      "article": "2560",
+      "title": "Plazo genérico",
+      "text": "El plazo de la prescripción es de cinco años, excepto que esté previsto uno diferente en la legislación local.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/anexos/235000-239999/235975/texact.htm",
+      "sourceDate": "2026-09-14",
+      "textHash": "47cc94dbd58f07e9e4a4f64680e94fd91986fff28f4c971f9f464790fa29dc81",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "prescripcion",
+        "plazo-generico"
+      ],
+      "synonyms": [
+        "prescribir",
+        "prescribe",
+        "prescripto",
+        "prescripción"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CCyC-2562",
+      "normId": "CCyC",
+      "article": "2562",
+      "title": "Plazo de dos años",
+      "text": "Prescriben a los dos años: a) el pedido de declaración de nulidad relativa y de revisión de actos jurídicos; b) el reclamo de derecho común de daños derivados de accidentes y enfermedades del trabajo; c) el reclamo de todo lo que se devenga por años o plazos periódicos más cortos, excepto que se trate del reintegro de un capital en cuotas; d) el reclamo de los daños derivados del contrato de transporte de personas o cosas; e) el pedido de revocación de la donación por ingratitud o del legado por indignidad; f) el pedido de declaración de inoponibilidad nacido del fraude.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/anexos/235000-239999/235975/texact.htm",
+      "sourceDate": "2026-09-14",
+      "textHash": "68383115667535b6fc995c0498d68abf52f0b7e7f489d165254f0042803bb412",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "prescripcion",
+        "dos-anos"
+      ],
+      "synonyms": [
+        "prescribir",
+        "prescribe",
+        "prescripto",
+        "prescripción"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CCyC-2564",
+      "normId": "CCyC",
+      "article": "2564",
+      "title": "Plazo de un año",
+      "text": "Prescriben al año: a) el reclamo por vicios redhibitorios; b) las acciones posesorias; c) el reclamo contra el constructor por responsabilidad por ruina; d) los reclamos procedentes de cualquier documento endosable o al portador; e) los reclamos a los otros obligados por repetición de lo pagado en concepto de alimentos; f) la acción autónoma de revisión de la cosa juzgada.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://servicios.infoleg.gob.ar/infolegInternet/anexos/235000-239999/235975/texact.htm",
+      "sourceDate": "2026-09-14",
+      "textHash": "804f96c122d65eed3d33885200e7d9e163002565723c894f975a4accdf2456aa",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-14",
+      "tags": [
+        "prescripcion",
+        "un-ano"
+      ],
+      "synonyms": [
+        "prescribir",
+        "prescribe",
+        "prescripto",
+        "prescripción"
+      ],
+      "verified": true
+    }
+  ],
+  "hash": "536f158febfd1be22ef9b04c33a1a8d1e4fa3026c19d15244196adc05b4a0fb1"
+}

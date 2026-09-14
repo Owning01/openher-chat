@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { chatHref, navigate, useRoute } from '@/app/routing';
+import { chatHref, navigate, SETTINGS_HREF, useRoute } from '@/app/routing';
 import { useServices } from '@/app/services';
 import type { ChatMessage } from '@/domain/types/chat';
 import { useConversationsStore, useConversationsStoreApi } from '@/features/conversations/state/conversationsStore';
+import { CaseStoreProvider, createCaseStore, useCaseStore, useCaseStoreApi } from '@/features/legal/state/caseStore';
+import type { CaseStore } from '@/features/legal/state/caseStore';
+import { CitationGuardProvider } from '@/features/legal/state/CitationGuardContext';
+import type { LegalCase, LegalIndex } from '@/domain/types/legal';
 import { ResearchPanel } from '@/features/research/ResearchPanel';
 import { researchWarningText } from '@/features/research/messages';
 import { researchWarning } from '@/features/research/selectors';
@@ -14,10 +18,13 @@ import { ChevronDown, PanelRightOpen } from '@/shared/icons';
 import { Badge, IconButton } from '@/shared/ui';
 
 import { Composer } from './components/Composer';
+import type { LegalRedactionCounts } from './components/Composer';
 import { EmptyChat } from './components/EmptyChat';
 import { ErrorBanner } from './components/ErrorBanner';
 import { MessageList } from './components/MessageList';
 import { ModelPicker } from './components/ModelPicker';
+import { CaseLinkDialog } from './components/CaseLinkDialog';
+import { ModesMenu } from './components/ModesMenu';
 import { ConversationUsage } from './components/MessageUsage';
 import { StreamingIndicator } from './components/StreamingIndicator';
 import { ToolApprovalDialog } from './components/ToolApprovalDialog';
@@ -45,11 +52,45 @@ export function ChatPage() {
   // Al desmontar (o cambiar de ruta) se aborta el run en vuelo para no dejar streams huérfanos.
   useEffect(() => () => store.getState().stop(), [store]);
 
+  // Store de expedientes memoizado desde los servicios (G1). Si faltan los
+  // servicios legales no se monta provider: el diálogo, el título y el
+  // consentimiento ya degradan a sesión/sin tienda en vez de romper. No se
+  // pisa un provider externo: sin `legalCases` en servicios no hay provider
+  // propio y un `CaseStoreProvider` de arriba (tests) sigue vigente.
+  const [caseStore] = useState(() => {
+    const cases = services.legalCases;
+    if (cases === undefined) return null;
+    return createCaseStore({ cases, conversations: services.conversations });
+  });
+
   return (
     <ChatStoreProvider store={store}>
-      <ChatPageContent />
+      {caseStore === null ? (
+        <ChatPageContent />
+      ) : (
+        <CaseStoreProvider store={caseStore}>
+          <ChatPageContent />
+        </CaseStoreProvider>
+      )}
     </ChatStoreProvider>
   );
+}
+
+/** Texto del consentimiento persistido en `LegalCase.consent` (fijo, en español). */
+const LEGAL_CONSENT_TEXT = 'Acepto que el texto anonimizado del expediente salga del dispositivo para esta consulta.';
+
+/** Conteos vacíos (sin mapping): el Composer muestra el preview en cero. */
+const LEGAL_EMPTY_COUNTS: LegalRedactionCounts = {};
+
+/** Conteos por categoría para el Composer, derivados del mapping en memoria. */
+function useRedactedCounts(): LegalRedactionCounts {
+  const mapping = useChatStore((state) => state.getRedactionMapping(state.conversationId));
+  return useMemo(() => {
+    if (mapping === null) return LEGAL_EMPTY_COUNTS;
+    const counts: LegalRedactionCounts = {};
+    for (const entry of mapping.entries) counts[entry.kind] = (counts[entry.kind] ?? 0) + 1;
+    return counts;
+  }, [mapping]);
 }
 
 function ChatPageContent() {
@@ -61,7 +102,10 @@ function ChatPageContent() {
   const storeConversationId = useChatStore((state) => state.conversationId);
   const researchMode = useChatStore((state) => state.researchMode);
   const setResearchMode = useChatStore((state) => state.setResearchMode);
+  const legalCaseId = useChatStore((state) => state.legalCaseId);
+  const setLegalCase = useChatStore((state) => state.setLegalCase);
   const setModel = useChatStore((state) => state.setModel);
+  const redactedCounts = useRedactedCounts();
   const controller = useChatController();
   const services = useServices();
   const providers = useProviderCatalog();
@@ -117,6 +161,51 @@ function ChatPageContent() {
   const modelId = conversation?.modelId ?? findLastModelId(controller.messages);
   const busy = controller.runStatus !== 'idle';
   const researchPanelVisible = appSettings?.ui.researchPanelVisible ?? true;
+  // Diálogo de vínculo legal (T27) y título del expediente para el resumen del menú.
+  const [caseDialogOpen, setCaseDialogOpen] = useState(false);
+  const linkedCase = useLinkedCase(legalCaseId);
+  const linkedCaseTitle = linkedCase?.title ?? null;
+  const caseApi = useOptionalCaseApi();
+  const legalActive = legalCaseId !== null;
+
+  // Índice del corpus para el guard de citas (G1): se resuelve al entrar en
+  // modo legal. Mientras carga o si no hay corpus NO se monta el provider
+  // (guard neutro = identidad); el fallo degrada en silencio sin romper el chat.
+  const [legalIndex, setLegalIndex] = useState<LegalIndex | null>(null);
+  useEffect(() => {
+    const corpus = services.legalCorpus;
+    if (!legalActive || corpus === undefined) {
+      setLegalIndex(null);
+      return;
+    }
+    let alive = true;
+    void corpus.ensureIndex().then(
+      (index) => {
+        if (alive) setLegalIndex(index);
+      },
+      () => {
+        if (alive) setLegalIndex(null);
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, [legalActive, services]);
+
+  // Consentimiento del expediente (G1): `LegalCase.consent` existe, así que se
+  // persiste vía `caseStore.update`; sin tienda o sin caso el Composer lo vale
+  // por sesión (su `sessionConsent` interno) y acá no se hace nada.
+  const consentAccepted = linkedCase?.consent !== undefined;
+  const handleConsentChange = (accepted: boolean): void => {
+    if (caseApi === null || legalCaseId === null) return;
+    const patch: Partial<Pick<LegalCase, 'consent'>> = accepted
+      ? { consent: { at: Date.now(), text: LEGAL_CONSENT_TEXT, scope: 'sensitive-data' } }
+      : { consent: undefined };
+    void caseApi.getState().update(legalCaseId, patch);
+  };
+  // Workspace configurado por onboarding o Ajustes; si no, el menú/diálogo ofrecen configurarlo.
+  const legalConfigured =
+    appSettings?.legal.setupCompleted === true || appSettings?.legal.enabled === true;
 
   useEffect(() => {
     setPendingTarget(null);
@@ -129,7 +218,7 @@ function ChatPageContent() {
 
   useChatShortcuts({ running: busy, onStop: controller.stop });
 
-  return (
+  const page = (
     <section
       data-testid="chat-page"
       data-conversation-id={conversationId ?? ''}
@@ -139,6 +228,25 @@ function ChatPageContent() {
         <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-text">
           {resolveTitle(conversation?.title, conversationId, t)}
         </h2>
+        <ModesMenu
+          researchMode={researchMode}
+          legalCaseId={legalCaseId}
+          legalCaseTitle={linkedCaseTitle}
+          researchDisabled={researchDisabled}
+          legalConfigured={legalConfigured}
+          onToggleResearch={(enabled) => {
+            void setResearchMode(enabled);
+          }}
+          onToggleLegal={(enabled) => {
+            // Apagar desvincula; encender sin caso lo resuelve el menú abriendo el diálogo.
+            if (!enabled) void setLegalCase(null);
+          }}
+          onOpenCaseDialog={() => setCaseDialogOpen(true)}
+          onConfigureLegal={() => navigate(SETTINGS_HREF)}
+          onOpenCase={
+            legalCaseId === null ? undefined : () => navigate(`#/legal/${legalCaseId}`)
+          }
+        />
         {researchMode && !researchPanelVisible ? (
           <IconButton
             data-testid="research-panel-show"
@@ -189,6 +297,7 @@ function ChatPageContent() {
                 <MessageList
                   messages={controller.messages}
                   runStatus={controller.runStatus}
+                  legalMode={legalActive}
                   onRegenerate={(messageId) => void controller.regenerate(messageId)}
                   onContinue={(messageId) => void controller.continueGeneration(messageId)}
                   onEdit={(messageId, text) => void controller.editUserMessage(messageId, text)}
@@ -243,6 +352,19 @@ function ChatPageContent() {
                 void setResearchMode(enabled);
               },
             }}
+            legal={
+              legalCaseId === null
+                ? undefined
+                : {
+                    // Expediente vinculado: preview de privacidad + gate de
+                    // consentimiento. Los conteos salen del mapping de
+                    // redacción en memoria (vacío hasta el primer turno).
+                    redactionActive: true,
+                    redactedCounts,
+                    consentAccepted,
+                    onConsentChange: handleConsentChange,
+                  }
+            }
           />
         </div>
       </footer>
@@ -253,13 +375,56 @@ function ChatPageContent() {
           onDeny={controller.denyTool}
         />
       ) : null}
+      <CaseLinkDialog
+        open={caseDialogOpen}
+        linkedCaseId={legalCaseId}
+        legalConfigured={legalConfigured}
+        defaultJurisdiction={appSettings?.legal.defaultJurisdiction ?? 'national'}
+        onLink={(caseId) => {
+          void setLegalCase(caseId);
+        }}
+        onConfigureLegal={() => {
+          setCaseDialogOpen(false);
+          navigate(SETTINGS_HREF);
+        }}
+        onClose={() => setCaseDialogOpen(false)}
+      />
     </section>
   );
+
+  // Guard de citas (G1): sólo con índice resuelto se monta el provider; sin
+  // índice el guard es neutro y el render queda idéntico al modo general.
+  if (legalIndex === null) return page;
+  return <CitationGuardProvider index={legalIndex}>{page}</CitationGuardProvider>;
 }
 
 function resolveTitle(title: string | undefined, conversationId: string | null, t: Translate): string {
   if (title !== undefined && title.trim() !== '') return title;
   return conversationId === null ? t('conversations.new') : t('conversations.untitled');
+}
+
+/**
+ * Expediente vinculado (o `null`). El provider del caseStore es opcional sobre
+ * el chat: sin provider montado degrada a `null` en vez de romper la página
+ * (mismo patrón que `CaseLinkDialog.useOptionalCaseStore`).
+ */
+function useLinkedCase(caseId: string | null): LegalCase | null {
+  try {
+    return useCaseStore((state) =>
+      caseId === null ? null : (state.cases.find((entry) => entry.id === caseId) ?? null),
+    );
+  } catch {
+    return null;
+  }
+}
+
+/** API del caseStore o `null` sin provider (el consentimiento vale por sesión). */
+function useOptionalCaseApi(): CaseStore | null {
+  try {
+    return useCaseStoreApi();
+  } catch {
+    return null;
+  }
 }
 
 function findLastModelId(messages: readonly ChatMessage[]): string | null {

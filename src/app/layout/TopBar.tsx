@@ -1,17 +1,18 @@
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, Scale, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { navigate, SETTINGS_HREF, useRoute } from '@/app/routing';
+import { LEGAL_HREF, navigate, SETTINGS_HREF, useRoute } from '@/app/routing';
 import type { Route } from '@/app/routing';
 import { useServices } from '@/app/services';
 import type { Conversation } from '@/domain/types/conversation';
 import type { ThemeMode } from '@/domain/types/settings';
+import { useAuthUser } from '@/features/auth/AuthGate';
 import { useCreateConversation } from '@/features/conversations/hooks/useCreateConversation';
 import { useConversationsStore } from '@/features/conversations/state/conversationsStore';
 import { useT } from '@/i18n/useT';
 import type { Translate } from '@/i18n/useT';
 import { useTheme } from '@/shared/hooks/useTheme';
-import { Menu, Plus, Settings } from '@/shared/icons';
+import { LogOut, Menu, Plus, Settings } from '@/shared/icons';
 import type { LucideIcon } from '@/shared/icons';
 import { IconButton, useToast } from '@/shared/ui';
 
@@ -26,6 +27,8 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
   const t = useT();
   const route = useRoute();
   const settingsRepo = useServices().settings;
+  const auth = useServices().auth;
+  const authUser = useAuthUser();
   const items = useConversationsStore((state) => state.items);
   const createConversation = useCreateConversation();
   const { push } = useToast();
@@ -81,6 +84,11 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
         onClick={() => void createConversation()}
       />
       <IconButton
+        label={t('legalCases.openLegal')}
+        icon={<Scale aria-hidden="true" />}
+        onClick={() => navigate(LEGAL_HREF)}
+      />
+      <IconButton
         label={t('app.themeCurrent', { mode: t(`common.theme.${theme}`) })}
         icon={<ThemeIcon aria-hidden="true" />}
         onClick={() => void cycleTheme()}
@@ -90,12 +98,22 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
         icon={<Settings aria-hidden="true" />}
         onClick={() => navigate(SETTINGS_HREF)}
       />
+      {auth !== undefined && authUser !== null ? (
+        <IconButton
+          label={t('auth.signOut')}
+          icon={<LogOut aria-hidden="true" />}
+          onClick={() => {
+            void auth.signOut().catch(() => push({ title: t('auth.errorUnknown'), variant: 'danger' }));
+          }}
+        />
+      ) : null}
     </header>
   );
 }
 
 function resolveTitle(route: Route, conversation: Conversation | undefined, t: Translate): string {
   if (route.name === 'settings') return t('app.settingsTitle');
+  if (route.name === 'legal') return t('legalCases.title');
   if (route.conversationId === null) return t('app.title');
   if (conversation === undefined || conversation.title.trim() === '') return t('conversations.untitled');
   return conversation.title;

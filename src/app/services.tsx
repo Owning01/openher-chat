@@ -3,19 +3,33 @@ import type { ReactNode } from 'react';
 
 import { CapacitorHttpClient } from '@/adapters/http/CapacitorHttpClient';
 import { createStreamTransport } from '@/adapters/http/resolveTransport';
+import { createFirebaseAuth } from '@/adapters/auth/FirebaseAuth';
+import { createLegalCorpus } from '@/adapters/legal/LegalCorpus';
+import type { LegalCorpus } from '@/adapters/legal/LegalCorpus';
 import { createProviderAdapter } from '@/adapters/providers';
 import { IndexedDbConversations } from '@/adapters/storage/IndexedDbConversations';
+import { IndexedDbLegalCases } from '@/adapters/storage/IndexedDbLegalCases';
+import { IndexedDbLegalPacks } from '@/adapters/storage/IndexedDbLegalPacks';
 import { LocalKeyVault } from '@/adapters/storage/LocalKeyVault';
 import { LocalSettingsRepository } from '@/adapters/storage/LocalSettingsRepository';
 import { createToolRegistry } from '@/adapters/tools';
+import { createLegalToolRegistry } from '@/adapters/tools/legal';
+import type { LegalGapEntry } from '@/adapters/tools/legal';
+import type { AuthPort } from '@/domain/ports/AuthPort';
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
 import type { HttpClient, StreamTransport } from '@/domain/ports/HttpClient';
 import type { KeyVault } from '@/domain/ports/KeyVault';
+import type { LegalCaseRepository } from '@/domain/ports/LegalCaseRepository';
+import type { LegalPackStore } from '@/domain/ports/LegalPackStore';
 import type { ProviderAdapter } from '@/domain/ports/ProviderAdapter';
 import type { SettingsRepository } from '@/domain/ports/SettingsRepository';
+import { composeToolRegistries } from '@/domain/tools/composeRegistry';
 import type { ProviderConfig } from '@/domain/types/provider';
 import type { AppSettings } from '@/domain/types/settings';
 import type { ToolRegistry } from '@/domain/types/tools';
+import { newId } from '@/shared/utils/ids';
+
+import { readFirebaseConfig } from './firebaseConfig';
 
 export interface AppServices {
   conversations: ConversationRepository;
@@ -23,9 +37,25 @@ export interface AppServices {
   keys: KeyVault;
   http: HttpClient;
   transport: StreamTransport;
+  /** Sólo existe si hay configuración de Firebase: si falta, la app es local-first sin login. */
+  auth?: AuthPort;
+  /** Expediente, packs y corpus del modo legal (opcionales para no romper literales viejos de test). */
+  legalCases?: LegalCaseRepository;
+  legalPacks?: LegalPackStore;
+  legalCorpus?: LegalCorpus;
   createAdapter(config: ProviderConfig): Promise<ProviderAdapter>;
-  /** Seam de tools web: el chat lo inyecta en modo investigación (opcional para dobles de test). */
-  createTools?: (settings: AppSettings) => ToolRegistry;
+  /**
+   * Seam de tools web + legales: sin `legalCaseId` devuelve sólo las tools web
+   * (modo general); con `legalCaseId` compone además `legal_search`/`cite_article`
+   * y persiste los gaps en el expediente (opcional para dobles de test).
+   */
+  createTools?: (settings: AppSettings, context?: CreateToolsContext) => ToolRegistry;
+}
+
+/** Contexto del turno para componer tools: el vínculo caso↔conversación vive en `Conversation.legalCaseId`. */
+export interface CreateToolsContext {
+  conversationId?: string | null;
+  legalCaseId?: string | null;
 }
 
 export interface CreateServicesOverrides {
@@ -34,28 +64,97 @@ export interface CreateServicesOverrides {
   keys?: KeyVault;
   http?: HttpClient;
   transport?: StreamTransport;
+  auth?: AuthPort;
+  legalCases?: LegalCaseRepository;
+  legalPacks?: LegalPackStore;
+  legalCorpus?: LegalCorpus;
+}
+
+export interface CreateServicesOptions {
+  /**
+   * UID de Firebase para particionar el storage por usuario. Ausente o
+   * `null` = partición legacy compartida (fase sin sesión).
+   */
+  userId?: string | null;
 }
 
 /** Arma los servicios reales; los tests inyectan dobles vía `overrides`. */
-export function createServices(overrides: CreateServicesOverrides = {}): AppServices {
-  const conversations = overrides.conversations ?? new IndexedDbConversations();
-  const settings = overrides.settings ?? new LocalSettingsRepository();
-  const keys = overrides.keys ?? new LocalKeyVault();
+export function createServices(
+  overrides: CreateServicesOverrides = {},
+  options: CreateServicesOptions = {},
+): AppServices {
+  // Dueño de los datos locales; los overrides con dobles lo ignoran.
+  const ownerId = options.userId ?? null;
+  const conversations = overrides.conversations ?? new IndexedDbConversations({ ownerId });
+  const settings = overrides.settings ?? new LocalSettingsRepository(undefined, ownerId);
+  const keys = overrides.keys ?? new LocalKeyVault(ownerId);
   const http = overrides.http ?? new CapacitorHttpClient();
   const transport = overrides.transport ?? createStreamTransport();
+  const auth = overrides.auth ?? createAuthFromEnv();
+  const legalCases = overrides.legalCases ?? new IndexedDbLegalCases({ ownerId });
+  const legalPacks = overrides.legalPacks ?? new IndexedDbLegalPacks({ ownerId });
+  // El corpus usa el `http` del servicio y el pack store real; el manifiesto y
+  // la base quedan con los defaults (`legal/packs/index.json` relativo al origen,
+  // asset same-origin servido en `public/legal/packs/`).
+  const legalCorpus = overrides.legalCorpus ?? createLegalCorpus({ http, packs: legalPacks });
 
   return {
+    ...(auth === undefined ? {} : { auth }),
     conversations,
     settings,
     keys,
     http,
     transport,
+    legalCases,
+    legalPacks,
+    legalCorpus,
     async createAdapter(config: ProviderConfig): Promise<ProviderAdapter> {
       const apiKey = config.keyRef === null ? undefined : ((await keys.get(config.keyRef)) ?? undefined);
       return createProviderAdapter(config, { transport, http, now: Date.now, apiKey });
     },
-    createTools: (settings) => createToolRegistry(settings, { http, keys, now: Date.now }),
+    createTools: (settings, context) => {
+      const web = createToolRegistry(settings, { http, keys, now: Date.now });
+      const legalCaseId = context?.legalCaseId;
+      // Sin caso legal (ausente, nulo o vacío) el modo es general: sólo tools web, sin cambios.
+      if (typeof legalCaseId !== 'string' || legalCaseId.trim() === '') return web;
+      const legal = createLegalToolRegistry({
+        corpus: legalCorpus,
+        reportGap: (entry) => {
+          void persistLegalGap(legalCases, legalCaseId, entry);
+        },
+      });
+      return composeToolRegistries(web, legal);
+    },
   };
+}
+
+/** Auth sólo se activa si el build trae la config de Firebase (`.env.local`). */
+function createAuthFromEnv(): AuthPort | undefined {
+  const config = readFirebaseConfig();
+  if (config === null) return undefined;
+  return createFirebaseAuth(config);
+}
+
+/**
+ * Persiste un gap legal en el expediente del contexto. Decisión: se guarda con
+ * el `caseId` del contexto sin resolver el caso en `legalCases` (el vínculo
+ * caso↔conversación ya lo trae el caller); nunca lanza ni loguea (sin secretos
+ * en logs): el fallo degrada a no-op como en las tools.
+ */
+function persistLegalGap(
+  cases: LegalCaseRepository,
+  caseId: string,
+  entry: LegalGapEntry,
+): Promise<void> {
+  const gap = {
+    id: newId('gap'),
+    caseId,
+    query: entry.query,
+    ...(entry.missingNorm === undefined ? {} : { missingNorm: entry.missingNorm }),
+    ...(entry.missingArticle === undefined ? {} : { missingArticle: entry.missingArticle }),
+    at: Date.now(),
+  };
+  return cases.appendGap(gap).catch(() => undefined);
 }
 
 const ServicesContext = createContext<AppServices | null>(null);

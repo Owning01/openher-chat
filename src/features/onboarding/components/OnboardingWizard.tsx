@@ -10,6 +10,7 @@ import { Button } from '@/shared/ui';
 
 import { resolveOnboardingSession } from '../session';
 import { KeyStep } from './KeyStep';
+import { LegalStep } from './LegalStep';
 import { ModelStep } from './ModelStep';
 import { ProviderStep } from './ProviderStep';
 import { StepIndicator } from './StepIndicator';
@@ -131,7 +132,7 @@ export function OnboardingWizard({ store }: OnboardingWizardProps) {
   };
 
   const finish = async (): Promise<void> => {
-    if (provider === null || state.selectedModelId === null) return;
+    if (provider === null || state.selectedModelId === null || !canAdvance(state)) return;
     setSaving(true);
     dismissError();
     await setActiveProvider(provider.id);
@@ -139,7 +140,12 @@ export function OnboardingWizard({ store }: OnboardingWizardProps) {
       await setModelForProvider(provider.id, state.selectedModelId);
     }
     if (store.getState().error === null) {
-      await patch({ onboardingCompleted: true });
+      // `setupCompleted` marca que ya se ofreció el modo legal, incluso apagado,
+      // para no re-preguntar: el usuario existente lo retoma desde Ajustes.
+      await patch({
+        onboardingCompleted: true,
+        legal: { enabled: state.legalEnabled, setupCompleted: true },
+      });
     }
     setSaving(false);
     if (store.getState().error !== null) return;
@@ -223,6 +229,18 @@ export function OnboardingWizard({ store }: OnboardingWizardProps) {
           saving={saving}
           onSelect={(modelId) => dispatch({ type: 'selectModel', modelId })}
           onTest={() => void testConnection()}
+          onBack={back}
+          onFinish={() => dispatch({ type: 'next' })}
+        />
+      ) : null}
+
+      {state.step === 'legal' ? (
+        <LegalStep
+          enabled={state.legalEnabled}
+          consent={state.legalConsent}
+          saving={saving}
+          onToggle={(enabled) => dispatch({ type: 'setLegal', enabled })}
+          onConsent={(consent) => dispatch({ type: 'setLegal', consent })}
           onBack={back}
           onFinish={() => void finish()}
         />

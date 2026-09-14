@@ -21,17 +21,19 @@
 - **Arquitectura:** puertos y adaptadores (hexagonal) + features por dominio.
   `domain/` = contratos y lógica pura; `adapters/` = implementaciones; `features/` = UI+stores;
   `app/` = composición, DI y routing.
-- **Estado:** proyecto completado y ampliado con el estándar de proveedores/OpenCode Zen+Go, caché de prompt, dictado por voz y
+- **Estado:** proyecto completado y ampliado con el estándar de proveedores/OpenCode Zen+Go, caché de prompt, dictado por voz,
   features de harness portadas de OpenCode (export/import, buscador de mensajes, continuar generación,
-  auto-título, coste/uso, compactación de contexto, comandos `/`, atajos y aprobación de tools):
-  87 archivos de test, 926 tests, `tsc -b` limpio, build OK, `cap sync` OK. Rama `main`.
+  auto-título, coste/uso, compactación de contexto, comandos `/`, atajos y aprobación de tools) y modo
+  legal (Argentina, civil y comercial, ver §12-quater):
+  120 archivos de test, 1358 tests (verificado en G2/G3 tras el modo legal + Firebase Auth: T26 no ejecuta
+  la suite completa por workers en paralelo), `tsc -b` limpio, build OK, `cap sync` OK. Rama `main`.
 
 Números rápidos:
 
 | Métrica | Valor |
 |---|---|
-| Archivos de test | 87 |
-| Tests | 926 |
+| Archivos de test | 120 (verificado en G2/G3) |
+| Tests | 1358 (verificado en G2/G3) |
 | Stores Zustand | 3 (chat, conversations, settings) + reducer de onboarding |
 | Validador de tipos | `pnpm exec tsc -b` (el `tsc --noEmit` de raíz es vacuo, ver §2) |
 | Alias de imports | `@/` → `src/` |
@@ -43,7 +45,7 @@ Números rápidos:
 ```sh
 pnpm install --frozen-lockfile   # sin cambios de lock
 pnpm exec tsc -b                 # type-check OFICIAL del workspace (src + configs)
-pnpm test                        # Vitest run (87 archivos / 926 tests)
+pnpm test                        # Vitest run (120 archivos / 1358 tests; verificado en G2/G3)
 pnpm build                       # tsc -b + vite build -> dist/
 ```
 
@@ -131,7 +133,7 @@ fakes en memoria, sin red y sin navegador. Para cambios funcionales, empieza sie
 | `index.html` | Shell HTML, manifest, theme-color, `#root`. |
 | `public/` | `manifest.webmanifest`, `sw.js` (PWA), `icons/icon.svg`. |
 | `android/` | Proyecto Capacitor (Gradle). Iconos default del template (limitación conocida). |
-| `docs/` | `dev-setup.md`, `search-proxy.md`, `e2e-smoke.md`. |
+| `docs/` | `dev-setup.md`, `search-proxy.md`, `e2e-smoke.md`, `legal-packs.md` (curación, licencia y hash del corpus legal). |
 | `AGENTS.md` | Reglas del repo. |
 | `.agents/teamwork_architect_spec.md` | **Spec congelada**. Contratos, reglas del agente, etc. |
 | `architecture.md` | Este documento. |
@@ -251,6 +253,21 @@ fakes en memoria, sin red y sin navegador. Para cambios funcionales, empieza sie
 | `test/setup.ts` | `jest-dom` + `fake-indexeddb/auto`. |
 | `test/fakes/MemoryRepos.ts` | Dobles en memoria para tests de dominio/stores. |
 | `main.tsx` | Monta `<App/>` en `#root`; registra el service worker solo en web de producción. |
+
+### Modo legal — mapa de archivos (ver §12-quater)
+
+| Ruta | Contenido |
+|---|---|
+| `src/domain/legal/` | Lógica pura: `hash.ts` (SHA-256 JS puro + normalización), `packs.ts` (parseo/validación/canon/índice), `retrieval.ts` (BM25), `citation.ts` (guard existencia+fidelidad), `deadlines.ts` + `rules/` (plazos versionados), `redaction.ts` (pseudonimización), `templates/` + `document.ts` (plantillas, watermark/disclaimer), `prompt.ts` + `brief.ts` (scaffold byte-estable + brief anti-injection), `adversarial.ts` (4 personas + síntesis). |
+| `src/domain/types/legal.ts` + `src/domain/ports/LegalCaseRepository.ts` + `src/domain/ports/LegalPackStore.ts` | Tipos del dominio legal y puertos de expediente y packs. `Conversation.legalCaseId?` (en `domain/types/conversation.ts`) es el vínculo único caso↔conversación. |
+| `src/domain/tools/composeRegistry.ts` + `src/adapters/tools/legal/index.ts` | Composición de registries y tools `legal_search` / `cite_article`. |
+| `src/adapters/legal/` | `packLoader.ts` (descarga + cache-buster + `?v=hash`), `packVerifier.ts` (verificación obligatoria), `LegalCorpus.ts` (índice async idempotente, cacheado por pack+versión). |
+| `src/adapters/storage/` | `idb.ts` (DB v2 + stores legales), `IndexedDbLegalCases.ts`, `IndexedDbLegalPacks.ts` (fuente única de packs instalados), `legalContract.ts` (contrato real+fake). |
+| `src/features/legal/` | `LegalPage.tsx` (ruta `#/legal`) + `components/` (`CaseForm`, `CaseList`, `AdversarialPanel`, `AnalysisView`, `DocumentStudio`) + `state/` (`caseStore`, `analysisStore`, `CitationGuardContext` con hook `useCitationGuard`). |
+| `src/features/chat/components/ModesMenu.tsx` + `CaseLinkDialog.tsx` | Menú de modos combinables (Investigación + Legal) en la cabecera del chat; vínculo de expediente desde el chat. |
+| `public/legal/packs/*.json` + `index.json` + `public/legal/README.md` | Corpus curado versionado con hash (3 packs MVP, ≤500 KB). |
+| `scripts/legal/verify-packs.mjs` + `scripts/legal/__fixtures__/` | Verificador de integridad del corpus + golden set de recall. |
+| `src/i18n/dicts/legal*.ts` + `modes.ts` | Un dict por subfeature legal (`legalCases`, `legalAnalysis`, `legalDocs`, `legalTrust`, `legalSetup`) + `modes.ts`. |
 
 ---
 
@@ -621,6 +638,59 @@ Notas de seguridad de la distribución:
 
 ---
 
+## 12-quater. Modo legal (Argentina, civil y comercial)
+
+Asistente de redacción e investigación para escritos civiles y comerciales con
+corpus normativo local, verificable por hash y 100% en el dispositivo. No es
+asesoramiento legal automático ni reemplaza el criterio del profesional. El
+texto del corpus es referencial; el auténtico es el Boletín Oficial.
+Detalle de curación, licencia y hash: `docs/legal-packs.md` y
+`public/legal/README.md`.
+
+- **Activación por conversación, no global.** Una conversación es legal si
+  `conversation.legalCaseId != null`. `settings.legal.enabled` solo define el
+  default de conversaciones **nuevas**. Modos ortogonales y combinables:
+  General, Investigación (`researchMode`), Legal, Investigación + Legal. Tres
+  vías de activación convergentes: onboarding, Ajustes (`WorkModeSection`) y
+  `ModesMenu` en la cabecera del chat (con `CaseLinkDialog` si no hay
+  expediente vinculado).
+- **Turno legal.** `chatStore` deriva `legalMode = legalCaseId != null`
+  (independiente del switch global y de `webSearchEnabled`), compone tools
+  web + legales (`createTools` con contexto de conversación) y anexa el brief
+  del caso por un seam efímero (`ephemeralSuffix`, con `reservedTokens`):
+  nunca en el historial persistido ni en el `system`.
+- **Dónde vive cada pieza:**
+  - Dominio puro: `src/domain/legal/` (hash, packs, retrieval BM25, citation
+    guard, plazos, redacción, plantillas, prompt/brief, adversarial) +
+    tipos/puertos (`types/legal.ts`, `ports/LegalCaseRepository.ts`,
+    `ports/LegalPackStore.ts`).
+  - Adapters: `src/adapters/legal/` (loader, verifier, corpus) y
+    `src/adapters/storage/` (IndexedDB v2: `legalCases`, `legalDocuments`,
+    `legalAnalyses`, `legalPacks`, `acknowledgments`, `gaps`) + tools
+    `legal_search` / `cite_article` (`src/adapters/tools/legal/`).
+  - UI: `src/features/legal/` (página `#/legal`, expediente, análisis
+    adversarial de 4 personas + síntesis, estudio de documentos con
+    watermark/disclaimer) + `ModesMenu`/`CaseLinkDialog` en
+    `src/features/chat/components/`.
+  - Datos: `public/legal/packs/` (corpus MVP: 3 packs, 12 provisiones,
+    ~16 KB de 500 KB) + manifiesto `index.json` + verificador
+    `scripts/legal/verify-packs.mjs`.
+- **Confianza.** Citation guard (existencia + fidelidad verbatim, resto
+  `[VERIFICAR]`) aplicado en render, copiar, exportar conversación y
+  exportar documento; documentos y análisis con watermark y disclaimer;
+  export exige consentimiento + reconocimiento persistidos;
+  pseudonimización obligatoria por defecto antes de cualquier envío al
+  proveedor.
+- **Ruta `#/legal`.** Hash routing propio (`app/routing.tsx`): `#/legal` y
+  `#/legal/:caseId`; entrada también desde `TopBar`. Lazy chunk.
+- **Crecimiento por fases.** F1: MVP nacional verificable. F2: normativa
+  provincial y jurisprudencia propia aportadas por el usuario (pack local
+  `user-provided`, sin redistribuir). F3: gap report local (misses de
+  `legal_search`/`cite_article`) visible en el expediente; alimenta el
+  próximo pack.
+
+---
+
 ## 13. Referencias
 
 - Diseño congelado y reglas del agente: `.agents/teamwork_architect_spec.md`.
@@ -629,5 +699,6 @@ Notas de seguridad de la distribución:
 - Setup: `docs/dev-setup.md`. Smoke E2E: `docs/e2e-smoke.md`.
 - Contrato del proxy de búsqueda: `docs/search-proxy.md`.
 - Estándar de proveedores y OpenCode: `docs/provider-standard.md`.
+- Modo legal: `docs/legal-packs.md` (curación, licencia, hash, fases) y `public/legal/README.md` (contenido del corpus y gap report).
 - Conformidad de caché de prompt vs. harnesses auditados: `docs/cache-conformance.md`.
 - Visión de producto: `README.md`.

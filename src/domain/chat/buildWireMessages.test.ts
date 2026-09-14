@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ChatMessage } from '../types/chat';
-import { buildWireMessages } from './buildWireMessages';
+import { buildWireMessages, ORPHAN_TOOL_RESULT_CONTENT } from './buildWireMessages';
 
 function userMessage(id: string, texts: string[]): ChatMessage {
   return {
@@ -72,20 +72,71 @@ describe('buildWireMessages', () => {
     });
   });
 
-  it('emite assistant con content vacío cuando solo hay tool-call', () => {
+  it('emite assistant con content vacío y repara con placeholder el tool-call sin resultado', () => {
     const wires = buildWireMessages({
       history: [assistantMessage('a1', [{ type: 'tool-call', toolCall: { id: 't1', name: 'open_url', argumentsText: '{}' } }])],
       userMessage: userMessage('u1', ['q']),
     });
-    expect(wires[0]).toEqual({ role: 'assistant', content: '', toolCalls: [{ id: 't1', name: 'open_url', argumentsText: '{}' }] });
+    expect(wires).toEqual([
+      { role: 'assistant', content: '', toolCalls: [{ id: 't1', name: 'open_url', argumentsText: '{}' }] },
+      { role: 'tool', content: ORPHAN_TOOL_RESULT_CONTENT, toolCallId: 't1', toolName: 'open_url' },
+      { role: 'user', content: 'q' },
+    ]);
   });
 
-  it('convierte bloques tool-result en mensajes rol tool', () => {
+  it('convierte un par assistant(tool-call) + tool-result en mensajes assistant/tool', () => {
+    const wires = buildWireMessages({
+      history: [
+        assistantMessage('a1', [
+          { type: 'tool-call', toolCall: { id: 't1', name: 'web_search', argumentsText: '{"query":"x"}' } },
+          { type: 'tool-result', toolCallId: 't1', toolName: 'web_search', result: TOOL_RESULT },
+        ]),
+      ],
+      userMessage: userMessage('u1', ['q']),
+    });
+    expect(wires).toEqual([
+      {
+        role: 'assistant',
+        content: '',
+        toolCalls: [{ id: 't1', name: 'web_search', argumentsText: '{"query":"x"}' }],
+      },
+      { role: 'tool', content: 'tool output', toolCallId: 't1', toolName: 'web_search' },
+      { role: 'user', content: 'q' },
+    ]);
+  });
+
+  it('descarta un tool-result huérfano sin tool-call precedente', () => {
     const wires = buildWireMessages({
       history: [assistantMessage('a1', [{ type: 'tool-result', toolCallId: 't1', toolName: 'web_search', result: TOOL_RESULT }])],
       userMessage: userMessage('u1', ['q']),
     });
-    expect(wires[0]).toEqual({ role: 'tool', content: 'tool output', toolCallId: 't1', toolName: 'web_search' });
+    expect(wires).toEqual([{ role: 'user', content: 'q' }]);
+  });
+
+  it('empareja un tool-result emitido en otro mensaje con su call precedente', () => {
+    const wires = buildWireMessages({
+      history: [
+        assistantMessage('a1', [{ type: 'tool-call', toolCall: { id: 't1', name: 'web_search', argumentsText: '{}' } }]),
+        userMessage('u1', ['q']),
+        assistantMessage('a2', [{ type: 'tool-result', toolCallId: 't1', toolName: 'web_search', result: TOOL_RESULT }]),
+      ],
+      userMessage: userMessage('u2', ['next']),
+    });
+    expect(wires.map((wire) => wire.role)).toEqual(['assistant', 'user', 'tool', 'user']);
+  });
+
+  it('descarta respuestas duplicadas del mismo tool-call', () => {
+    const wires = buildWireMessages({
+      history: [
+        assistantMessage('a1', [
+          { type: 'tool-call', toolCall: { id: 't1', name: 'web_search', argumentsText: '{}' } },
+          { type: 'tool-result', toolCallId: 't1', toolName: 'web_search', result: TOOL_RESULT },
+          { type: 'tool-result', toolCallId: 't1', toolName: 'web_search', result: TOOL_RESULT },
+        ]),
+      ],
+      userMessage: userMessage('u1', ['q']),
+    });
+    expect(wires.filter((wire) => wire.role === 'tool')).toHaveLength(1);
   });
 
   it('expande pasos intercalados a assistant/tool/assistant', () => {

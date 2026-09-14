@@ -1,5 +1,5 @@
 import { buildWireMessages } from '../chat/buildWireMessages';
-import { estimateToolsTokens } from '../chat/estimateTokens';
+import { estimateMessagesTokens, estimateToolsTokens } from '../chat/estimateTokens';
 import { createAssistantMessage, finalizeMessage } from '../chat/messageFactory';
 import { selectHistoryByBudget } from '../chat/selectHistoryByBudget';
 import { truncateText } from '../chat/truncateText';
@@ -55,6 +55,20 @@ export interface RunAgentParams {
   researchMode: boolean;
   signal: AbortSignal;
   /**
+   * AMEND §A2 (aditivo): habilita el loop de tools sin sobrecargar `researchMode`.
+   * Gate efectivo: `(enableTools ?? researchMode) && capabilities.toolCalling
+   * && model?.supportsTools !== false`. Ausente = comportamiento previo.
+   */
+  enableTools?: boolean;
+  /**
+   * AMEND §A6 (aditivo): mensajes efímeros que se anexan **solo al wire**, después
+   * de la selección de historial y antes del user actual. Nunca entran a
+   * `loopHistory` ni a `systemPrompt`, por lo que no se persisten ni invalidan el
+   * prefijo cacheado. Sirven al brief legal (par atómico assistant(tool-call) +
+   * tool-result). Su tamaño se reserva vía `SelectHistoryByBudgetInput.reservedTokens`.
+   */
+  ephemeralSuffix?: ChatMessage[];
+  /**
    * AMEND aditivo sobre §7 (compatible con la firma congelada): §7 exige el gate
    * `model.supportsTools !== false`, pero la firma no transportaba el modelo.
    * El caller resuelve aquí el `ModelInfo` activo; si falta, el modelo se
@@ -65,6 +79,19 @@ export interface RunAgentParams {
 }
 
 const CACHED_CALL_NOTE = '[note: identical call already executed; reusing cached result]';
+
+/** Causa por la que un tool-call emitido no llegó a ejecutarse (C1). */
+type NotExecutedReason = 'aborted' | 'budget' | 'failed' | 'skipped';
+
+/** Set vacío reutilizable para cerrar tool-calls de intentos que nunca ejecutaron tools. */
+const EMPTY_EXECUTED_IDS: ReadonlySet<string> = new Set<string>();
+
+const NOT_EXECUTED_DETAIL: Record<NotExecutedReason, string> = {
+  aborted: 'was not executed because the run was aborted',
+  budget: 'was not executed because the run budget was exhausted',
+  failed: 'was not executed because the run stopped after repeated tool failures',
+  skipped: 'was not executed in this run',
+};
 
 const MESSAGE_ERROR_CODES: readonly MessageErrorCode[] = [
   'auth',
@@ -85,6 +112,8 @@ type StreamFailure =
 interface AttemptState {
   blocks: MessageContent[];
   toolCalls: ToolCall[];
+  /** Ids ya vistos en este intento: sostiene la unicidad ante providers que repiten ids (B2). */
+  seenToolCallIds: Map<string, number>;
   usage?: TokenUsage;
   stopReason: StopReason;
   sawOutput: boolean;
@@ -132,6 +161,12 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
   let finalStatus: AgentRunStatus = 'complete';
   let finalError: MessageError | undefined;
   let stepIndex = 0;
+  // AMEND §A6: tokens del sufijo efímero, reservados en cada selección para que el
+  // wire (historial + sufijo + user) no desborde la ventana. La ventana queda
+  // protegida por esa reserva (`reservedTokens` achica el historial elegible);
+  // el estimado de costo, en cambio, SÍ los incluye (ver cálculo abajo), porque
+  // el proveedor factura el prompt real con el sufijo adentro (B4).
+  const ephemeralTokens = p.ephemeralSuffix === undefined ? 0 : estimateMessagesTokens(p.ephemeralSuffix);
   // Cuando se agota el presupuesto blando (pasos o tool-calls) se reserva un paso
   // final SIN tools para que el modelo sintetice en vez de terminar en blanco.
   let answerForced = false;
@@ -140,7 +175,8 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
 
   try {
     const capabilities = d.provider.capabilities();
-    const toolsEnabled = p.researchMode && capabilities.toolCalling && p.model?.supportsTools !== false;
+    const toolsEnabled =
+      (p.enableTools ?? p.researchMode) && capabilities.toolCalling && p.model?.supportsTools !== false;
     const toolDefinitions = toolsEnabled ? d.tools.list() : [];
     const requestTools = toolDefinitions.length > 0 ? toolDefinitions : undefined;
 
@@ -163,10 +199,16 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
           system: p.systemPrompt,
           budget: p.historyBudget,
           contextWindow: p.model?.contextWindow,
+          reservedTokens: ephemeralTokens,
         });
         const stepTools = answerForced ? undefined : requestTools;
+        // B4: el estimado de costo cubre el prompt real completo (historial
+        // seleccionado + tools + sufijo efímero). La reserva de ventana vive en
+        // la selección (`reservedTokens`); aquí se mide costo, no ventana.
         estimatedPromptTokens =
-          selection.estimatedPromptTokens + (stepTools === undefined ? 0 : estimateToolsTokens(stepTools));
+          selection.estimatedPromptTokens +
+          (stepTools === undefined ? 0 : estimateToolsTokens(stepTools)) +
+          ephemeralTokens;
 
         const limit = findBudgetLimit(
           budgetState,
@@ -193,7 +235,11 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
         const request: ChatCompletionRequest = {
           modelId: p.modelId,
           system: p.systemPrompt !== '' ? p.systemPrompt : undefined,
-          messages: buildWireMessages({ system: p.systemPrompt, history: selection.messages, userMessage: p.userMessage }),
+          messages: buildWireMessages({
+            system: p.systemPrompt,
+            history: withEphemeralSuffix(selection.messages, p.ephemeralSuffix),
+            userMessage: p.userMessage,
+          }),
           tools: stepTools,
           toolChoice: stepTools === undefined ? undefined : 'auto',
           temperature: p.defaults.temperature,
@@ -226,8 +272,9 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
               yield { type: 'reasoning-delta', stepIndex, delta: event.delta };
             } else if (event.type === 'tool-call') {
               attempt.sawOutput = true;
-              attempt.toolCalls.push(event.toolCall);
-              attempt.blocks.push({ type: 'tool-call', toolCall: event.toolCall });
+              const uniqueCall = uniqueToolCall(event.toolCall, attempt.seenToolCallIds);
+              attempt.toolCalls.push(uniqueCall);
+              attempt.blocks.push({ type: 'tool-call', toolCall: uniqueCall });
             } else if (event.type === 'usage') {
               attempt.usage = accumulateUsage(attempt.usage, event.usage);
             } else if (event.type === 'stop') {
@@ -250,12 +297,14 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
 
         if (attempt.aborted) {
           runBlocks.push(...attempt.blocks);
+          yield* closeToolCalls(runBlocks, attempt.toolCalls, EMPTY_EXECUTED_IDS, 'aborted', stepIndex);
           finalStatus = 'aborted';
           break steps;
         }
         const failure = attempt.failure;
         if (failure !== undefined && failure.aborted) {
           runBlocks.push(...attempt.blocks);
+          yield* closeToolCalls(runBlocks, attempt.toolCalls, EMPTY_EXECUTED_IDS, 'aborted', stepIndex);
           finalStatus = 'aborted';
           break steps;
         }
@@ -270,12 +319,14 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
             const slept = await sleepAbortable(computeRetryDelay(retriesUsed - 1, failure.retryAfterMs), p.signal);
             if (slept === 'aborted') {
               runBlocks.push(...attempt.blocks);
+              yield* closeToolCalls(runBlocks, attempt.toolCalls, EMPTY_EXECUTED_IDS, 'aborted', stepIndex);
               finalStatus = 'aborted';
               break steps;
             }
             continue attempts;
           }
           runBlocks.push(...attempt.blocks);
+          yield* closeToolCalls(runBlocks, attempt.toolCalls, EMPTY_EXECUTED_IDS, 'failed', stepIndex);
           finalStatus = 'error';
           finalError = { code: failure.code, message: failure.message, retryable: failure.retryable };
           break steps;
@@ -296,61 +347,86 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
       let budgetDuringTools = false;
       let failedTwice = false;
       let lastToolFailure: ToolResult | undefined;
+      /** Tool-calls que sí emitieron su `tool-result` en este paso. */
+      const executedToolCallIds = new Set<string>();
+      /** Tool-calls que ya emitieron su `tool-start`: el cierre sintético no lo repite (B1/B3). */
+      const startedToolCallIds = new Set<string>();
 
       if (shouldRunTools) {
-        for (const call of attempt.toolCalls) {
-          if (p.signal.aborted) {
-            abortedDuringTools = true;
-            break;
-          }
-          if (elapsedWallClock(budgetState, d.clock()) >= p.budget.maxWallClockMs) {
-            budgetDuringTools = true;
-            break;
-          }
-          if (budgetState.toolCalls >= p.budget.maxToolCalls) {
-            budgetDuringTools = true;
-            break;
-          }
-
-          const prepared = prepareToolCall(call, d.tools, toolResultCache);
-          yield { type: 'tool-start', stepIndex, toolCall: prepared.call };
-
-          let result: ToolResult;
-          if (prepared.kind === 'immediate') {
-            result = prepared.result;
-          } else {
-            const execution = await executePreparedTool(prepared, p, d);
-            if (execution.kind === 'aborted') {
+        try {
+          for (const call of attempt.toolCalls) {
+            if (p.signal.aborted) {
               abortedDuringTools = true;
               break;
             }
-            result = execution.result;
-            toolResultCache.set(prepared.cacheKey, result);
-          }
+            if (elapsedWallClock(budgetState, d.clock()) >= p.budget.maxWallClockMs) {
+              budgetDuringTools = true;
+              break;
+            }
+            if (budgetState.toolCalls >= p.budget.maxToolCalls) {
+              budgetDuringTools = true;
+              break;
+            }
 
-          budgetState.toolCalls += 1;
-          const limitedResult = truncateToolResult(result, prepared.def, p.budget.maxToolResultChars);
-          runBlocks.push({
-            type: 'tool-result',
-            toolCallId: prepared.call.id,
-            toolName: prepared.call.name,
-            result: limitedResult,
-          });
+            const prepared = prepareToolCall(call, d.tools, toolResultCache);
+            yield { type: 'tool-start', stepIndex, toolCall: prepared.call };
+            startedToolCallIds.add(prepared.call.id);
 
-          if (limitedResult.ok) {
-            consecutiveToolFailures = 0;
-          } else {
-            consecutiveToolFailures += 1;
-            lastToolFailure = limitedResult;
-          }
-          yield { type: 'tool-end', stepIndex, toolCall: prepared.call, result: limitedResult };
+            let result: ToolResult;
+            if (prepared.kind === 'immediate') {
+              result = prepared.result;
+            } else {
+              const execution = await executePreparedTool(prepared, p, d);
+              if (execution.kind === 'aborted') {
+                abortedDuringTools = true;
+                break;
+              }
+              result = execution.result;
+              toolResultCache.set(prepared.cacheKey, result);
+            }
 
-          if (consecutiveToolFailures >= 2) {
-            failedTwice = true;
-            break;
+            budgetState.toolCalls += 1;
+            const limitedResult = truncateToolResult(result, prepared.def, p.budget.maxToolResultChars);
+            executedToolCallIds.add(prepared.call.id);
+            runBlocks.push({
+              type: 'tool-result',
+              toolCallId: prepared.call.id,
+              toolName: prepared.call.name,
+              result: limitedResult,
+            });
+
+            if (limitedResult.ok) {
+              consecutiveToolFailures = 0;
+            } else {
+              consecutiveToolFailures += 1;
+              lastToolFailure = limitedResult;
+            }
+            yield { type: 'tool-end', stepIndex, toolCall: prepared.call, result: limitedResult };
+
+            if (consecutiveToolFailures >= 2) {
+              failedTwice = true;
+              break;
+            }
           }
+        } catch (cause) {
+          // Un throw del registry o de la preparación no debe dejar tool-calls abiertos.
+          yield* closeToolCalls(runBlocks, attempt.toolCalls, executedToolCallIds, 'failed', stepIndex, startedToolCallIds);
+          throw cause;
         }
       }
+
+      // C1: todo tool-call emitido en el assistant debe tener su tool-result antes de
+      // finalizar el paso. Los no ejecutados se cierran con un resultado sintético
+      // `not_executed` (sin simular ejecución) para no romper proveedores
+      // OpenAI-compatible con `No tool output found for function call`.
+      const cutoffReason: NotExecutedReason = abortedDuringTools
+        ? 'aborted'
+        : budgetDuringTools
+          ? 'budget'
+          : failedTwice
+            ? 'failed'
+            : 'skipped';
+      yield* closeToolCalls(runBlocks, attempt.toolCalls, executedToolCallIds, cutoffReason, stepIndex, startedToolCallIds);
 
       if (abortedDuringTools) {
         finalStatus = 'aborted';
@@ -422,7 +498,73 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
 }
 
 function createAttempt(): AttemptState {
-  return { blocks: [], toolCalls: [], stopReason: 'end_turn', sawOutput: false, aborted: false };
+  return { blocks: [], toolCalls: [], seenToolCallIds: new Map<string, number>(), stopReason: 'end_turn', sawOutput: false, aborted: false };
+}
+
+/**
+ * Anexa el sufijo efímero (AMEND §A6) a la selección de historial que recibe
+ * `buildWireMessages`: viaja al wire después del historial seleccionado y antes
+ * del user actual, pero nunca entra a `loopHistory` (se recompone en cada paso).
+ */
+function withEphemeralSuffix(history: ChatMessage[], suffix: ChatMessage[] | undefined): ChatMessage[] {
+  if (suffix === undefined || suffix.length === 0) return history;
+  return [...history, ...suffix];
+}
+
+/**
+ * Cierra los tool-calls de `calls` que no registraron resultado en `executedIds`
+ * (C1). Emite un `tool-result` sintético `not_executed` y su evento `tool-end`,
+ * coherente con el camino feliz, para que el wire nunca quede con un call abierto.
+ * B1: cada `tool-end` sintético va precedido de su `tool-start` (salvo que el
+ * start real ya se haya emitido —ver `startedIds`—, para no duplicarlo cuando la
+ * ejecución falla después del start). Invariante del módulo: exactamente un
+ * `tool-start` y un `tool-end` por cada tool-call emitido.
+ */
+async function* closeToolCalls(
+  runBlocks: MessageContent[],
+  calls: readonly ToolCall[],
+  executedIds: ReadonlySet<string>,
+  reason: NotExecutedReason,
+  stepIndex: number,
+  startedIds: ReadonlySet<string> = EMPTY_EXECUTED_IDS,
+): AsyncGenerator<AgentEvent, void, void> {
+  for (const call of calls) {
+    if (executedIds.has(call.id)) continue;
+    if (!startedIds.has(call.id)) {
+      yield { type: 'tool-start', stepIndex, toolCall: call };
+    }
+    const result = notExecutedResult(call.name, reason);
+    runBlocks.push({ type: 'tool-result', toolCallId: call.id, toolName: call.name, result });
+    yield { type: 'tool-end', stepIndex, toolCall: call, result };
+  }
+}
+
+/**
+ * Garantiza ids únicos por intento (B2): el protocolo exige aparear cada
+ * `tool-result` con su `tool-call` por id, y el sanitizador del wire
+ * (`buildWireMessages`, fuera del alcance de este fix) cuenta resultados por id.
+ * Si el proveedor repite un id, el duplicado se reescribe como `<id>__dup<N>`
+ * (se conserva la llamada y su ejecución; sólo cambia el id de apareo local).
+ * Primera ocurrencia: se conserva tal cual.
+ */
+function uniqueToolCall(call: ToolCall, seen: Map<string, number>): ToolCall {
+  const count = seen.get(call.id) ?? 0;
+  seen.set(call.id, count + 1);
+  if (count === 0) return call;
+  let attempt = count + 1;
+  let candidate = `${call.id}__dup${attempt}`;
+  while (seen.has(candidate)) {
+    attempt += 1;
+    candidate = `${call.id}__dup${attempt}`;
+  }
+  seen.set(candidate, 1);
+  return { ...call, id: candidate };
+}
+
+/** Resultado sintético de cierre: declara que la tool no se ejecutó, sin fingir salida. */
+function notExecutedResult(toolName: string, reason: NotExecutedReason): ToolResult {
+  const message = `The "${toolName}" tool ${NOT_EXECUTED_DETAIL[reason]}. Continue without its result.`;
+  return { ok: false, content: message, error: { code: 'not_executed', message }, durationMs: 0 };
 }
 
 function appendBlockDelta(blocks: MessageContent[], type: 'text' | 'reasoning', delta: string): void {
@@ -569,6 +711,7 @@ const TOOL_FAILURE_MESSAGE_CODES: Record<ToolErrorCode, MessageErrorCode> = {
   http_error: 'unknown',
   parse_error: 'unknown',
   denied: 'unknown',
+  not_executed: 'unknown',
 };
 
 function toolFailureToMessageError(result: ToolResult | undefined): MessageError {

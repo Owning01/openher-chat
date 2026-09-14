@@ -11,6 +11,8 @@ export interface NewConversationInput {
   title?: string;
   providerId?: string | null;
   modelId?: string | null;
+  /** Vínculo inicial caso↔conversación; ausente/`null` = general. */
+  legalCaseId?: string | null;
 }
 
 export type ConversationsStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -103,15 +105,21 @@ export function createConversationsStore(
     async create(input = {}) {
       set({ error: null });
       try {
-        const conversation = await repo.create(input);
+        // `create()` nunca puebla el vínculo (contrato T14): se linkea con `update`.
+        const { legalCaseId, ...createInput } = input;
+        const created = await repo.create(createInput);
+        const linked =
+          legalCaseId != null && legalCaseId !== ''
+            ? await repo.update(created.id, { legalCaseId })
+            : created;
         loadSeq += 1;
         set((state) => ({
-          items: sortConversationsByUpdatedAt([conversation, ...state.items]),
-          activeId: conversation.id,
+          items: sortConversationsByUpdatedAt([linked, ...state.items]),
+          activeId: linked.id,
           query: '',
           status: state.status === 'loading' ? 'ready' : state.status,
         }));
-        return conversation;
+        return linked;
       } catch (error) {
         set({ error: toErrorMessage(error) });
         return null;
@@ -237,6 +245,7 @@ export function createConversationsStore(
           researchMode: archive.conversation.researchMode,
           systemPromptOverride: archive.conversation.systemPromptOverride,
           messageCount: archive.messages.length,
+          ...(archive.conversation.legalCaseId != null ? { legalCaseId: archive.conversation.legalCaseId } : {}),
         });
         loadSeq += 1;
         set((state) => ({

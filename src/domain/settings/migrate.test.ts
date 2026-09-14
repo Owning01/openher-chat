@@ -3,6 +3,9 @@ import {
   DEFAULT_AGENT_BUDGET,
   DEFAULT_CHAT_DEFAULTS,
   DEFAULT_HISTORY_BUDGET,
+  DEFAULT_LEGAL_ANALYSIS_BUDGET,
+  DEFAULT_LEGAL_RETRIEVAL_BUDGET,
+  DEFAULT_LEGAL_SETTINGS,
   DEFAULT_SEARCH_SETTINGS,
   DEFAULT_SYSTEM_PROMPT,
   DEFAULT_UI_SETTINGS,
@@ -158,6 +161,125 @@ describe('migrateSettings', () => {
     expect(migrateSettings({ updatedAt: -1 }, NOW).updatedAt).toBe(NOW);
     expect(migrateSettings({ updatedAt: 'x' }, NOW).updatedAt).toBe(NOW);
     expect(migrateSettings({ updatedAt: 1234.9 }, NOW).updatedAt).toBe(1234);
+  });
+
+  it('con raw vacío completa la sección legal con defaults', () => {
+    expect(migrateSettings({}, NOW).legal).toEqual(DEFAULT_LEGAL_SETTINGS);
+    expect(migrateSettings({ legal: 'nope' }, NOW).legal).toEqual(DEFAULT_LEGAL_SETTINGS);
+    expect(migrateSettings({ legal: [] }, NOW).legal).toEqual(DEFAULT_LEGAL_SETTINGS);
+    expect(migrateSettings({ legal: null }, NOW).legal).toEqual(DEFAULT_LEGAL_SETTINGS);
+  });
+
+  it('conserva la sección legal válida y completa lo faltante', () => {
+    const legal = migrateSettings(
+      {
+        legal: {
+          enabled: true,
+          defaultJurisdiction: 'caba',
+          defaultCourt: 'Juzgado Civil N° 5',
+          defaultMatter: 'commercial',
+          anonymization: 'optional',
+          setupCompleted: true,
+          retrieval: { maxPassages: 12, maxPassageChars: 2000, maxBriefTokens: 9000 },
+          analysis: {
+            maxCalls: 6,
+            maxTotalTokens: 90000,
+            maxWallClockMs: 180000,
+            maxParallel: 3,
+            maxOutputTokensPerPersona: 2000,
+          },
+          perspectives: ['judge', 'defense'],
+          defaultTemplates: { claim: 'tpl-claim', answer: 'tpl-answer' },
+        },
+      },
+      NOW,
+    ).legal;
+    expect(legal).toEqual({
+      enabled: true,
+      defaultJurisdiction: 'caba',
+      defaultCourt: 'Juzgado Civil N° 5',
+      defaultMatter: 'commercial',
+      retrieval: { maxPassages: 12, maxPassageChars: 2000, maxBriefTokens: 9000 },
+      analysis: {
+        maxCalls: 6,
+        maxTotalTokens: 90000,
+        maxWallClockMs: 180000,
+        maxParallel: 3,
+        maxOutputTokensPerPersona: 2000,
+      },
+      anonymization: 'optional',
+      perspectives: ['judge', 'defense'],
+      defaultTemplates: { claim: 'tpl-claim', answer: 'tpl-answer' },
+      setupCompleted: true,
+    });
+  });
+
+  it('sanea enums legales inválidos al default', () => {
+    const legal = migrateSettings(
+      { legal: { defaultJurisdiction: 'marte', defaultMatter: 'penal', anonymization: 'maybe' } },
+      NOW,
+    ).legal;
+    expect(legal.defaultJurisdiction).toBe('national');
+    expect(legal.defaultMatter).toBe('civil-commercial');
+    expect(legal.anonymization).toBe('required');
+    expect(migrateSettings({ legal: { defaultCourt: 42 } }, NOW).legal.defaultCourt).toBe('');
+  });
+
+  it('filtra y deduplica las perspectivas adversariales', () => {
+    const perspectives = migrateSettings(
+      { legal: { perspectives: ['defense', 'nope', 'defense', 42, 'judge', null] } },
+      NOW,
+    ).legal.perspectives;
+    expect(perspectives).toEqual(['defense', 'judge']);
+    expect(migrateSettings({ legal: { perspectives: 'defense' } }, NOW).legal.perspectives).toEqual(
+      DEFAULT_LEGAL_SETTINGS.perspectives,
+    );
+  });
+
+  it('sanea defaultTemplates: sólo claves DocumentKind con valor string no vacío', () => {
+    const templates = migrateSettings(
+      { legal: { defaultTemplates: { claim: 'tpl', bogus: 'x', answer: '   ', contract: 5, bylaws: 'tpl-bylaws' } } },
+      NOW,
+    ).legal.defaultTemplates;
+    expect(templates).toEqual({ claim: 'tpl', bylaws: 'tpl-bylaws' });
+    expect(migrateSettings({ legal: { defaultTemplates: 'nope' } }, NOW).legal.defaultTemplates).toEqual({});
+  });
+
+  it('cae al default con NaN/Infinity/negativos en los topes y acota los excesos', () => {
+    const legal = migrateSettings(
+      {
+        legal: {
+          retrieval: { maxPassages: Number.NaN, maxPassageChars: Number.POSITIVE_INFINITY, maxBriefTokens: -100 },
+          analysis: {
+            maxCalls: -1,
+            maxTotalTokens: Number.NaN,
+            maxWallClockMs: Number.NEGATIVE_INFINITY,
+            maxParallel: 0,
+            maxOutputTokensPerPersona: -5,
+          },
+        },
+      },
+      NOW,
+    ).legal;
+    expect(legal.retrieval).toEqual(DEFAULT_LEGAL_RETRIEVAL_BUDGET);
+    expect(legal.analysis).toEqual(DEFAULT_LEGAL_ANALYSIS_BUDGET);
+    expect(migrateSettings({ legal: { retrieval: { maxPassages: 999 } } }, NOW).legal.retrieval.maxPassages).toBe(50);
+    expect(migrateSettings({ legal: { analysis: { maxParallel: 99 } } }, NOW).legal.analysis.maxParallel).toBe(8);
+  });
+
+  it('migrateLegal es idempotente con la sección legal corrupta', () => {
+    const raw = {
+      legal: {
+        enabled: true,
+        defaultJurisdiction: 'marte',
+        perspectives: ['risk', 'risk', 'x'],
+        retrieval: { maxPassages: -1 },
+        defaultTemplates: { claim: 't', nope: 'y' },
+      },
+    };
+    const once = migrateSettings(raw, NOW);
+    const twice = migrateSettings(once, NOW + 5000);
+    expect(twice).toEqual(once);
   });
 
   it('es idempotente y preserva updatedAt entre corridas', () => {

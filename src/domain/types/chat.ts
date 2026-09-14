@@ -25,7 +25,13 @@ export type ToolErrorCode =
   | 'missing_proxy'
   | 'http_error'
   | 'parse_error'
-  | 'denied';
+  | 'denied'
+  /**
+   * AMEND §A7 (aditivo): el tool-call quedó sin ejecutar porque el run se cortó
+   * (aborto, presupuesto, fallos consecutivos o paso final sin tools). Se usa
+   * sólo para resultados sintéticos de cierre; no implica que la tool corrió.
+   */
+  | 'not_executed';
 
 export interface ToolResult {
   ok: boolean;
