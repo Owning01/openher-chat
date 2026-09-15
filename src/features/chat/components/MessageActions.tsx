@@ -3,9 +3,11 @@ import { useState } from 'react';
 import type { Role } from '@/domain/types/chat';
 import { useCitationGuard } from '@/features/legal/state/CitationGuardContext';
 import { useT } from '@/i18n/useT';
-import { Pencil, Play, RefreshCw, Trash } from '@/shared/icons';
+import { Download, FileText, Pencil, Play, RefreshCw, Trash } from '@/shared/icons';
 import { CopyButton } from '@/shared/markdown/CopyButton';
 import { Button, IconButton, TextArea } from '@/shared/ui';
+import { downloadBinaryFile, downloadTextFile } from '@/shared/utils/download';
+import { DOCX_MIME, markdownToDocx } from '@/adapters/documents/docxWriter';
 
 export interface MessageActionsProps {
   messageId: string;
@@ -41,6 +43,28 @@ export function MessageActions({
   return (
     <div className="flex items-center gap-0.5">
       <CopyButton text={copyText} label={t('chat.copy')} copiedLabel={t('chat.copied')} />
+      {role === 'assistant' ? (
+        <IconButton
+          size="sm"
+          disabled={disabled || text.trim() === ''}
+          label={t('chat.download')}
+          icon={<Download aria-hidden="true" className="size-4" />}
+          onClick={() =>
+            downloadTextFile(`respuesta-${messageId.slice(0, 8)}.md`, copyText, 'text/markdown')
+          }
+        />
+      ) : null}
+      {role === 'assistant' ? (
+        <IconButton
+          size="sm"
+          disabled={disabled || text.trim() === ''}
+          label={t('chat.downloadWord')}
+          icon={<FileText aria-hidden="true" className="size-4" />}
+          onClick={() =>
+            downloadBinaryFile(`respuesta-${messageId.slice(0, 8)}.docx`, markdownToDocx(copyText), DOCX_MIME)
+          }
+        />
+      ) : null}
       {role === 'assistant' && onContinue !== undefined ? (
         <IconButton
           size="sm"

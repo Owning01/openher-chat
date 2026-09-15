@@ -8,11 +8,13 @@ import {
   createConversationsStore,
   useConversationsStore,
 } from '@/features/conversations/state/conversationsStore';
+import { synchronizeWithCloud } from '@/features/settings/state/cloudSync';
+import { createSettingsStore } from '@/features/settings/state/settingsStore';
 import { isOnboardingResolvedThisSession, needsOnboarding } from '@/features/onboarding/session';
 import { AuthGate, useAuthUser } from '@/features/auth/AuthGate';
 import { UpdateNotice } from '@/features/updates/UpdateNotice';
 import { useT } from '@/i18n/useT';
-import { Sparkles } from '@/shared/icons';
+import { Logo } from '@/shared/brand/Logo';
 import { Button, Spinner } from '@/shared/ui';
 
 import { bootstrapApp } from './bootstrap';
@@ -105,6 +107,20 @@ function ScopedApp() {
       if (!active) return;
       try {
         const result = await bootstrapApp(undefined, { userId: uid });
+        // Espejo en la nube (misma cuenta = mismos datos en todos los
+        // dispositivos): si la nube trae algo más nuevo, se aplica antes de
+        // montar el chat para que aparezca listo. Best-effort y silencioso:
+        // sin red o sin nube se sigue con lo local; Ajustes reintenta al abrirse.
+        if (result.services.sync !== undefined) {
+          const syncStore = createSettingsStore(result.services);
+          try {
+            await syncStore.getState().load();
+            await synchronizeWithCloud(syncStore, result.services.sync);
+          } catch {
+            // Local-first: se ignora y se sigue con lo del dispositivo.
+          }
+          // Sin suscriptores: el store transitorio se descarta sin más trámite.
+        }
         if (active) setScoped({ status: 'ready', ...result });
       } catch (error: unknown) {
         if (active) {
@@ -232,7 +248,7 @@ function BootSplash() {
   return (
     <main className="grid min-h-dvh place-items-center bg-background text-text">
       <div className="flex flex-col items-center gap-4">
-        <Sparkles aria-hidden="true" className="size-8 text-primary" />
+        <Logo size={40} />
         <h1 className="text-lg font-semibold tracking-tight">{t('app.title')}</h1>
         <Spinner label={t('common.loading')} />
       </div>

@@ -22,3 +22,12 @@ export function useSettingsStore<T>(selector: (state: SettingsState) => T): T {
   }
   return useStore(store, selector);
 }
+
+/** Acceso al store completo (para sincronización en la nube y acciones fuera de render). */
+export function useSettingsStoreApi(): SettingsStore {
+  const store = useContext(SettingsStoreContext);
+  if (store === null) {
+    throw new Error('useSettingsStoreApi must be used within a SettingsStoreProvider');
+  }
+  return store;
+}

@@ -159,7 +159,8 @@ export function createOpenCodeAdapter(
     toolCalling: true,
     systemPrompt: true,
     listModels: true,
-    images: false,
+    // Delega en chat-completions/messages/responses, todos con visión.
+    images: true,
   });
 
   return {

@@ -6,6 +6,7 @@ import { conversationToJson, conversationToMarkdown, parseConversationArchive } 
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
 import type { Conversation } from '@/domain/types/conversation';
 import { newId as defaultNewId } from '@/shared/utils/ids';
+import type { LegalCircuitRole } from '@/domain/types/legal';
 
 export interface NewConversationInput {
   title?: string;
@@ -13,6 +14,8 @@ export interface NewConversationInput {
   modelId?: string | null;
   /** Vínculo inicial caso↔conversación; ausente/`null` = general. */
   legalCaseId?: string | null;
+  /** Rol inicial del circuito; ausente/`null` = sin rol. */
+  legalRole?: LegalCircuitRole | null;
 }
 
 export type ConversationsStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -105,21 +108,26 @@ export function createConversationsStore(
     async create(input = {}) {
       set({ error: null });
       try {
-        // `create()` nunca puebla el vínculo (contrato T14): se linkea con `update`.
-        const { legalCaseId, ...createInput } = input;
+        // `create()` nunca puebla vínculo ni rol (contrato T14): se linkean con `update`.
+        const { legalCaseId, legalRole, ...createInput } = input;
         const created = await repo.create(createInput);
-        const linked =
-          legalCaseId != null && legalCaseId !== ''
-            ? await repo.update(created.id, { legalCaseId })
-            : created;
+        const withLinks =
+          legalRole != null
+            ? await repo.update(created.id, {
+                ...(legalCaseId != null && legalCaseId !== '' ? { legalCaseId } : {}),
+                legalRole,
+              })
+            : legalCaseId != null && legalCaseId !== ''
+              ? await repo.update(created.id, { legalCaseId })
+              : created;
         loadSeq += 1;
         set((state) => ({
-          items: sortConversationsByUpdatedAt([linked, ...state.items]),
-          activeId: linked.id,
+          items: sortConversationsByUpdatedAt([withLinks, ...state.items]),
+          activeId: withLinks.id,
           query: '',
           status: state.status === 'loading' ? 'ready' : state.status,
         }));
-        return linked;
+        return withLinks;
       } catch (error) {
         set({ error: toErrorMessage(error) });
         return null;
@@ -246,6 +254,7 @@ export function createConversationsStore(
           systemPromptOverride: archive.conversation.systemPromptOverride,
           messageCount: archive.messages.length,
           ...(archive.conversation.legalCaseId != null ? { legalCaseId: archive.conversation.legalCaseId } : {}),
+          ...(archive.conversation.legalRole != null ? { legalRole: archive.conversation.legalRole } : {}),
         });
         loadSeq += 1;
         set((state) => ({

@@ -1,12 +1,17 @@
 import { applyCitationMarkers, extractCitations, verifyCitations } from '../legal/citation';
 import { DOCUMENT_SOURCE_DISCLAIMER, DOCUMENT_WATERMARK } from '../legal/document';
-import type { CitationGuardResult, CitationVerdict, LegalIndex } from '../types/legal';
+import type { CitationGuardResult, CitationVerdict, LegalCircuitRole, LegalIndex } from '../types/legal';
 import type { ChatMessage, MessageContent, TokenUsage } from '../types/chat';
 import type { Conversation } from '../types/conversation';
 
+/**
+ * Cota anti-basura para bloques `image` en import: ~8M chars (≈6MB binarios).
+ * Los adjuntos generados por la app quedan muy por debajo (comprimidos).
+ */
+export const MAX_IMAGE_DATA_URL_CHARS = 8_000_000;
+
 /** Formato portable de una conversación (round-trip JSON). */
-export interface ConversationArchive {
-  version: 1;
+export interface ConversationArchive {  version: 1;
   exportedAt: number;
   conversation: {
     title: string;
@@ -16,6 +21,8 @@ export interface ConversationArchive {
     researchMode: boolean;
     /** Vínculo caso↔conversación; ausente = general (round-trip del modo legal). */
     legalCaseId?: string | null;
+    /** Rol del circuito adversarial; ausente = sin rol (round-trip). */
+    legalRole?: LegalCircuitRole | null;
   };
   messages: ChatMessage[];
 }
@@ -100,6 +107,9 @@ function appendBlock(lines: string[], block: MessageContent, index: LegalIndex |
       }
       break;
     }
+    case 'image':
+      lines.push(`[imagen adjunta: ${block.name}]`, '');
+      break;
   }
 }
 
@@ -149,6 +159,7 @@ export function conversationToArchive(conversation: Conversation, messages: Chat
       systemPromptOverride: conversation.systemPromptOverride,
       researchMode: conversation.researchMode,
       ...(conversation.legalCaseId != null ? { legalCaseId: conversation.legalCaseId } : {}),
+      ...(conversation.legalRole != null ? { legalRole: conversation.legalRole } : {}),
     },
     messages: messages.map(cloneMessage),
   };
@@ -161,7 +172,8 @@ export function conversationToJson(conversation: Conversation, messages: ChatMes
 /**
  * Parser tolerante de un archivo importado (JSON). Devuelve `null` si no es un
  * archivo válido; el llamador asigna ids nuevos de conversación/mensajes.
- * `legalCaseId` se restaura sólo si es un string no vacío (ausente = general).
+ * `legalCaseId` se restaura sólo si es un string no vacío (ausente = general);
+ * `legalRole` sólo si es un rol válido del circuito (ausente = sin rol).
  */
 export function parseConversationArchive(text: string): ConversationArchive | null {
   let parsed: unknown;
@@ -180,6 +192,7 @@ export function parseConversationArchive(text: string): ConversationArchive | nu
   }
   if (messages.length === 0) return null;
   const legalCaseId = readLegalCaseId(convo.legalCaseId);
+  const legalRole = readLegalRole(convo.legalRole);
   return {
     version: 1,
     exportedAt: typeof root.exportedAt === 'number' ? root.exportedAt : 0,
@@ -190,6 +203,7 @@ export function parseConversationArchive(text: string): ConversationArchive | nu
       systemPromptOverride: asNullableString(convo.systemPromptOverride),
       researchMode: convo.researchMode === true,
       ...(legalCaseId === undefined ? {} : { legalCaseId }),
+      ...(legalRole === undefined ? {} : { legalRole }),
     },
     messages,
   };
@@ -199,6 +213,13 @@ export function parseConversationArchive(text: string): ConversationArchive | nu
 function readLegalCaseId(value: unknown): string | undefined {
   if (typeof value !== 'string') return undefined;
   return value.trim() !== '' ? value : undefined;
+}
+
+/** Lee el rol del circuito: sólo un rol válido; cualquier otra cosa ⇒ ausente (sin rol). */
+function readLegalRole(value: unknown): LegalCircuitRole | undefined {
+  return value === 'redactor' || value === 'atacante' || value === 'juez' || value === 'sintesis'
+    ? value
+    : undefined;
 }
 
 function normalizeMessage(record: Record<string, unknown> | null): ChatMessage | null {
@@ -224,7 +245,24 @@ function normalizeMessage(record: Record<string, unknown> | null): ChatMessage |
 function isContentBlock(value: unknown): value is MessageContent {
   const block = asRecord(value);
   if (block === null) return false;
-  return block.type === 'text' || block.type === 'reasoning' || block.type === 'tool-call' || block.type === 'tool-result';
+  if (
+    block.type === 'text' ||
+    block.type === 'reasoning' ||
+    block.type === 'tool-call' ||
+    block.type === 'tool-result'
+  ) {
+    return true;
+  }
+  // Imagen M7: exige dataUrl string con esquema data: (cota anti-basura en import).
+  if (block.type !== 'image') return false;
+  return (
+    typeof block.imageId === 'string' &&
+    typeof block.name === 'string' &&
+    typeof block.mime === 'string' &&
+    typeof block.dataUrl === 'string' &&
+    block.dataUrl.startsWith('data:') &&
+    block.dataUrl.length <= MAX_IMAGE_DATA_URL_CHARS
+  );
 }
 
 function isUsage(value: unknown): value is TokenUsage {

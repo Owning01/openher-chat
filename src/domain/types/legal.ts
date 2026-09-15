@@ -266,6 +266,20 @@ export interface CitationGuardResult {
 /** Perspectiva del análisis adversarial; el ataque es siempre una simulación interna. */
 export type AdversarialPerspective = 'defense' | 'attack' | 'judge' | 'risk';
 
+/**
+ * Rol de un chat dentro del circuito adversarial de un expediente.
+ * - `redactor`: redacta el escrito jurídico del cliente (chat principal).
+ * - `atacante`: recibe el escrito y lo ataca como abogado de la contraparte.
+ * - `juez`: recibe redacción + ataque y revisa todo como árbitro definitivo.
+ * - `sintesis`: recibe escrito + ataque + veredicto y fusiona el documento
+ *   final pulido, iterando a pedido del usuario.
+ * Cada rol tiene reglas propias (`buildLegalRolePrompt`); ausente = sin rol.
+ */
+export type LegalCircuitRole = 'redactor' | 'atacante' | 'juez' | 'sintesis';
+
+/** Orden canónico del circuito: redacción → ataque → revisión definitiva → síntesis final. */
+export const LEGAL_CIRCUIT_ROLES: readonly LegalCircuitRole[] = ['redactor', 'atacante', 'juez', 'sintesis'];
+
 /** Ítem del análisis adversarial. */
 export interface AnalysisItem {
   id: string;

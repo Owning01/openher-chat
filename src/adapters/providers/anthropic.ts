@@ -223,11 +223,17 @@ interface AnthropicToolResultBlock {
   cache_control?: AnthropicCacheControl;
 }
 
-type AnthropicContentBlock = AnthropicTextBlock | AnthropicToolUseBlock | AnthropicToolResultBlock;
+type AnthropicContentBlock = AnthropicTextBlock | AnthropicImageBlock | AnthropicToolUseBlock | AnthropicToolResultBlock;
 
 interface AnthropicSystemBlock {
   type: 'text';
   text: string;
+  cache_control?: AnthropicCacheControl;
+}
+
+interface AnthropicImageBlock {
+  type: 'image';
+  source: { type: 'base64'; media_type: string; data: string };
   cache_control?: AnthropicCacheControl;
 }
 
@@ -300,8 +306,17 @@ function resolveSystem(request: ChatCompletionRequest): string | undefined {
 
 function toAnthropicMessage(message: NonSystemWireMessage, mark: boolean): AnthropicMessage {
   switch (message.role) {
-    case 'user':
-      return { role: 'user', content: [withCacheControl({ type: 'text', text: message.content }, mark)] };
+    case 'user': {
+      const content: AnthropicContentBlock[] = [];
+      if (message.content !== '') content.push({ type: 'text', text: message.content });
+      for (const image of message.images ?? []) {
+        const block = toImageBlock(image.dataUrl);
+        if (block !== null) content.push(block);
+      }
+      if (content.length === 0) content.push({ type: 'text', text: '[attached image]' });
+      markLastBlock(content, mark);
+      return { role: 'user', content };
+    }
     case 'assistant': {
       const content: AnthropicContentBlock[] = [];
       if (message.content !== '') content.push({ type: 'text', text: message.content });
@@ -324,6 +339,16 @@ function toAnthropicMessage(message: NonSystemWireMessage, mark: boolean): Anthr
 function withCacheControl(block: AnthropicContentBlock, mark: boolean): AnthropicContentBlock {
   if (mark) block.cache_control = EPHEMERAL;
   return block;
+}
+
+/** Bloque `image` desde un dataUrl; `null` si no es base64 parseable. */
+function toImageBlock(dataUrl: string): AnthropicImageBlock | null {
+  const match = /^data:([^;,]+)?;base64,(.*)$/s.exec(dataUrl);
+  if (match === null) return null;
+  const mediaType = match[1] !== undefined && match[1] !== '' ? match[1] : 'application/octet-stream';
+  const data = match[2] ?? '';
+  if (data === '') return null;
+  return { type: 'image', source: { type: 'base64', media_type: mediaType, data } };
 }
 
 function markLastBlock(blocks: AnthropicContentBlock[], mark: boolean): void {

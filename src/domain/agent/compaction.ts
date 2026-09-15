@@ -86,6 +86,8 @@ export function serializeForSummary(message: ChatMessage): string {
           return [`[Assistant tool call]: ${block.toolCall.name}(${block.toolCall.argumentsText})`];
         case 'tool-result':
           return [`[Tool result]: ${truncate(block.result.content)}`];
+        case 'image':
+          return [];
       }
     })
     .join('\n');

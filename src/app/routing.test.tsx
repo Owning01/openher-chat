@@ -102,7 +102,9 @@ describe('AppRoutes', () => {
     window.location.hash = '#/onboarding';
     renderWithServices(<AppRoutes />);
 
-    expect(await screen.findByTestId('onboarding-wizard')).toBeInTheDocument();
+    // La página entra por `React.lazy`: con la suite en paralelo la carga del
+    // chunk supera el timeout por defecto de `findBy` (1s) en máquinas lentas.
+    expect(await screen.findByTestId('onboarding-wizard', undefined, { timeout: 10_000 })).toBeInTheDocument();
   });
 
   it('sin hash monta la página de chat sin id', async () => {

@@ -273,7 +273,9 @@ describe('LegalPage (G1)', () => {
     fireEvent.click(await screen.findByTestId('adversarial-analyze'));
 
     // La síntesis del modelo queda visible: las 5 llamadas (4 personas + síntesis) corrieron.
-    expect(await screen.findByText(SYNTHESIS_RAW)).toBeInTheDocument();
+    // Timeout amplio: el pipeline con streaming supera el `findBy` por defecto
+    // (1s) cuando la suite corre en paralelo en máquinas lentas.
+    expect(await screen.findByText(SYNTHESIS_RAW, undefined, { timeout: 10_000 })).toBeInTheDocument();
     expect(adapter.requests).toHaveLength(5);
     // Mismo scaffold en todas (byte-idéntico) y brief del expediente en el wire.
     const systems = new Set(adapter.requests.map((request) => request.system ?? ''));

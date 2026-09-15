@@ -77,7 +77,7 @@ describe('createOpenAICompatibleAdapter', () => {
       toolCalling: true,
       systemPrompt: true,
       listModels: true,
-      images: false,
+      images: true,
     });
   });
 });
@@ -588,7 +588,7 @@ describe('createProviderAdapter', () => {
       toolCalling: true,
       systemPrompt: true,
       listModels: true,
-      images: false,
+      images: true,
     });
   });
 
@@ -646,6 +646,34 @@ describe('caché de prompt', () => {
     expect(payload.messages).toEqual([
       { role: 'system', content: 'You are helpful.' },
       { role: 'user', content: 'Hi' },
+    ]);
+  });
+
+  it('envía imágenes como partes image_url y texto sin imágenes como string', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(
+      adapter.streamChat(
+        chatRequest({
+          messages: [
+            { role: 'user', content: 'Mirá esta foto', images: [{ dataUrl: 'data:image/jpeg;base64,AAA', mime: 'image/jpeg', name: 'foto.jpg' }] },
+            { role: 'user', content: 'Solo texto' },
+          ],
+        }),
+      ),
+    );
+
+    const payload = body(transport);
+    expect(payload.messages).toEqual([
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Mirá esta foto' },
+          { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,AAA' } },
+        ],
+      },
+      { role: 'user', content: 'Solo texto' },
     ]);
   });
 

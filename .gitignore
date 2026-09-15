@@ -10,6 +10,7 @@ apk/
 
 # Agent scratch
 scratch/
+.debug/
 
 # Local overrides and env
 *.local
@@ -44,3 +45,7 @@ Thumbs.db
 
 # Firebase CLI
 .firebase/
+
+# Firebase Android config: local por máquina (contiene api key del proyecto).
+# Se genera con `google-services.json` descargado de la consola; nunca al repo.
+android/app/google-services.json

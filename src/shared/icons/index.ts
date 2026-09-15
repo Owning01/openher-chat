@@ -12,6 +12,7 @@ export {
   Download,
   Ellipsis,
   ExternalLink,
+  FileText,
   Globe,
   Info,
   KeyRound,

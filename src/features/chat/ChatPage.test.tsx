@@ -11,7 +11,7 @@ import { CaseStoreProvider } from '@/features/legal/state/CaseStoreContext';
 import { createCaseStore } from '@/features/legal/state/caseStore';
 import type { CaseStore } from '@/features/legal/state/caseStore';
 import { PROVIDERS_STORAGE_KEY } from '@/features/settings/state/providerStorage';
-import { setLocale } from '@/i18n';
+import { setLocale, t } from '@/i18n';
 import { MemoryLegalCaseRepository } from '@/test/fakes/MemoryRepos';
 
 import { ChatPage } from './ChatPage';
@@ -430,5 +430,226 @@ describe('ChatPage - modo legal con expediente (G1)', () => {
     expect(await screen.findByText('hola')).toBeInTheDocument();
     expect(screen.queryByText(/VERIFICAR/)).not.toBeInTheDocument();
     expect(await screen.findByTestId('legal-privacy-preview')).toBeInTheDocument();
+  });
+});
+
+describe('ChatPage - circuito adversarial', () => {
+  it('derivar al atacante crea el chat vinculado con rol y auto-envía la semilla', async () => {
+    const harness = createChatHarness();
+    localStorage.setItem(PROVIDERS_STORAGE_KEY, JSON.stringify([createProviderConfig()]));
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Caso circuito',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    await legalRepo.update(created.id, {
+      consent: { at: 1, text: 'consentimiento', scope: 'sensitive-data' },
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    await caseStore.getState().list();
+    const conversation = await harness.repo.create({ title: 'Borrador' });
+    await harness.repo.update(conversation.id, { legalCaseId: created.id, legalRole: 'redactor' });
+    await harness.repo.appendMessage(
+      userMessage('m1', 'redactá la demanda', { conversationId: conversation.id, createdAt: 1 }),
+    );
+    await harness.repo.appendMessage(
+      assistantMessage('m2', [{ type: 'text', text: '# Demanda\n\nContenido.' }], {
+        conversationId: conversation.id,
+        createdAt: 2,
+      }),
+    );
+    harness.provider.scripts.push(scriptFor('Ataque: excepción de prescripción.'));
+    window.location.hash = `#/chat/${conversation.id}`;
+    renderChatPageWithCases(harness.services, caseStore);
+
+    // Esperar el documento en pantalla: sin markdown del asistente no hay derivación.
+    expect(await screen.findByText('Contenido.')).toBeInTheDocument();
+
+    // El botón del circuito sólo aparece en modo legal.
+    fireEvent.click(await screen.findByTestId('circuit-open'));
+    fireEvent.click(await screen.findByRole('button', { name: t('chat.circuitDeriveAtacante') }));
+
+    // El chat derivado existe, vinculado al caso y con rol atacante.
+    let derivedId: string | null = null;
+    await waitFor(async () => {
+      const derived = (await harness.repo.list()).find(
+        (entry) => entry.id !== conversation.id && entry.legalRole === 'atacante',
+      );
+      expect(derived).not.toBeUndefined();
+      derivedId = derived?.id ?? null;
+    });
+    expect(derivedId).not.toBeNull();
+
+    // El chat derivado se auto-envía: llega la respuesta del atacante.
+    expect(await screen.findByText('Ataque: excepción de prescripción.')).toBeInTheDocument();
+
+    const derived = await harness.repo.get(derivedId ?? '');
+    expect(derived?.legalCaseId).toBe(created.id);
+    const derivedMessages = derivedId === null ? [] : await harness.repo.listMessages(derivedId);
+    expect(
+      derivedMessages.some(
+        (message) =>
+          message.role === 'user' &&
+          message.content.some((block) => block.type === 'text' && block.text.includes('# Demanda')),
+      ),
+    ).toBe(true);
+  });
+
+  it('bloquea elevar al definitivo si el atacante no tiene respuesta', async () => {
+    const harness = createChatHarness();
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Caso con ataque incompleto',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    await legalRepo.update(created.id, {
+      consent: { at: 1, text: 'consentimiento', scope: 'sensitive-data' },
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    await caseStore.getState().list();
+    const redactor = await harness.repo.create({ title: 'Borrador' });
+    await harness.repo.update(redactor.id, { legalCaseId: created.id, legalRole: 'redactor', messageCount: 2 });
+    await harness.repo.appendMessage(
+      assistantMessage('m1', [{ type: 'text', text: '# Demanda\n\nContenido.' }], {
+        conversationId: redactor.id,
+        createdAt: 1,
+      }),
+    );
+    // Atacante con semilla pero sin respuesta: ida sin vuelta.
+    const attacker = await harness.repo.create({ title: 'Atacante' });
+    await harness.repo.update(attacker.id, { legalCaseId: created.id, legalRole: 'atacante', messageCount: 1 });
+    await harness.repo.appendMessage(
+      userMessage('m2', 'semilla', { conversationId: attacker.id, createdAt: 2 }),
+    );
+    window.location.hash = `#/chat/${redactor.id}`;
+    renderChatPageWithCases(harness.services, caseStore);
+
+    expect(await screen.findByText('Contenido.')).toBeInTheDocument();
+    fireEvent.click(await screen.findByTestId('circuit-open'));
+    // Esperar etapas cargadas (marca "actual" en el redactor): sin esto el
+    // gate se leería antes del `load()` y el botón nacería deshabilitado.
+    await screen.findByText(
+      (_, element) => element?.textContent === `${t('chat.circuitRole_redactor')} · ${t('chat.circuitCurrent')}`,
+    );
+    expect(screen.getByRole('button', { name: t('chat.circuitDeriveJuez') })).toBeDisabled();
+  });
+
+  it('encadena juez y síntesis solo con las tres partes completas', async () => {
+    const harness = createChatHarness();
+    localStorage.setItem(PROVIDERS_STORAGE_KEY, JSON.stringify([createProviderConfig()]));
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Caso circuito completo',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    await legalRepo.update(created.id, {
+      consent: { at: 1, text: 'consentimiento', scope: 'sensitive-data' },
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    await caseStore.getState().list();
+    const redactor = await harness.repo.create({ title: 'Borrador' });
+    await harness.repo.update(redactor.id, { legalCaseId: created.id, legalRole: 'redactor', messageCount: 2 });
+    await harness.repo.appendMessage(
+      assistantMessage('m1', [{ type: 'text', text: '# Demanda\n\nContenido.' }], {
+        conversationId: redactor.id,
+        createdAt: 1,
+      }),
+    );
+    const attacker = await harness.repo.create({ title: 'Ataque' });
+    await harness.repo.update(attacker.id, { legalCaseId: created.id, legalRole: 'atacante', messageCount: 2 });
+    await harness.repo.appendMessage(
+      userMessage('m2', 'semilla', { conversationId: attacker.id, createdAt: 2 }),
+    );
+    await harness.repo.appendMessage(
+      assistantMessage('m3', [{ type: 'text', text: 'Ataque: excepción de prescripción.' }], {
+        conversationId: attacker.id,
+        createdAt: 3,
+      }),
+    );
+    harness.provider.scripts.push(scriptFor('Verdict: side A 60% / side B 40%.'));
+    // Cada turno de 2 mensajes dispara además el auto-título lateral (consume
+    // un script): se intercalan rellenos para que cada turno consuma el suyo.
+    harness.provider.scripts.push(scriptFor('Título del definitivo'));
+    harness.provider.scripts.push(scriptFor('Documento final pulido.'));
+    harness.provider.scripts.push(scriptFor('Título de la síntesis'));
+    window.location.hash = `#/chat/${redactor.id}`;
+    const { conversations } = renderChatPageWithCases(harness.services, caseStore);
+
+    expect(await screen.findByText('Contenido.')).toBeInTheDocument();
+    fireEvent.click(await screen.findByTestId('circuit-open'));
+    await screen.findByText(
+      (_, element) => element?.textContent === `${t('chat.circuitRole_redactor')} · ${t('chat.circuitCurrent')}`,
+    );
+    const deriveJuez = await screen.findByRole('button', { name: t('chat.circuitDeriveJuez') });
+    await waitFor(() => expect(deriveJuez).toBeEnabled());
+    fireEvent.click(deriveJuez);
+
+    // El veredicto se auto-envía en el chat del definitivo.
+    expect(await screen.findByText('Verdict: side A 60% / side B 40%.')).toBeInTheDocument();
+    await conversations.getState().load();
+
+    fireEvent.click(await screen.findByTestId('circuit-open'));
+    const deriveSintesis = await screen.findByRole('button', { name: t('chat.circuitDeriveSintesis') });
+    await waitFor(() => expect(deriveSintesis).toBeEnabled());
+    fireEvent.click(deriveSintesis);
+
+    // La síntesis fusiona las tres partes y responde el documento pulido.
+    expect(await screen.findByText('Documento final pulido.')).toBeInTheDocument();
+    const sintesis = (await harness.repo.list()).find((entry) => entry.legalRole === 'sintesis');
+    expect(sintesis?.legalCaseId).toBe(created.id);
+    const seed = sintesis === undefined ? [] : await harness.repo.listMessages(sintesis.id);
+    const seedText = seed
+      .flatMap((message) => message.content)
+      .filter((block) => block.type === 'text')
+      .map((block) => (block.type === 'text' ? block.text : ''))
+      .join('\n');
+    expect(seedText).toContain('# Demanda');
+    expect(seedText).toContain('excepción de prescripción');
+    expect(seedText).toContain('Verdict: side A 60% / side B 40%');
+  });
+
+  it('sin consentimiento del caso no hay auto-envío (H1)', async () => {
+    const harness = createChatHarness();
+    const legalRepo = new MemoryLegalCaseRepository();
+    const created = await legalRepo.create({
+      title: 'Caso sin consentir',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    const caseStore = createCaseStore({ cases: legalRepo });
+    const conversation = await harness.repo.create({ title: 'Borrador' });
+    await harness.repo.update(conversation.id, { legalCaseId: created.id, legalRole: 'redactor' });
+    await harness.repo.appendMessage(
+      assistantMessage('m1', [{ type: 'text', text: '# Demanda\n\nContenido.' }], {
+        conversationId: conversation.id,
+        createdAt: 1,
+      }),
+    );
+    harness.provider.scripts.push(scriptFor('Ataque: excepción de prescripción.'));
+    window.location.hash = `#/chat/${conversation.id}`;
+    renderChatPageWithCases(harness.services, caseStore);
+
+    fireEvent.click(await screen.findByTestId('circuit-open'));
+    fireEvent.click(await screen.findByRole('button', { name: t('chat.circuitDeriveAtacante') }));
+
+    // Se crea y se abre el chat derivado, pero sin auto-envío: el ataque no llega solo.
+    await waitFor(async () => {
+      const derived = (await harness.repo.list()).find(
+        (entry) => entry.id !== conversation.id && entry.legalRole === 'atacante',
+      );
+      expect(derived).not.toBeUndefined();
+    });
+    expect(screen.queryByText('Ataque: excepción de prescripción.')).not.toBeInTheDocument();
   });
 });

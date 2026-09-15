@@ -21,10 +21,16 @@ export function ConversationItem({ conversation, active, onSelect, onRename, onD
   return (
     <li
       className={cn(
-        'group flex items-center gap-1 rounded-lg pr-1 transition-colors',
+        'group relative flex items-center gap-1 rounded-lg pr-1 transition-colors',
         active ? 'bg-primary-soft' : 'hover:bg-surface-subtle',
       )}
     >
+      {active ? (
+        <span
+          aria-hidden="true"
+          className="absolute top-2 bottom-2 left-0 w-[3px] rounded-full bg-primary shadow-[0_0_8px_1px_var(--color-primary)]"
+        />
+      ) : null}
       <button
         type="button"
         aria-current={active ? 'true' : undefined}

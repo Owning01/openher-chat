@@ -1,4 +1,4 @@
-import type { AdversarialPerspective } from '../types/legal';
+import type { AdversarialPerspective, LegalCircuitRole } from '../types/legal';
 import type { Locale } from '../types/settings';
 
 export interface BuildLegalSystemPromptInput {
@@ -80,4 +80,43 @@ function normalizeToday(today: string | undefined): string | null {
   if (today === undefined) return null;
   const match = /^(\d{4}-\d{2}-\d{2})(?:$|[T\s])/.exec(today.trim());
   return match?.[1] ?? null;
+}
+
+// ---------------------------------------------------------------------------
+// Circuito adversarial: cuatro roles con cuatro reglas distintas.
+// ---------------------------------------------------------------------------
+
+/**
+ * Rol del chat actual dentro del circuito, en el orden en que se derivan.
+ * El rol viaja en `Conversation.legalRole`; el handoff entre chats lo arma la UI.
+ */
+export const LEGAL_ROLE_ORDER: readonly LegalCircuitRole[] = ['redactor', 'atacante', 'juez', 'sintesis'];
+
+/**
+ * Scaffold del rol para el system prompt, en inglés y byte-estable (sin fechas
+ * ni colecciones de entrada). Cada rol tiene sus propias reglas: el redactor
+ * redacta, el atacante sólo ataca como contraparte, el juez sólo arbitra con
+ * veredicto en porcentajes y la síntesis fusiona el documento final.
+ */
+export function buildLegalRolePrompt(role: LegalCircuitRole): string {
+  const lines: string[] = ['LEGAL CIRCUIT ROLE'];
+  if (role === 'redactor') {
+    lines.push('- You are the drafting counsel. Draft the client\u2019s legal brief in Argentine format as Markdown.');
+    lines.push('- Follow the document checklist and the citation discipline: verified citations only, [VERIFICAR] otherwise, [COMPLETAR] for missing data.');
+    lines.push('- Do not anticipate the opposing counsel and do not judge the case: your output feeds the attacker chat.');
+  } else if (role === 'atacante') {
+    lines.push('- You are opposing counsel in an internal red-team simulation. The brief you receive is the other side\u2019s draft: attack it with everything lawful.');
+    lines.push('- Cover every defense: prior exceptions, attack on evidence, and legal arguments, each grounded in a verified citation or marked [VERIFICAR].');
+    lines.push('- Begin the attack immediately with point 1: no preamble, no announcements, no meta-commentary. The full attack must be delivered in this response, or the circuit stalls.');
+    lines.push('- Never defend the drafter, never soften the attack, never step out of the attacker role.');
+  } else if (role === 'juez') {
+    lines.push('- You are the final arbiter. You receive the draft (side A) and the attack (side B); review everything like a debate judge.');
+    lines.push('- Weigh each thesis with its evidence and citations, estimate how a court would lean, and close with a mandatory verdict section: one line per thesis as `Verdict: side A x% / side B y%` plus its grounds. The verdict section is required: never close the answer without it.');
+    lines.push('- Never draft new pleadings and never take a side beforehand: decide only from what both chats presented.');
+  } else {
+    lines.push('- You are the synthesis counsel. You receive the draft (part 1), the attack (part 2) and the arbiter verdict (part 3).');
+    lines.push('- Fuse the three parts into the final polished legal document in Argentine format as Markdown, following the verdict percentages and keeping verified citations only ([VERIFICAR] otherwise, [COMPLETAR] for missing data).');
+    lines.push('- Iterate on request: each user message refines the same document; never reopen the attack or the verdict unless the user asks.');
+  }
+  return `${lines.join('\n')}\n`;
 }

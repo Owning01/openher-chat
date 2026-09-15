@@ -81,7 +81,7 @@ describe('createOpenAIResponsesAdapter', () => {
       toolCalling: true,
       systemPrompt: true,
       listModels: true,
-      images: false,
+      images: true,
     });
   });
 });
@@ -180,8 +180,39 @@ describe('streamChat payload', () => {
     });
   });
 
-  it('mapea assistant con texto y prioriza request.system; normaliza baseUrl con slash final', async () => {
+  it('envía imágenes como input_image junto al texto', async () => {
     const transport = fakeTransport(() => sseResult(textResponse('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(
+      adapter.streamChat(
+        responsesChatRequest({
+          messages: [
+            {
+              role: 'user',
+              content: 'Qué dice acá',
+              images: [{ dataUrl: 'data:image/jpeg;base64,AAA', mime: 'image/jpeg' }],
+            },
+          ],
+        }),
+      ),
+    );
+
+    const post = requirePost(transport);
+    expect(post.body).toMatchObject({
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: 'Qué dice acá' },
+            { type: 'input_image', image_url: 'data:image/jpeg;base64,AAA', detail: 'auto' },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('mapea assistant con texto y prioriza request.system; normaliza baseUrl con slash final', async () => {    const transport = fakeTransport(() => sseResult(textResponse('ok')));
     const adapter = makeAdapter(transport, undefined, responsesConfig({ baseUrl: 'https://api.example.com/v1/' }));
 
     await collect(

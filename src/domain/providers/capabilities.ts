@@ -1,14 +1,14 @@
 import type { ModelInfo, ProviderCapabilities, ProviderConfig, ProviderKind } from '../types/provider';
 
 /**
- * Capacidades por defecto del transporte. Anthropic soporta imágenes y no se
- * asume lo mismo de servidores OpenAI-compatible genéricos.
+ * Capacidades por defecto del transporte. Los cuatro adapters implementan
+ * payload multimodal, así que todos declaran `images: true` (fuente única de
+ * verdad: `adapter.capabilities()`); el opt-out por modelo vive en
+ * `ModelInfo.supportsImages` y lo aplica `resolveCapabilities`/`runAgent`.
  */
 export function defaultCapabilities(kind: ProviderKind): ProviderCapabilities {
-  if (kind === 'anthropic') {
-    return { streaming: true, toolCalling: true, systemPrompt: true, listModels: true, images: true };
-  }
-  return { streaming: true, toolCalling: true, systemPrompt: true, listModels: true, images: false };
+  void kind;
+  return { streaming: true, toolCalling: true, systemPrompt: true, listModels: true, images: true };
 }
 
 /** Ajusta las capacidades del proveedor con los flags del modelo (`supportsTools !== false`). */
@@ -20,6 +20,6 @@ export function resolveCapabilities(config: ProviderConfig, model?: ModelInfo): 
     toolCalling: capabilities.toolCalling && model.supportsTools !== false,
     systemPrompt: capabilities.systemPrompt,
     listModels: capabilities.listModels,
-    images: capabilities.images,
+    images: capabilities.images && model.supportsImages !== false,
   };
 }

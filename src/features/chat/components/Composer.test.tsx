@@ -161,3 +161,96 @@ describe('Composer — dictado por voz', () => {
     expect(screen.getByRole('button', { name: 'Detener dictado' })).toBeInTheDocument();
   });
 });
+
+describe('Composer — adjuntos', () => {
+  function fileInput(): HTMLInputElement {
+    const composer = screen.getByTestId('chat-composer');
+    const input = composer.querySelector('input[type="file"]');
+    if (input === null) throw new Error('Falta el input de archivos del composer.');
+    return input as HTMLInputElement;
+  }
+
+  it('adjunta un .txt y lo incluye delimitado al enviar', async () => {
+    const onSend = vi.fn();
+    render(<Composer status="idle" onSend={onSend} onStop={vi.fn()} />);
+
+    const file = new File(['contenido del acta'], 'acta.txt', { type: 'text/plain' });
+    await act(async () => {
+      fireEvent.change(fileInput(), { target: { files: [file] } });
+    });
+
+    expect(await screen.findByText('acta.txt')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Escribe un mensaje…' }), {
+      target: { value: 'revisá esto' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+
+    expect(onSend).toHaveBeenCalledTimes(1);
+    const sent = String(onSend.mock.calls[0]?.[0] ?? '');
+    expect(sent).toContain('revisá esto');
+    expect(sent).toContain('## Archivo adjunto: acta.txt');
+    expect(sent).toContain('contenido del acta');
+  });
+
+  it('rechaza PDF con aviso y no lo adjunta', async () => {
+    const onSend = vi.fn();
+    render(<Composer status="idle" onSend={onSend} onStop={vi.fn()} />);
+
+    const file = new File(['%PDF'], 'doc.pdf', { type: 'application/pdf' });
+    await act(async () => {
+      fireEvent.change(fileInput(), { target: { files: [file] } });
+    });
+
+    expect(await screen.findByRole('status')).toBeInTheDocument();
+    expect(screen.queryByText('doc.pdf')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Enviar' })).toBeDisabled();
+  });
+
+  it('permite quitar un adjunto antes de enviar', async () => {
+    render(<Composer status="idle" onSend={vi.fn()} onStop={vi.fn()} />);
+
+    const file = new File(['datos'], 'datos.csv', { type: 'text/csv' });
+    await act(async () => {
+      fireEvent.change(fileInput(), { target: { files: [file] } });
+    });
+
+    expect(await screen.findByText('datos.csv')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Quitar datos.csv' }));
+    expect(screen.queryByText('datos.csv')).not.toBeInTheDocument();
+  });
+
+  it('adjunta una imagen y la envía como segundo argumento (texto vacío permitido)', async () => {
+    const onSend = vi.fn();
+    render(<Composer status="idle" onSend={onSend} onStop={vi.fn()} />);
+
+    const bytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const file = new File([bytes], 'foto.png', { type: 'image/png' });
+    await act(async () => {
+      fireEvent.change(fileInput(), { target: { files: [file] } });
+    });
+
+    expect(await screen.findByText('foto.png')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+
+    expect(onSend).toHaveBeenCalledTimes(1);
+    const [sentText, sentImages] = onSend.mock.calls[0] as [string, { name: string; dataUrl: string }[]];
+    expect(sentText).toBe('');
+    expect(sentImages).toHaveLength(1);
+    expect(sentImages[0]?.name).toBe('foto.png');
+    expect(sentImages[0]?.dataUrl.startsWith('data:image/png;base64,')).toBe(true);
+  });
+
+  it('rechaza el .doc viejo con aviso accionable y no lo adjunta', async () => {
+    render(<Composer status="idle" onSend={vi.fn()} onStop={vi.fn()} />);
+
+    const file = new File(['binario'], 'informe.doc', { type: 'application/msword' });
+    await act(async () => {
+      fireEvent.change(fileInput(), { target: { files: [file] } });
+    });
+
+    const status = await screen.findByRole('status');
+    expect(status).toHaveTextContent('.docx');
+    expect(screen.queryByText('informe.doc')).not.toBeInTheDocument();
+  });
+});

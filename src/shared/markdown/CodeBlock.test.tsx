@@ -35,6 +35,31 @@ describe('CodeBlock', () => {
     expect(container.textContent).toContain('<img src=x');
   });
 
+  it('en streaming difiere el highlight de bloques grandes (pestaña no cuelga)', () => {
+    const big = `const x = 1;\n`.repeat(500);
+    expect(big.length).toBeGreaterThan(4000);
+    const { container } = render(<CodeBlock code={big} language="js" streaming />);
+
+    expect(screen.getByTestId('code-language')).toHaveTextContent('js');
+    expect(container.querySelector('.hljs-keyword')).toBeNull();
+    expect(container.textContent).toContain('const x = 1;');
+  });
+
+  it('en streaming colorea igual los bloques chicos', () => {
+    const { container } = render(<CodeBlock code="const x = 1;" language="js" streaming />);
+
+    expect(container.querySelector('.hljs-keyword')).not.toBeNull();
+  });
+
+  it('nunca colorea bloques gigantes aunque hayan completado', () => {
+    const huge = `const x = 1;\n`.repeat(9000);
+    expect(huge.length).toBeGreaterThan(100_000);
+    const { container } = render(<CodeBlock code={huge} language="js" />);
+
+    expect(container.querySelector('.hljs-keyword')).toBeNull();
+    expect(container.textContent).toContain('const x = 1;');
+  });
+
   it('copia el código y muestra «Copiado» durante 1.2 s', async () => {
     vi.useFakeTimers();
     const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValue(undefined);

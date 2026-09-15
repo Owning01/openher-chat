@@ -13,16 +13,22 @@ export interface CreateUserMessageInput {
   conversationId: string;
   text: string;
   now: number;
+  /** Imágenes ya comprimidas (dataUrl); se agregan como bloques `image`. */
+  images?: readonly { imageId: string; name: string; mime: string; dataUrl: string }[];
 }
 
 /** Mensaje de usuario ya completo (el texto se persiste tal cual, sin markdown implícito). */
 export function createUserMessage(input: CreateUserMessageInput): ChatMessage {
+  const content: MessageContent[] = [{ type: 'text', text: input.text }];
+  for (const image of input.images ?? []) {
+    content.push({ type: 'image', imageId: image.imageId, name: image.name, mime: image.mime, dataUrl: image.dataUrl });
+  }
   return {
     id: input.id,
     conversationId: input.conversationId,
     role: 'user',
     status: 'complete',
-    content: [{ type: 'text', text: input.text }],
+    content,
     createdAt: input.now,
     updatedAt: input.now,
   };

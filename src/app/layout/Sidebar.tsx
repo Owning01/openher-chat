@@ -1,6 +1,6 @@
 import { ConversationsPanel } from '@/features/conversations/ConversationsPanel';
 import { useT } from '@/i18n/useT';
-import { Sparkles } from '@/shared/icons';
+import { Logo } from '@/shared/brand/Logo';
 import { cn } from '@/shared/utils/cn';
 
 export interface SidebarProps {
@@ -20,7 +20,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
       )}
     >
       <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
-        <Sparkles aria-hidden="true" className="size-5 shrink-0 text-primary" />
+        <Logo size={20} className="shrink-0" />
         <span className="truncate text-sm font-semibold text-text">{t('app.title')}</span>
       </div>
       <ConversationsPanel onNavigate={onNavigate} />

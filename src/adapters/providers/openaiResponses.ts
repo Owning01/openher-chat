@@ -84,7 +84,7 @@ export function createOpenAIResponsesAdapter(config: ProviderConfig, deps: Adapt
     providerId: config.id,
     kind: 'openai-responses',
     capabilities(): ProviderCapabilities {
-      return { streaming: true, toolCalling: true, systemPrompt: true, listModels: true, images: false };
+      return { streaming: true, toolCalling: true, systemPrompt: true, listModels: true, images: true };
     },
     listModels,
     streamChat,
@@ -132,7 +132,18 @@ function removeHeader(headers: Record<string, string>, name: string): void {
 
 interface ResponseUserInput {
   role: 'user';
-  content: string;
+  content: string | (ResponseInputTextPart | ResponseInputImagePart)[];
+}
+
+interface ResponseInputTextPart {
+  type: 'input_text';
+  text: string;
+}
+
+interface ResponseInputImagePart {
+  type: 'input_image';
+  image_url: string;
+  detail: 'auto';
 }
 
 interface ResponseAssistantInput {
@@ -223,8 +234,17 @@ function toResponseInputItems(message: WireMessage): ResponseInputItem[] {
   switch (message.role) {
     case 'system':
       return [];
-    case 'user':
-      return [{ role: 'user', content: message.content }];
+    case 'user': {
+      if (message.images === undefined || message.images.length === 0) {
+        return [{ role: 'user', content: message.content }];
+      }
+      const parts: (ResponseInputTextPart | ResponseInputImagePart)[] = [];
+      if (message.content !== '') parts.push({ type: 'input_text', text: message.content });
+      for (const image of message.images) {
+        parts.push({ type: 'input_image', image_url: image.dataUrl, detail: 'auto' });
+      }
+      return [{ role: 'user', content: parts }];
+    }
     case 'assistant': {
       const items: ResponseInputItem[] = [];
       if (message.content !== '') items.push({ role: 'assistant', content: message.content });

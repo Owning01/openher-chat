@@ -89,7 +89,7 @@ describe('createOpenCodeAdapter identidad y capacidades', () => {
       toolCalling: true,
       systemPrompt: true,
       listModels: true,
-      images: false,
+      images: true,
     });
   });
 });

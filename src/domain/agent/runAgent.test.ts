@@ -23,9 +23,10 @@ class FakeProviderAdapter implements ProviderAdapter {
   completed = false;
   closed = false;
   toolCalling = true;
+  imagesCapable = false;
 
   capabilities(): ProviderCapabilities {
-    return { streaming: true, toolCalling: this.toolCalling, systemPrompt: true, listModels: true, images: false };
+    return { streaming: true, toolCalling: this.toolCalling, systemPrompt: true, listModels: true, images: this.imagesCapable };
   }
 
   async listModels(): Promise<ModelInfo[]> {
@@ -273,6 +274,64 @@ describe('runAgent - caso feliz', () => {
     expect(h.provider.requests[0]?.system).toBe(h.params.systemPrompt);
     expect(h.provider.requests[0]?.messages[0]).toEqual({ role: 'system', content: h.params.systemPrompt });
     expect(h.provider.requests[0]?.tools).toBeUndefined();
+  });
+});
+
+describe('runAgent - images', () => {
+  function imageMessage(): ChatMessage {
+    return {
+      id: 'u-img',
+      conversationId: 'conv-1',
+      role: 'user',
+      status: 'complete',
+      content: [
+        { type: 'text', text: '' },
+        { type: 'image', imageId: 'img_1', name: 'foto.png', mime: 'image/png', dataUrl: 'data:image/png;base64,AAA' },
+      ],
+      createdAt: 0,
+      updatedAt: 0,
+    };
+  }
+
+  async function wireLast(params: Partial<RunAgentParams>, imagesCapable: boolean): Promise<WireMessage | undefined> {
+    const h = createHarness({ params: { userMessage: imageMessage(), ...params } });
+    h.provider.imagesCapable = imagesCapable;
+    h.provider.scripts.push({ events: [{ type: 'text-delta', delta: 'ok' }, { type: 'stop', reason: 'end_turn' }] });
+    await collect(runAgent(h.params, h.deps));
+    const messages = h.provider.requests[0]?.messages ?? [];
+    return messages[messages.length - 1];
+  }
+
+  it('con visión pasa las imágenes al wire', async () => {
+    const last = await wireLast({}, true);
+    expect(last).toMatchObject({
+      role: 'user',
+      images: [{ dataUrl: 'data:image/png;base64,AAA', mime: 'image/png', name: 'foto.png' }],
+    });
+  });
+
+  it('modelo solo-texto degrada a descriptor sin romper el turno', async () => {
+    const last = await wireLast(
+      { model: { id: 'txt', label: 'Txt', source: 'manual', supportsImages: false } },
+      true,
+    );
+    expect(last).toMatchObject({ role: 'user' });
+    expect(last).not.toHaveProperty('images');
+    if (last?.role === 'user') {
+      expect(last.content).toContain('[imagen no soportada por este modelo: foto.png]');
+    } else {
+      throw new Error('expected user wire message');
+    }
+  });
+
+  it('transporte sin visión también degrada aunque el modelo no opine', async () => {
+    const last = await wireLast({}, false);
+    expect(last).not.toHaveProperty('images');
+    if (last?.role === 'user') {
+      expect(last.content).toContain('[imagen no soportada por este modelo: foto.png]');
+    } else {
+      throw new Error('expected user wire message');
+    }
   });
 });
 

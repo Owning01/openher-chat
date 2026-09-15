@@ -9,7 +9,7 @@ import { HttpError } from '@/domain/ports/HttpClient';
 import type { StreamResult } from '@/domain/ports/HttpClient';
 import type { TokenUsage } from '@/domain/types/chat';
 import type { ModelInfo, ProviderCapabilities, ProviderConfig } from '@/domain/types/provider';
-import type { StopReason, StreamEvent, WireMessage } from '@/domain/types/stream';
+import type { StopReason, StreamEvent, WireImage, WireMessage } from '@/domain/types/stream';
 import type { JsonSchema, ToolDefinition } from '@/domain/types/tools';
 import { ProviderError, mapHttpStatus } from './errors';
 import { parseSseStream, parseSseText } from './sse';
@@ -87,7 +87,7 @@ export function createOpenAICompatibleAdapter(config: ProviderConfig, deps: Adap
     providerId: config.id,
     kind: 'openai-compatible',
     capabilities(): ProviderCapabilities {
-      return { streaming: true, toolCalling: true, systemPrompt: true, listModels: true, images: false };
+      return { streaming: true, toolCalling: true, systemPrompt: true, listModels: true, images: true };
     },
     listModels,
     streamChat,
@@ -173,7 +173,12 @@ interface OpenAITextPart {
   cache_control?: { type: 'ephemeral' };
 }
 
-type OpenAIMessageContent = string | null | OpenAITextPart[];
+interface OpenAIImagePart {
+  type: 'image_url';
+  image_url: { url: string };
+}
+
+type OpenAIMessageContent = string | null | (OpenAITextPart | OpenAIImagePart)[];
 
 interface OpenAIMessagePayload {
   role: 'system' | 'user' | 'assistant' | 'tool';
@@ -264,12 +269,30 @@ function markText(text: string, mark: boolean): OpenAIMessageContent {
   return [{ type: 'text', text, cache_control: { type: 'ephemeral' } }];
 }
 
+/**
+ * Contenido de usuario multimodal: texto + imágenes como partes
+ * `image_url` (dataUrl). Sin imágenes degrada al string de siempre.
+ */
+function toUserContent(content: string, images: WireImage[] | undefined, mark: boolean): OpenAIMessageContent {
+  if (images === undefined || images.length === 0) return markText(content, mark);
+  const parts: (OpenAITextPart | OpenAIImagePart)[] = [];
+  if (content !== '') {
+    parts.push(
+      mark ? { type: 'text', text: content, cache_control: { type: 'ephemeral' } } : { type: 'text', text: content },
+    );
+  }
+  for (const image of images) {
+    parts.push({ type: 'image_url', image_url: { url: image.dataUrl } });
+  }
+  return parts;
+}
+
 function toOpenAIMessage(message: WireMessage, mark: boolean): OpenAIMessagePayload {
   switch (message.role) {
     case 'system':
       return { role: 'system', content: markText(message.content, mark) };
     case 'user':
-      return { role: 'user', content: markText(message.content, mark) };
+      return { role: 'user', content: toUserContent(message.content, message.images, mark) };
     case 'assistant': {
       const payload: OpenAIMessagePayload = {
         role: 'assistant',

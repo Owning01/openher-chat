@@ -1,9 +1,16 @@
 import type { MessageError, TokenUsage, ToolCall } from './chat';
 
+/** Imagen del usuario ya comprimida, lista para el payload multimodal. */
+export interface WireImage {
+  dataUrl: string;
+  mime: string;
+  name?: string;
+}
+
 /** Mensaje ya normalizado para el wire de cualquier adapter. */
 export type WireMessage =
   | { role: 'system'; content: string }
-  | { role: 'user'; content: string }
+  | { role: 'user'; content: string; images?: WireImage[] }
   | { role: 'assistant'; content: string; toolCalls?: { id: string; name: string; argumentsText: string }[] }
   | { role: 'tool'; content: string; toolCallId: string; toolName?: string };
 

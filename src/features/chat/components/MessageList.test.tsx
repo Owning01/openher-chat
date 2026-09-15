@@ -135,4 +135,56 @@ describe('MessageList', () => {
     expect(screen.getByRole('button', { name: 'Regenerar' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Eliminar mensaje' })).toBeDisabled();
   });
+
+  it('la respuesta del asistente se puede descargar como archivo', () => {
+    render(
+      <MessageList messages={[assistantMessage('a1', [{ type: 'text', text: 'escrito' }])]} runStatus="idle" {...handlers()} />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Descargar como archivo' })).toBeInTheDocument();
+  });
+
+  it('la respuesta del asistente se puede descargar como Word', () => {
+    render(
+      <MessageList messages={[assistantMessage('a1', [{ type: 'text', text: '# Título' }])]} runStatus="idle" {...handlers()} />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Descargar Word (.docx)' })).toBeInTheDocument();
+  });
+
+  it('el mensaje de usuario no ofrece descarga', () => {
+    render(<MessageList messages={[userMessage('u1', 'hola')]} runStatus="idle" {...handlers()} />);
+
+    expect(screen.queryByRole('button', { name: 'Descargar como archivo' })).not.toBeInTheDocument();
+  });
+
+  it('el mensaje de usuario muestra las imágenes adjuntas', () => {
+    const message = userMessage('u1', '');
+    message.content.push({
+      type: 'image',
+      imageId: 'img_1',
+      name: 'foto.png',
+      mime: 'image/png',
+      dataUrl: 'data:image/png;base64,AAA',
+    });
+    render(<MessageList messages={[message]} runStatus="idle" {...handlers()} />);
+
+    expect(screen.getByAltText('foto.png')).toBeInTheDocument();
+  });
+
+  it('en streaming difiere el highlight del bloque grande y lo colorea al completar', () => {
+    const bigCode = `\`\`\`js\n${'const x = 1;\n'.repeat(500)}\`\`\``;
+    const streaming = assistantMessage('a1', [{ type: 'text', text: bigCode }], { status: 'streaming' });
+    const { container, rerender } = render(
+      <MessageList messages={[streaming]} runStatus="running" {...handlers()} />,
+    );
+
+    expect(container.querySelector('.hljs-keyword')).toBeNull();
+    expect(screen.getByTestId('streaming-cursor')).toBeInTheDocument();
+
+    const complete = assistantMessage('a1', [{ type: 'text', text: bigCode }], { status: 'complete' });
+    rerender(<MessageList messages={[complete]} runStatus="idle" {...handlers()} />);
+
+    expect(container.querySelector('.hljs-keyword')).not.toBeNull();
+  });
 });

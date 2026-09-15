@@ -106,7 +106,7 @@ export function ModesMenu({
           data-testid="modes-menu"
           role="menu"
           aria-label={t('modes.menuLabel')}
-          className="absolute right-0 top-full z-20 mt-2 max-h-64 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border bg-surface p-1 shadow-lg"
+          className="anim-scale-in absolute right-0 top-full z-20 mt-2 max-h-64 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border bg-surface p-1 shadow-lg [--anim-origin:top_right]"
         >
           <button
             ref={firstItemRef}
@@ -116,7 +116,7 @@ export function ModesMenu({
             disabled={researchDisabled}
             data-testid="modes-menu-research"
             onClick={() => onToggleResearch(!researchMode)}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-surface-subtle disabled:opacity-50"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50"
           >
             <CheckMark checked={researchMode} />
             <span className="min-w-0 flex-1">
@@ -130,7 +130,7 @@ export function ModesMenu({
             aria-checked={legalOn}
             data-testid="modes-menu-legal"
             onClick={handleLegalClick}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left hover:bg-surface-subtle"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
             <CheckMark checked={legalOn} />
             <span className="min-w-0 flex-1">
@@ -150,7 +150,7 @@ export function ModesMenu({
                 setOpen(false);
                 onOpenCase();
               }}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-text hover:bg-surface-subtle"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-text transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
             >
               {t('modes.openCase')}
             </button>
@@ -164,7 +164,7 @@ export function ModesMenu({
                 setOpen(false);
                 onConfigureLegal();
               }}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-text hover:bg-surface-subtle"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-text transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
             >
               {t('modes.configureLegal')}
             </button>

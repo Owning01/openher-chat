@@ -110,7 +110,7 @@ export function Toast({ toast, onDismiss, className }: ToastProps) {
     <div
       role={toast.variant === 'danger' ? 'alert' : 'status'}
       className={cn(
-        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border p-3 shadow-lg',
+        'anim-toast-in pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-lg border p-3 shadow-lg',
         VARIANT_CONTAINERS[toast.variant],
         className,
       )}

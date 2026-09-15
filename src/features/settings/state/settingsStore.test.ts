@@ -647,3 +647,75 @@ describe('settingsStore', () => {
     expect(store.getState().legal().defaultJurisdiction).toBe('caba');
   });
 });
+
+describe('settingsStore - configuración compartida', () => {
+  it('exporta proveedores, secretos y ajustes mínimos', async () => {
+    const { store } = createHarness();
+    await store.getState().load();
+    await store.getState().addProvider({ type: 'manual', label: 'Go', kind: 'opencode', baseUrl: 'https://opencode.ai/zen/go/v1', requiresKey: true });
+    const created = store.getState().providers[0];
+    if (created === undefined) throw new Error('sin proveedor');
+    await store.getState().saveApiKey(created.keyRef ?? '', 'sk-hijo');
+    await store.getState().patch({
+      activeProviderId: created.id,
+      lastModelByProvider: { [created.id]: 'muse-spark-1.3-contributor' },
+      chat: { thinking: 'high' },
+    });
+
+    const payload = await store.getState().exportShareConfig();
+
+    expect(payload.providers).toHaveLength(1);
+    expect(payload.providers[0]?.secret).toBe('sk-hijo');
+    expect(payload.settings.activeProviderId).toBe(created.id);
+    expect(payload.settings.chat.thinking).toBe('high');
+    expect(payload.settings.lastModelByProvider[created.id]).toBe('muse-spark-1.3-contributor');
+  });
+
+  it('aplica un paquete en un store vacío: crea, guarda keys y activa modelo', async () => {
+    const origen = createHarness();
+    await origen.store.getState().load();
+    await origen.store.getState().addProvider({ type: 'manual', label: 'Go', kind: 'opencode', baseUrl: 'https://opencode.ai/zen/go/v1', requiresKey: true });
+    const created = origen.store.getState().providers[0];
+    if (created === undefined) throw new Error('sin proveedor');
+    await origen.store.getState().saveApiKey(created.keyRef ?? '', 'sk-hijo');
+    await origen.store.getState().patch({
+      activeProviderId: created.id,
+      lastModelByProvider: { [created.id]: 'muse-spark-1.3-contributor' },
+      chat: { thinking: 'high' },
+    });
+    const payload = await origen.store.getState().exportShareConfig();
+
+    const destino = createHarness();
+    await destino.store.getState().load();
+    const result = await destino.store.getState().applyShareConfig(payload);
+
+    expect(result).toEqual({ added: 1, reused: 0, keysSet: 1, keysMissing: 0 });
+    const state = destino.store.getState();
+    expect(state.providers).toHaveLength(1);
+    expect(state.providers[0]?.id).toBe(created.id);
+    expect(state.settings.activeProviderId).toBe(created.id);
+    expect(state.settings.chat.thinking).toBe('high');
+    expect(state.settings.lastModelByProvider[created.id]).toBe('muse-spark-1.3-contributor');
+    expect(await destino.keys.get(state.providers[0]?.keyRef ?? '')).toBe('sk-hijo');
+    expect(state.keyPresence[state.providers[0]?.keyRef ?? '']).toBe(true);
+  });
+
+  it('no pisa un proveedor equivalente del destino y cuenta faltantes de key', async () => {
+    const destino = createHarness();
+    await destino.store.getState().load();
+    await destino.store.getState().addProvider({ type: 'manual', label: 'Ya lo tengo', kind: 'opencode', baseUrl: 'https://opencode.ai/zen/go/v1', requiresKey: true });
+
+    const origen = createHarness();
+    await origen.store.getState().load();
+    await origen.store.getState().addProvider({ type: 'manual', label: 'Go del hijo', kind: 'opencode', baseUrl: 'https://opencode.ai/zen/go/v1', requiresKey: true });
+    const payload = await origen.store.getState().exportShareConfig();
+    expect(payload.providers[0]?.secret).toBeNull();
+
+    const result = await destino.store.getState().applyShareConfig(payload);
+
+    expect(result.added).toBe(0);
+    expect(result.reused).toBe(1);
+    expect(result.keysMissing).toBe(1);
+    expect(destino.store.getState().providers[0]?.label).toBe('Ya lo tengo');
+  });
+});

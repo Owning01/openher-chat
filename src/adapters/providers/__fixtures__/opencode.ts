@@ -53,7 +53,7 @@ function recordingAdapter(
     toolCalling: true,
     systemPrompt: true,
     listModels: true,
-    images: false,
+    images: true,
   });
 
   return {

@@ -8,6 +8,8 @@ import { getProviderTemplate } from '@/domain/providers/catalog';
 import type { ProviderTemplate } from '@/domain/providers/catalog';
 import { createDefaultSettings } from '@/domain/settings/defaults';
 import { migrateSettings } from '@/domain/settings/migrate';
+import type { SharePayload } from '@/domain/settings/share';
+import { buildSharePayload } from '@/domain/settings/share';
 import type { AgentBudget } from '@/domain/types/agent';
 import type { LegalSettings } from '@/domain/types/legal';
 import type { ModelInfo, ProviderConfig, ProviderKind, ProviderQuirks } from '@/domain/types/provider';
@@ -87,6 +89,18 @@ export interface SettingsStoreOptions {
   newId?: () => string;
 }
 
+/** Resultado de aplicar una configuración compartida (ver `share.ts`). */
+export interface ShareApplyResult {
+  /** Proveedores creados desde el paquete. */
+  added: number;
+  /** Proveedores que ya existían (kind+baseUrl) y no se tocaron. */
+  reused: number;
+  /** Secretos guardados en el vault local. */
+  keysSet: number;
+  /** Proveedores con key requerida pero sin secreto en el paquete. */
+  keysMissing: number;
+}
+
 export interface SettingsState {
   settings: AppSettings;
   providers: ProviderConfig[];
@@ -104,6 +118,14 @@ export interface SettingsState {
   saveApiKey(ref: string, secret: string): Promise<boolean>;
   refreshModels(providerId: string): Promise<ModelInfo[] | null>;
   importProviders(providers: readonly ImportedProvider[]): Promise<ImportedProviderResult>;
+  /** Arma el paquete compartible (proveedores + secretos + ajustes mínimos). */
+  exportShareConfig(): Promise<SharePayload>;
+  /**
+   * Aplica un paquete compartido: importa proveedores (sin pisar duplicados),
+   * guarda secretos, preserva headers y aplica modelo/thinking/idioma.
+   * Nunca toca conversaciones ni expedientes.
+   */
+  applyShareConfig(payload: SharePayload): Promise<ShareApplyResult>;
   setActiveProvider(id: string | null): Promise<void>;
   setModelForProvider(providerId: string, modelId: string | null): Promise<void>;
   dismissError(): void;
@@ -363,6 +385,136 @@ export function createSettingsStore(services: SettingsStoreServices, options: Se
       }
     },
 
+    async exportShareConfig() {
+      const { providers, settings } = get();
+      const secrets: Record<string, string> = {};
+      for (const provider of providers) {
+        if (provider.keyRef === null) continue;
+        try {
+          const secret = await keys.get(provider.keyRef);
+          if (secret !== null && secret !== '') secrets[provider.keyRef] = secret;
+        } catch {
+          // Sin secreto: viaja como `null` y la UI lo informa.
+        }
+      }
+      return buildSharePayload({
+        providers,
+        secrets,
+        settings: {
+          activeProviderId: settings.activeProviderId,
+          lastModelByProvider: settings.lastModelByProvider,
+          chat: settings.chat,
+          locale: settings.locale,
+        },
+        now: now(),
+      });
+    },
+
+    async applyShareConfig(payload) {
+      const previousProviders = get().providers;
+      const previousSettings = get().settings;
+      const previousKeyPresence = get().keyPresence;
+      const keysSet: string[] = [];
+      const timestamp = now();
+      let added = 0;
+      let reused = 0;
+      let keysMissing = 0;
+
+      try {
+        // 1. Proveedores con la misma política que el importador (skip por kind+baseUrl).
+        await get().importProviders(
+          payload.providers.map((entry) => ({
+            id: entry.config.id,
+            label: entry.config.label,
+            kind: entry.config.kind,
+            baseUrl: entry.config.baseUrl,
+            requiresKey: entry.config.requiresKey,
+            models: entry.config.models,
+            ...(entry.config.quirks === undefined ? {} : { quirks: entry.config.quirks }),
+          })),
+        );
+
+        // 2. Resolver id final (el import respeta el id salvo colisión con sufijo).
+        // Se priorizan los recién creados sobre preexistentes equivalentes.
+        const beforeIds = new Set(previousProviders.map((provider) => provider.id));
+        const current = get().providers;
+        const createdNow = current.filter((provider) => !beforeIds.has(provider.id));
+        const resolved = new Map<string, ProviderConfig>();
+        for (const entry of payload.providers) {
+          const match =
+            createdNow.find((provider) => sameEndpoint(provider, entry.config)) ??
+            current.find((provider) => sameEndpoint(provider, entry.config));
+          if (match === undefined) throw new Error(`No se pudo resolver el proveedor ${entry.config.id}`);
+          resolved.set(entry.config.id, match);
+        }
+
+        for (const entry of payload.providers) {
+          const target = resolved.get(entry.config.id);
+          if (target === undefined) continue;
+          const preexisted = previousProviders.some((provider) => provider.id === target.id);
+          if (preexisted) reused += 1;
+          else added += 1;
+          // 3. Headers custom que el importador no transporta.
+          if (
+            entry.config.extraHeaders !== undefined &&
+            JSON.stringify(target.extraHeaders ?? {}) !== JSON.stringify(entry.config.extraHeaders)
+          ) {
+            const ok = await get().updateProvider(target.id, { extraHeaders: entry.config.extraHeaders });
+            if (!ok) throw new Error(`No se pudieron aplicar los headers de ${target.id}`);
+          }
+          // 4. Secreto en el keyRef canónico del destino.
+          if (target.requiresKey && target.keyRef !== null) {
+            if (entry.secret === null) {
+              keysMissing += 1;
+            } else {
+              await keys.set(target.keyRef, entry.secret);
+              keysSet.push(target.keyRef);
+              set((state) => ({ keyPresence: { ...state.keyPresence, [target.keyRef as string]: true } }));
+            }
+          }
+        }
+
+        // 5. Ajustes mínimos remapeados a los ids finales.
+        const lastModelByProvider = { ...get().settings.lastModelByProvider };
+        for (const [oldId, modelId] of Object.entries(payload.settings.lastModelByProvider)) {
+          const target = resolved.get(oldId);
+          if (target !== undefined) lastModelByProvider[target.id] = modelId;
+        }
+        const activeFromPayload =
+          payload.settings.activeProviderId === null
+            ? null
+            : (resolved.get(payload.settings.activeProviderId)?.id ?? get().settings.activeProviderId);
+        const nextSettings = migrateSettings(
+          {
+            ...get().settings,
+            activeProviderId: activeFromPayload,
+            lastModelByProvider,
+            chat: { ...payload.settings.chat },
+            locale: payload.settings.locale,
+            updatedAt: timestamp,
+          },
+          timestamp,
+        );
+        set({ settings: nextSettings, error: null });
+        await settingsRepo.save(nextSettings);
+
+        return { added, reused, keysSet: keysSet.length, keysMissing };
+      } catch (error) {
+        await Promise.allSettled([
+          settingsRepo.save(previousSettings),
+          providerRepo.save(previousProviders),
+          ...keysSet.map((ref) => keys.remove(ref)),
+        ]);
+        set({
+          providers: previousProviders,
+          settings: previousSettings,
+          keyPresence: previousKeyPresence,
+          error: toErrorMessage(error),
+        });
+        return { added: 0, reused: 0, keysSet: 0, keysMissing: 0 };
+      }
+    },
+
     async setActiveProvider(id) {
       if (id !== null && !get().providers.some((provider) => provider.id === id)) return;
       await get().patch({ activeProviderId: id });
@@ -481,6 +633,19 @@ function uniqueProviderId(base: string, providers: readonly ProviderConfig[]): s
   return `${base}-${suffix}`;
 }
 
+/**
+ * Mismo endpoint para dedupe de importados: kind + baseUrl normalizada
+ * (trim, minúsculas, sin slashes finales). Regla propia mínima porque
+ * `normalizeBaseUrl` ya corrió sobre lo persistido.
+ */
+function sameEndpoint(left: Pick<ProviderConfig, 'kind' | 'baseUrl'>, right: Pick<ProviderConfig, 'kind' | 'baseUrl'>): boolean {
+  return left.kind === right.kind && normalizeEndpoint(left.baseUrl) === normalizeEndpoint(right.baseUrl);
+}
+
+function normalizeEndpoint(baseUrl: string): string {
+  return baseUrl.trim().toLowerCase().replace(/\/+$/, '');
+}
+
 function applyProviderPatch(existing: ProviderConfig, patch: ProviderPatch, timestamp: number): ProviderConfig | null {
   const merged: ProviderConfig = { ...existing, ...patch, updatedAt: timestamp };
   if (hasProviderDraftErrors(validateProviderDraft(merged))) return null;
@@ -591,5 +756,5 @@ function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-export { SettingsStoreProvider, useSettingsStore } from './SettingsStoreContext';
+export { SettingsStoreProvider, useSettingsStore, useSettingsStoreApi } from './SettingsStoreContext';
 export type { SettingsStoreProviderProps } from './SettingsStoreContext';

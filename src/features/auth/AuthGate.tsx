@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { useRoute } from '@/app/routing';
 import type { AuthPort, AuthUser } from '@/domain/ports/AuthPort';
 import { useT } from '@/i18n/useT';
-import { Sparkles } from '@/shared/icons';
+import { Logo } from '@/shared/brand/Logo';
 import { Spinner } from '@/shared/ui';
 
 import { LandingPage } from './LandingPage';
@@ -39,7 +39,7 @@ export function AuthGate({ auth, children }: AuthGateProps) {
     return (
       <main className="grid min-h-dvh place-items-center bg-background text-text">
         <div className="flex flex-col items-center gap-4">
-          <Sparkles aria-hidden="true" className="size-8 text-primary" />
+          <Logo size={32} />
           <Spinner label={t('auth.loading')} />
         </div>
       </main>

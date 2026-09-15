@@ -79,6 +79,20 @@ describe('conversationToMarkdown', () => {
     expect(md).toContain('web_search');
     expect(md).toContain('[Ex](https://ex.com/a)');
   });
+
+  it('anota las imágenes sin volcar el dataUrl', () => {
+    const withImage = userMessage();
+    withImage.content.push({
+      type: 'image',
+      imageId: 'img_1',
+      name: 'foto.png',
+      mime: 'image/png',
+      dataUrl: 'data:image/png;base64,AAA',
+    });
+    const md = conversationToMarkdown(conversation(), [withImage]);
+    expect(md).toContain('[imagen adjunta: foto.png]');
+    expect(md).not.toContain('base64,AAA');
+  });
 });
 
 describe('conversationToJson / parseConversationArchive', () => {
@@ -118,6 +132,50 @@ describe('conversationToJson / parseConversationArchive', () => {
     const general = conversationToArchive(conversation(), [userMessage()], 7);
     expect(general.conversation).not.toHaveProperty('legalCaseId');
     expect(parseConversationArchive(JSON.stringify(general))?.conversation.legalCaseId).toBeUndefined();
+  });
+
+  it('hace round-trip del rol del circuito y rechaza roles inválidos', () => {
+    const circuit = conversationToArchive(
+      conversation({ legalCaseId: 'case-1', legalRole: 'juez' }),
+      [userMessage()],
+      7,
+    );
+    expect(circuit.conversation.legalRole).toBe('juez');
+    expect(parseConversationArchive(JSON.stringify(circuit))?.conversation.legalRole).toBe('juez');
+
+    const sintesis = conversationToArchive(
+      conversation({ legalCaseId: 'case-1', legalRole: 'sintesis' }),
+      [userMessage()],
+      7,
+    );
+    expect(parseConversationArchive(JSON.stringify(sintesis))?.conversation.legalRole).toBe('sintesis');
+
+    const noRole = conversationToArchive(conversation({ legalCaseId: 'case-1' }), [userMessage()], 7);
+    expect(noRole.conversation).not.toHaveProperty('legalRole');
+
+    const hostile = JSON.parse(JSON.stringify(circuit)) as { conversation: { legalRole: unknown } };
+    hostile.conversation.legalRole = 'fiscal';
+    expect(parseConversationArchive(JSON.stringify(hostile))?.conversation.legalRole).toBeUndefined();
+  });
+
+  it('hace round-trip de bloques image y rechaza dataUrls inválidos', () => {
+    const withImage = userMessage();
+    withImage.content.push({
+      type: 'image',
+      imageId: 'img_1',
+      name: 'foto.png',
+      mime: 'image/png',
+      dataUrl: 'data:image/png;base64,AAA',
+    });
+    const json = conversationToJson(conversation(), [withImage], 11);
+    const parsed = parseConversationArchive(json);
+    expect(parsed?.messages[0]?.content.map((block) => block.type)).toEqual(['text', 'image']);
+
+    const tampered = JSON.parse(json) as { messages: { content: { dataUrl: unknown }[] }[] };
+    tampered.messages[0]!.content[1]!.dataUrl = 'no-es-data-url';
+    expect(parseConversationArchive(JSON.stringify(tampered))?.messages[0]?.content.map((b) => b.type)).toEqual([
+      'text',
+    ]);
   });
 });
 

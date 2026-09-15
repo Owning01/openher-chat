@@ -233,6 +233,38 @@ describe('streamChat payload', () => {
     expect(post.body).not.toHaveProperty('tool_choice');
   });
 
+  it('envía imágenes como bloques image base64 junto al texto', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(
+      adapter.streamChat(
+        chatRequest({
+          messages: [
+            {
+              role: 'user',
+              content: 'Mirá este documento',
+              images: [{ dataUrl: 'data:image/png;base64,AAA', mime: 'image/png' }],
+            },
+          ],
+        }),
+      ),
+    );
+
+    const post = requirePost(transport);
+    expect(post.body).toMatchObject({
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: 'Mirá este documento' },
+            { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'AAA' } },
+          ],
+        },
+      ],
+    });
+  });
+
   it('prioriza req.system, excluye todo system de messages y usa max_tokens 2048 por defecto', async () => {
     const transport = fakeTransport(() => sseResult(textStream('ok')));
     const adapter = makeAdapter(transport);

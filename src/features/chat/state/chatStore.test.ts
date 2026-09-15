@@ -250,6 +250,26 @@ describe('chatStore - send y streaming', () => {
     expect(messages[0]?.role).toBe('user');
     expect(h.store.getState().messages).toHaveLength(1);
   });
+
+  it('envía imágenes con texto vacío: persiste el bloque y lo pasa al wire', async () => {
+    const h = createChatHarness();
+    const conversationId = await startConversation(h);
+    h.provider.scripts.push(scriptFor('visto'));
+
+    await h.store.getState().send('', [
+      { id: 'img_1', name: 'foto.png', mime: 'image/png', dataUrl: 'data:image/png;base64,AAA' },
+    ]);
+
+    const persisted = await h.repo.listMessages(conversationId);
+    expect(persisted.map((message) => message.role)).toEqual(['user', 'assistant']);
+    expect(persisted[0]?.content.map((block) => block.type)).toEqual(['text', 'image']);
+    const request = h.provider.requests[0];
+    expect(request?.messages.at(-1)).toMatchObject({
+      role: 'user',
+      images: [{ dataUrl: 'data:image/png;base64,AAA', mime: 'image/png', name: 'foto.png' }],
+    });
+    expect(h.store.getState().runStatus).toBe('idle');
+  });
 });
 
 describe('chatStore - runAgent con tools', () => {
@@ -337,6 +357,62 @@ describe('chatStore - regenerar, editar y borrar', () => {
     expect(messages[0]?.content).toEqual([{ type: 'text', text: 'corregida' }]);
     expect(messages[1]?.content).toEqual([{ type: 'text', text: 'respuesta' }]);
     expect((await h.repo.get(conversationId))?.title).toBe('corregida');
+  });
+
+  it('editar conserva las imágenes del mensaje original', async () => {
+    const h = createChatHarness();
+    const conversationId = await startConversation(h);
+    h.provider.scripts.push(scriptFor('uno'));
+    await h.store.getState().send('miren', [
+      { id: 'img_1', name: 'foto.png', mime: 'image/png', dataUrl: 'data:image/png;base64,AAA' },
+    ]);
+
+    const firstUser = h.store.getState().messages[0];
+    expect(firstUser?.role).toBe('user');
+    if (firstUser === undefined) return;
+
+    h.provider.scripts.push(scriptFor('respuesta'));
+    await h.store.getState().editUserMessage(firstUser.id, 'miren esto mejor');
+
+    const persisted = await h.repo.listMessages(conversationId);
+    expect(persisted[0]?.content.map((block) => block.type)).toEqual(['text', 'image']);
+    expect(persisted[0]?.content[0]).toEqual({ type: 'text', text: 'miren esto mejor' });
+  });
+
+  it('mensaje solo-imagen titula con el nombre del archivo', async () => {
+    const h = createChatHarness();
+    h.provider.scripts.push(scriptFor('visto'));
+
+    await h.store.getState().send('', [
+      { id: 'img_1', name: 'acta-foto.png', mime: 'image/png', dataUrl: 'data:image/png;base64,AAA' },
+    ]);
+
+    const conversationId = h.store.getState().conversationId;
+    expect(conversationId).not.toBeNull();
+    if (conversationId === null) return;
+    expect((await h.repo.get(conversationId))?.title).toBe('acta-foto.png');
+  });
+
+  it('sin visión degrada a descriptor en el wire pero persiste la imagen', async () => {
+    const h = createChatHarness();
+    h.provider.imagesCapable = false;
+    const conversationId = await startConversation(h);
+    h.provider.scripts.push(scriptFor('visto'));
+
+    await h.store.getState().send('', [
+      { id: 'img_1', name: 'foto.png', mime: 'image/png', dataUrl: 'data:image/png;base64,AAA' },
+    ]);
+
+    const request = h.provider.requests[0];
+    expect(request?.messages.at(-1)).not.toHaveProperty('images');
+    const last = request?.messages.at(-1);
+    if (last?.role === 'user') {
+      expect(last.content).toContain('[imagen no soportada por este modelo: foto.png]');
+    } else {
+      throw new Error('expected user wire message');
+    }
+    const persisted = await h.repo.listMessages(conversationId);
+    expect(persisted[0]?.content.map((block) => block.type)).toEqual(['text', 'image']);
   });
 
   it('retryLast reintenta el último assistant fallido', async () => {

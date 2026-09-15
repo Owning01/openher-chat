@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import type { ChatMessage, MessageContent, ToolResult } from '@/domain/types/chat';
@@ -19,7 +19,8 @@ import { ToolCallCard } from './ToolCallCard';
 export type DisplayBlock =
   | { type: 'text'; text: string }
   | { type: 'reasoning'; text: string }
-  | { type: 'tool'; name: string; result: ToolResult | undefined };
+  | { type: 'tool'; name: string; result: ToolResult | undefined }
+  | { type: 'image'; imageId: string; name: string; dataUrl: string };
 
 /** Agrupa `tool-call` con su `tool-result` (en orden) sin perder bloques huérfanos. */
 export function buildDisplayBlocks(content: readonly MessageContent[]): DisplayBlock[] {
@@ -46,6 +47,9 @@ export function buildDisplayBlocks(content: readonly MessageContent[]): DisplayB
         if (!consumedCalls.has(block.toolCallId)) {
           display.push({ type: 'tool', name: block.toolName, result: block.result });
         }
+        break;
+      case 'image':
+        display.push({ type: 'image', imageId: block.imageId, name: block.name, dataUrl: block.dataUrl });
         break;
     }
   }
@@ -142,7 +146,7 @@ interface MessageItemProps {
   onDelete: (messageId: string) => void;
 }
 
-function MessageItem({
+function MessageItemInner({
   message,
   isLastAssistant,
   streaming,
@@ -160,12 +164,15 @@ function MessageItem({
   // Mapping del turno (sólo memoria, nunca persistido); el render y el copiar
   // comparten este texto. Sin mapping no se restaura (sólo guard de citas).
   const mapping = useOptionalRedactionMapping(message.conversationId);
+  // `rawText`/`markedText` memoizados: sin esto, cada render del padre
+  // (p. ej. cada token del streaming) re-une strings y re-corre el guard en
+  // TODOS los mensajes aunque su contenido no haya cambiado.
+  const rawText = useMemo(() => messageText(message), [message]);
+  const markedText = useMemo(() => guard.mark(rawText), [guard, rawText]);
   // El texto crudo se conserva para editar; el render y el copiar usan el
   // post-guard (con `[VERIFICAR]` visibles en contexto legal). En modo legal
   // además se restauran los valores con el mapping del turno (sin mapping
   // no se restaura). Fuera del provider el guard es identidad.
-  const rawText = messageText(message);
-  const markedText = guard.mark(rawText);
   const text = legalMode ? deanonymizeOrSelf(markedText, mapping) : markedText;
   const blocks = useMemo(
     () =>
@@ -176,15 +183,25 @@ function MessageItem({
       ),
     [message.content, guard, legalMode, mapping],
   );
+  const userImages = useMemo(() => blocks.filter((block) => block.type === 'image'), [blocks]);
   // Los contadores describen la salida del modelo; sólo se muestran en el
   // asistente y cuando hay citas (en modo general siempre son cero).
   const counts = useMemo(() => guard.counters(rawText), [guard, rawText]);
   const showCounts = !isUser && counts.verified + counts.unverified > 0;
 
-  const handleSave = (next: string): void => {
+  const handleSave = useCallback(
+    (next: string): void => {
+      setEditing(false);
+      onEdit(message.id, next);
+    },
+    [message.id, onEdit],
+  );
+  const handleEditStart = useCallback((): void => {
+    setEditing(true);
+  }, []);
+  const handleEditCancel = useCallback((): void => {
     setEditing(false);
-    onEdit(message.id, next);
-  };
+  }, []);
 
   return (
     <article
@@ -200,12 +217,27 @@ function MessageItem({
               initialText={rawText}
               disabled={busy}
               onSubmit={handleSave}
-              onCancel={() => setEditing(false)}
+              onCancel={handleEditCancel}
             />
           </div>
         ) : (
           <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-sm text-on-primary">
-            <p className="whitespace-pre-wrap break-words">{text}</p>
+            {userImages.length > 0 ? (
+              <ul aria-label={t('chat.attachments')} className="mb-2 flex flex-wrap gap-2">
+                {userImages.map((image) => (
+                  <li key={image.imageId}>
+                    <img
+                      src={image.dataUrl}
+                      alt={image.name}
+                      title={image.name}
+                      className="h-20 w-20 rounded-lg object-cover"
+                      loading="lazy"
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {text.trim() !== '' ? <p className="whitespace-pre-wrap break-words">{text}</p> : null}
           </div>
         )
       ) : (
@@ -226,7 +258,7 @@ function MessageItem({
           }
           disabled={busy}
           onRegenerate={onRegenerate}
-          onEditStart={() => setEditing(true)}
+          onEditStart={handleEditStart}
           onDelete={onDelete}
         />
       )}
@@ -244,19 +276,35 @@ function MessageItem({
   );
 }
 
+/**
+ * Item memoizado: durante el streaming sólo re-renderiza el mensaje que crece.
+ * El store preserva la identidad de los mensajes intactos (`map` devuelve la
+ * misma referencia) y `ChatPage` pasa callbacks estables, así que el resto de
+ * la lista salta el re-parse de Markdown + highlight. Sin esto, cada token
+ * re-parseaba TODA la conversación (O(historia × tokens) → pestaña colgada).
+ */
+const MessageItem = memo(MessageItemInner);
+
 function renderBlock(block: DisplayBlock, index: number, total: number, streaming: boolean): ReactNode {
+  const live = streaming && index === total - 1;
   switch (block.type) {
     case 'text':
       return (
         <div key={`text-${index}`} data-block="text">
-          <Markdown>{block.text}</Markdown>
-          {streaming && index === total - 1 ? <StreamingCursor /> : null}
+          <Markdown streaming={live}>{block.text}</Markdown>
+          {live ? <StreamingCursor /> : null}
         </div>
       );
     case 'reasoning':
       return <ReasoningBlock key={`reasoning-${index}`} text={block.text} />;
     case 'tool':
       return <ToolCallCard key={`tool-${index}`} name={block.name} result={block.result} />;
+    case 'image':
+      return (
+        <figure key={`image-${index}`} data-block="image">
+          <img src={block.dataUrl} alt={block.name} title={block.name} className="max-h-64 rounded-lg" loading="lazy" />
+        </figure>
+      );
   }
 }
 

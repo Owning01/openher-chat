@@ -8,6 +8,7 @@ import type { ChatMessage, MessageError } from '@/domain/types/chat';
 import type { ChatRunStatus, ChatStore, ToolApprovalRequest } from '../state/chatStore';
 import { createChatStore } from '../state/chatStore';
 import { useChatStoreContext } from '../state/ChatStoreContext';
+import type { ImageDraft } from '@/domain/documents/documents';
 
 export interface ChatController {
   messages: ChatMessage[];
@@ -15,7 +16,7 @@ export interface ChatController {
   liveSteps: AgentStep[];
   lastError: MessageError | null;
   pendingApproval: ToolApprovalRequest | null;
-  send: (text: string) => Promise<void>;
+  send: (text: string, images?: readonly ImageDraft[]) => Promise<void>;
   stop: () => void;
   approveTool: (always: boolean) => void;
   denyTool: () => void;

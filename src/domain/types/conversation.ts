@@ -1,3 +1,5 @@
+import type { LegalCircuitRole } from './legal';
+
 export interface Conversation {
   id: string;
   title: string;
@@ -13,6 +15,12 @@ export interface Conversation {
    * `create()` nunca lo puebla (contrato T14).
    */
   legalCaseId?: string | null;
+  /**
+   * Rol del chat en el circuito adversarial del expediente (`redactor` →
+   * `atacante` → `juez` → `sintesis`). Ausente/`null` = sin rol (chat legal común).
+   * `create()` nunca lo puebla (contrato T14, igual que `legalCaseId`).
+   */
+  legalRole?: LegalCircuitRole | null;
   messageCount: number;
   lastMessagePreview: string;
   status: 'active' | 'archived';

@@ -13,6 +13,25 @@ export function downloadTextFile(filename: string, text: string, mime = 'text/pl
   URL.revokeObjectURL(url);
 }
 
+/** Descarga bytes como archivo en el navegador (sin dependencias). */
+export function downloadBinaryFile(filename: string, data: Uint8Array, mime: string): void {
+  if (typeof document === 'undefined' || typeof URL.createObjectURL !== 'function') return;
+  // Copia a un ArrayBuffer propio: el `Uint8Array` puede ser una vista con
+  // offset y el Blob necesita el rango exacto.
+  const copy = new Uint8Array(data.length);
+  copy.set(data);
+  const blob = new Blob([copy.buffer as ArrayBuffer], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.rel = 'noopener';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 /** Nombre de archivo seguro a partir de un título (conserva espacios → guiones). */
 export function safeFilename(title: string, fallback = 'conversation'): string {
   const cleaned = title

@@ -16,7 +16,7 @@ export interface ButtonProps extends ComponentProps<'button'> {
 }
 
 const BASE_CLASSES =
-  'inline-flex select-none items-center justify-center font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50';
+  'inline-flex select-none items-center justify-center font-medium whitespace-nowrap transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50';
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-on-primary hover:opacity-90 active:opacity-80',
@@ -32,9 +32,9 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
 };
 
 const ICON_SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: 'size-8 rounded-md',
-  md: 'size-10 rounded-lg',
-  lg: 'size-12 rounded-xl',
+  sm: 'size-8 rounded-md hit-expand',
+  md: 'size-10 rounded-lg hit-expand',
+  lg: 'size-12 rounded-xl hit-expand',
 };
 
 export function Button({

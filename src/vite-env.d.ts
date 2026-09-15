@@ -13,3 +13,13 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+/** `mammoth@1` no trae tipos propios ni existen en DefinitelyTyped: declaración mínima local. */
+declare module 'mammoth' {
+  export interface MammothResult {
+    value: string;
+    messages: unknown[];
+  }
+  export function extractRawText(input: { arrayBuffer: ArrayBuffer }): Promise<MammothResult>;
+  export function convertToHtml(input: { arrayBuffer: ArrayBuffer }): Promise<MammothResult>;
+}

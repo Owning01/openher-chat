@@ -1,23 +1,28 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { chatHref, navigate, SETTINGS_HREF, useRoute } from '@/app/routing';
 import { useServices } from '@/app/services';
 import type { ChatMessage } from '@/domain/types/chat';
+import { buildAttackerSeed, buildFinalSeed, buildJudgeSeed } from '@/domain/legal/circuit';
+import type { LegalCase, LegalCircuitRole, LegalIndex } from '@/domain/types/legal';
+import { LEGAL_CIRCUIT_ROLES } from '@/domain/types/legal';
 import { useConversationsStore, useConversationsStoreApi } from '@/features/conversations/state/conversationsStore';
 import { CaseStoreProvider, createCaseStore, useCaseStore, useCaseStoreApi } from '@/features/legal/state/caseStore';
 import type { CaseStore } from '@/features/legal/state/caseStore';
 import { CitationGuardProvider } from '@/features/legal/state/CitationGuardContext';
-import type { LegalCase, LegalIndex } from '@/domain/types/legal';
 import { ResearchPanel } from '@/features/research/ResearchPanel';
 import { researchWarningText } from '@/features/research/messages';
 import { researchWarning } from '@/features/research/selectors';
 import { useResearchSettings } from '@/features/research/useResearchSettings';
 import { useT } from '@/i18n/useT';
 import type { Translate } from '@/i18n/useT';
-import { ChevronDown, PanelRightOpen } from '@/shared/icons';
+import { ChevronDown, PanelRightOpen, Scale } from '@/shared/icons';
 import { Badge, IconButton } from '@/shared/ui';
 
+import { CircuitDialog, ROLE_LABEL_KEYS } from './components/CircuitDialog';
+import type { CircuitStage } from './components/CircuitDialog';
 import { Composer } from './components/Composer';
+import { messageText } from './components/MessageList';
 import type { LegalRedactionCounts } from './components/Composer';
 import { EmptyChat } from './components/EmptyChat';
 import { ErrorBanner } from './components/ErrorBanner';
@@ -104,6 +109,8 @@ function ChatPageContent() {
   const setResearchMode = useChatStore((state) => state.setResearchMode);
   const legalCaseId = useChatStore((state) => state.legalCaseId);
   const setLegalCase = useChatStore((state) => state.setLegalCase);
+  const legalRole = useChatStore((state) => state.legalRole);
+  const setLegalRole = useChatStore((state) => state.setLegalRole);
   const setModel = useChatStore((state) => state.setModel);
   const redactedCounts = useRedactedCounts();
   const controller = useChatController();
@@ -122,6 +129,7 @@ function ChatPageContent() {
 
   const items = useConversationsStore((state) => state.items);
   const loadConversations = useConversationsStore((state) => state.load);
+  const createConversation = useConversationsStore((state) => state.create);
 
   useEffect(() => {
     void loadConversations();
@@ -146,6 +154,35 @@ function ChatPageContent() {
     previousRunStatus.current = controller.runStatus;
     if (finished) void loadConversations();
   }, [controller.runStatus, loadConversations]);
+
+  // Handlers estables para `MessageList`: con `MessageItem` memoizado, una
+  // referencia nueva por render invalidaría el memo y re-parsearía todo.
+  // Ojo: `controller` es un objeto nuevo por render; las deps son las acciones
+  // del store, que sí son estables.
+  const handleRegenerate = useCallback(
+    (messageId: string): void => {
+      void controller.regenerate(messageId);
+    },
+    [controller.regenerate],
+  );
+  const handleContinue = useCallback(
+    (messageId: string): void => {
+      void controller.continueGeneration(messageId);
+    },
+    [controller.continueGeneration],
+  );
+  const handleEdit = useCallback(
+    (messageId: string, text: string): void => {
+      void controller.editUserMessage(messageId, text);
+    },
+    [controller.editUserMessage],
+  );
+  const handleDelete = useCallback(
+    (messageId: string): void => {
+      void controller.deleteMessage(messageId).then(() => loadConversations());
+    },
+    [controller.deleteMessage, loadConversations],
+  );
 
   const conversation = useMemo(
     () => items.find((entry) => entry.id === conversationId),
@@ -207,6 +244,79 @@ function ChatPageContent() {
   const legalConfigured =
     appSettings?.legal.setupCompleted === true || appSettings?.legal.enabled === true;
 
+  // Circuito adversarial del expediente (redactor → atacante → juez → síntesis):
+  // etapas existentes y derivación con semilla. El auto-envío lo consume `load()` del
+  // store tras hidratar (sin carreras con su `fetch`).
+  const [circuitOpen, setCircuitOpen] = useState(false);
+  const setPendingSeed = useChatStore((state) => state.setPendingSeed);
+
+  const circuitStages: CircuitStage[] = useMemo(() => {
+    if (legalCaseId === null) return [];
+    return LEGAL_CIRCUIT_ROLES.map((role) => {
+      const match = items.find((entry) => entry.legalCaseId === legalCaseId && entry.legalRole === role);
+      if (match === undefined) return { role, conversationId: null, title: null };
+      return { role, conversationId: match.id, title: match.title };
+    });
+  }, [items, legalCaseId]);
+
+  const currentDoc = useMemo(() => lastAssistantMarkdown(controller.messages), [controller.messages]);
+  const canDeriveAtacante =
+    legalCaseId !== null && (legalRole === null || legalRole === 'redactor') && currentDoc.trim() !== '';
+  /** Una etapa está lista para derivar cuando tiene ida y vuelta (semilla + respuesta). */
+  const stageMessageCount = (stageRole: LegalCircuitRole): number => {
+    if (legalCaseId === null) return 0;
+    const match = items.find((entry) => entry.legalCaseId === legalCaseId && entry.legalRole === stageRole);
+    return match?.messageCount ?? 0;
+  };
+  const attackerStageId = circuitStages.find((stage) => stage.role === 'atacante')?.conversationId ?? null;
+  const canDeriveJuez = legalCaseId !== null && attackerStageId !== null && stageMessageCount('atacante') >= 2;
+  const judgeStageId = circuitStages.find((stage) => stage.role === 'juez')?.conversationId ?? null;
+  const canDeriveSintesis = legalCaseId !== null && judgeStageId !== null && stageMessageCount('juez') >= 2;
+
+  const deriveCircuitRole = (role: LegalCircuitRole): void => {
+    if (legalCaseId === null || busy) return;
+    const caseId = legalCaseId;
+    const caseTitle = linkedCase?.title?.trim() !== '' ? (linkedCase?.title.trim() ?? '') : '';
+    void (async () => {
+      let seed: string | null = null;
+      if (role === 'atacante') {
+        const doc = lastAssistantMarkdown(controller.messages);
+        if (doc.trim() === '') return;
+        if (legalRole === null) await setLegalRole('redactor');
+        seed = buildAttackerSeed(doc);
+      } else if (role === 'juez') {
+        const [doc, attack] = await Promise.all([stageDoc('redactor'), stageDoc('atacante')]);
+        if (doc.trim() === '' || attack.trim() === '') return;
+        seed = buildJudgeSeed(doc, attack);
+      } else if (role === 'sintesis') {
+        const [doc, attack, verdict] = await Promise.all([
+          stageDoc('redactor'),
+          stageDoc('atacante'),
+          stageDoc('juez'),
+        ]);
+        if (doc.trim() === '' || attack.trim() === '' || verdict.trim() === '') return;
+        seed = buildFinalSeed(doc, attack, verdict);
+      }
+      const title = caseTitle === '' ? t('chat.circuit') : `${t(ROLE_LABEL_KEYS[role])} — ${caseTitle}`;
+      const created = await createConversation({ title, legalCaseId: caseId, legalRole: role });
+      if (created === null) return;
+      setCircuitOpen(false);
+      if (seed !== null) setPendingSeed({ conversationId: created.id, seed });
+      navigate(chatHref(created.id));
+    })();
+  };
+
+  async function stageDoc(stageRole: LegalCircuitRole): Promise<string> {
+    const stage = circuitStages.find((entry) => entry.role === stageRole);
+    if (stage?.conversationId == null) return '';
+    try {
+      const messages = await services.conversations.listMessages(stage.conversationId);
+      return lastAssistantMarkdown(messages);
+    } catch {
+      return '';
+    }
+  }
+
   useEffect(() => {
     setPendingTarget(null);
   }, [conversationId]);
@@ -257,6 +367,16 @@ function ChatPageContent() {
             className="shrink-0"
           />
         ) : null}
+        {legalCaseId !== null ? (
+          <IconButton
+            data-testid="circuit-open"
+            label={t('chat.circuit')}
+            size="sm"
+            icon={<Scale aria-hidden="true" className="size-4" />}
+            onClick={() => setCircuitOpen(true)}
+            className="shrink-0"
+          />
+        ) : null}
         {modelTarget !== null ? (
           <ModelPicker
             providers={providers}
@@ -298,12 +418,10 @@ function ChatPageContent() {
                   messages={controller.messages}
                   runStatus={controller.runStatus}
                   legalMode={legalActive}
-                  onRegenerate={(messageId) => void controller.regenerate(messageId)}
-                  onContinue={(messageId) => void controller.continueGeneration(messageId)}
-                  onEdit={(messageId, text) => void controller.editUserMessage(messageId, text)}
-                  onDelete={(messageId) => {
-                    void controller.deleteMessage(messageId).then(() => loadConversations());
-                  }}
+                  onRegenerate={handleRegenerate}
+                  onContinue={handleContinue}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
                 />
               )}
               {busy ? <StreamingIndicator /> : null}
@@ -316,7 +434,7 @@ function ChatPageContent() {
               aria-label={t('chat.scrollToBottom')}
               title={t('chat.scrollToBottom')}
               onClick={() => scrollToBottom('smooth')}
-              className="absolute bottom-4 left-1/2 grid size-9 -translate-x-1/2 place-items-center rounded-full border border-border bg-surface text-text shadow-sm transition-colors hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+              className="hit-expand absolute bottom-4 left-1/2 grid size-9 -translate-x-1/2 place-items-center rounded-full border border-border bg-surface text-text shadow-sm transition-all duration-150 hover:bg-surface-subtle active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
             >
               <ChevronDown aria-hidden="true" className="size-4" />
             </button>
@@ -342,7 +460,7 @@ function ChatPageContent() {
           ) : null}
           <Composer
             status={controller.runStatus}
-            onSend={(text) => void controller.send(text)}
+            onSend={(text, images) => void controller.send(text, images)}
             onStop={controller.stop}
             research={{
               enabled: researchMode,
@@ -375,6 +493,22 @@ function ChatPageContent() {
           onDeny={controller.denyTool}
         />
       ) : null}
+      <CircuitDialog
+        open={circuitOpen}
+        caseTitle={linkedCase?.title ?? null}
+        currentConversationId={conversationId}
+        stages={circuitStages}
+        canDeriveAtacante={canDeriveAtacante}
+        canDeriveJuez={canDeriveJuez}
+        canDeriveSintesis={canDeriveSintesis}
+        busy={busy}
+        onDerive={(role) => deriveCircuitRole(role)}
+        onOpen={(id) => {
+          setCircuitOpen(false);
+          navigate(chatHref(id));
+        }}
+        onClose={() => setCircuitOpen(false)}
+      />
       <CaseLinkDialog
         open={caseDialogOpen}
         linkedCaseId={legalCaseId}
@@ -401,6 +535,17 @@ function ChatPageContent() {
 function resolveTitle(title: string | undefined, conversationId: string | null, t: Translate): string {
   if (title !== undefined && title.trim() !== '') return title;
   return conversationId === null ? t('conversations.new') : t('conversations.untitled');
+}
+
+/** Último texto del asistente (markdown) para sembrar el chat derivado; vacío si no hay. */
+function lastAssistantMarkdown(messages: ChatMessage[]): string {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (message === undefined || message.role !== 'assistant') continue;
+    const text = messageText(message).trim();
+    if (text !== '') return text;
+  }
+  return '';
 }
 
 /**

@@ -21,7 +21,7 @@ export function Skeleton({ rounded = 'md', className, ...rest }: SkeletonProps) 
     <div
       {...rest}
       aria-hidden="true"
-      className={cn('h-4 w-full animate-pulse bg-surface-subtle', ROUNDED_CLASSES[rounded], className)}
+      className={cn('anim-shimmer h-4 w-full bg-surface-subtle', ROUNDED_CLASSES[rounded], className)}
     />
   );
 }

@@ -332,6 +332,19 @@ describe('conversationsStore', () => {
     expect(store.getState().items[0]?.legalCaseId).toBe('case-1');
   });
 
+  it('crea con rol del circuito sin poblarlo en create (link vía update)', async () => {
+    const { repo, store } = createHarness();
+
+    const created = await store.getState().create({ title: 'Ataque', legalCaseId: 'case-2', legalRole: 'atacante' });
+
+    expect(created).not.toBeNull();
+    if (created === null) return;
+    expect(created.legalCaseId).toBe('case-2');
+    expect(created.legalRole).toBe('atacante');
+    expect((await repo.get(created.id))?.legalRole).toBe('atacante');
+    expect(store.getState().items[0]?.legalRole).toBe('atacante');
+  });
+
   it('el vínculo sobrevive a exportar/importar (round-trip de legalCaseId)', async () => {
     const { repo, store } = createHarness();
     const created = await store.getState().create({ title: 'Legal', legalCaseId: 'case-7' });

@@ -20,24 +20,10 @@ function model(overrides: Partial<ModelInfo> = {}): ModelInfo {
 }
 
 describe('defaultCapabilities', () => {
-  it('openai-compatible: todo menos imágenes por defecto', () => {
-    expect(defaultCapabilities('openai-compatible')).toEqual({
-      streaming: true,
-      toolCalling: true,
-      systemPrompt: true,
-      listModels: true,
-      images: false,
-    });
-  });
-
-  it('anthropic: incluye imágenes', () => {
-    expect(defaultCapabilities('anthropic')).toEqual({
-      streaming: true,
-      toolCalling: true,
-      systemPrompt: true,
-      listModels: true,
-      images: true,
-    });
+  it('todos los transportes declaran imágenes (el opt-out es por modelo)', () => {
+    for (const kind of ['openai-compatible', 'anthropic', 'openai-responses', 'opencode'] as const) {
+      expect(defaultCapabilities(kind).images).toBe(true);
+    }
   });
 });
 
@@ -55,6 +41,12 @@ describe('resolveCapabilities', () => {
   it('respeta supportsStreaming !== false', () => {
     expect(resolveCapabilities(config, model({ supportsStreaming: false })).streaming).toBe(false);
     expect(resolveCapabilities(config, model({ supportsStreaming: true })).streaming).toBe(true);
+  });
+
+  it('respeta supportsImages !== false (opt-out por modelo solo-texto)', () => {
+    expect(resolveCapabilities(config, model({ supportsImages: false })).images).toBe(false);
+    expect(resolveCapabilities(config, model({ supportsImages: true })).images).toBe(true);
+    expect(resolveCapabilities(config, model()).images).toBe(true);
   });
 
   it('no muta la config ni el modelo', () => {

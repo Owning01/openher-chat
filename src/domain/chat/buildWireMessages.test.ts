@@ -191,4 +191,60 @@ describe('buildWireMessages', () => {
     });
     expect(wires.map((wire) => wire.role)).toEqual(['user', 'assistant', 'user']);
   });
+
+  it('propaga imágenes del usuario al wire y permite mensaje solo con imágenes', () => {    const withImage: ChatMessage = {
+      id: 'u1',
+      conversationId: 'c1',
+      role: 'user',
+      status: 'complete',
+      content: [
+        { type: 'text', text: 'mirá' },
+        { type: 'image', imageId: 'img_1', name: 'foto.jpg', mime: 'image/jpeg', dataUrl: 'data:image/jpeg;base64,AAA' },
+      ],
+      createdAt: 0,
+      updatedAt: 0,
+    };
+    const wires = buildWireMessages({ history: [], userMessage: withImage });
+    expect(wires).toEqual([
+      {
+        role: 'user',
+        content: 'mirá',
+        images: [{ dataUrl: 'data:image/jpeg;base64,AAA', mime: 'image/jpeg', name: 'foto.jpg' }],
+      },
+    ]);
+
+    const imagesOnly: ChatMessage = {
+      ...withImage,
+      id: 'u2',
+      content: [
+        { type: 'text', text: '   ' },
+        { type: 'image', imageId: 'img_1', name: 'foto.jpg', mime: 'image/jpeg', dataUrl: 'data:image/jpeg;base64,AAA' },
+      ],
+    };
+    const wiresOnly = buildWireMessages({ history: [], userMessage: imagesOnly });
+    expect(wiresOnly).toHaveLength(1);
+    expect(wiresOnly[0]).toMatchObject({ role: 'user', content: '   ' });
+  });
+
+  it('con imagesSupported:false degrada a descriptor de texto sin campo images', () => {
+    const withImage: ChatMessage = {
+      id: 'u1',
+      conversationId: 'c1',
+      role: 'user',
+      status: 'complete',
+      content: [
+        { type: 'text', text: '' },
+        { type: 'image', imageId: 'img_1', name: 'foto.png', mime: 'image/png', dataUrl: 'data:image/png;base64,AAA' },
+      ],
+      createdAt: 0,
+      updatedAt: 0,
+    };
+    const wires = buildWireMessages({ history: [], userMessage: withImage }, { imagesSupported: false });
+    expect(wires).toHaveLength(1);
+    expect(wires[0]).not.toHaveProperty('images');
+    expect(wires[0]).toMatchObject({
+      role: 'user',
+      content: '[imagen no soportada por este modelo: foto.png]',
+    });
+  });
 });

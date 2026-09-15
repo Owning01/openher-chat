@@ -6,7 +6,7 @@
   "rules": [
     "Stack fijo: Vite + React 19 + TS estricto + Tailwind 4 + pnpm; Capacitor Android; desktop SPA/PWA",
     "File scoping estricto por WORKER_DISPATCH",
-    "Solo T01 agrega dependencias; lista aprobada en el plan",
+    "Solo T01 y T17 agregan dependencias; lista aprobada en el plan (T17: mammoth + pdfjs-dist, imágenes sin deps vía canvas)",
     "tsc --noEmit limpio y vitest verde antes de cada WORKER_COMPLETE",
     "Cero console.log / dead code / TODOs sueltos",
     "Secretos solo en KeyVault local; sin telemetria",
@@ -778,7 +778,158 @@
         "tsc -b + pnpm test + build verdes"
       ],
       "evaluatorVerdict": "ACCEPTED"
+    },
+    {
+      "id": "T17",
+      "milestone": "M7",
+      "title": "Ingesta Word/PDF/imágenes (deps aprobadas) + contratos multimodales",
+      "status": "COMPLETED",
+      "wave": 11,
+      "assignee": null,
+      "dependencies": [],
+      "estimateHours": 6,
+      "parallelWith": [],
+      "allowedFiles": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "src/vite-env.d.ts",
+        "src/domain/types/chat.ts",
+        "src/domain/types/stream.ts",
+        "src/domain/types/provider.ts",
+        "src/domain/chat/buildWireMessages.ts",
+        "src/domain/chat/buildWireMessages.test.ts",
+        "src/domain/chat/attachments.ts",
+        "src/domain/chat/attachments.test.ts",
+        "src/domain/chat/estimateTokens.ts",
+        "src/domain/chat/messageFactory.ts",
+        "src/domain/chat/serializeConversation.ts",
+        "src/domain/chat/serializeConversation.test.ts",
+        "src/domain/agent/compaction.ts",
+        "src/domain/agent/runAgent.ts",
+        "src/domain/agent/runAgent.test.ts",
+        "src/domain/providers/capabilities.ts",
+        "src/domain/providers/capabilities.test.ts",
+        "src/domain/types/provider.ts",
+        "src/domain/documents/**",
+        "src/adapters/documents/**",
+        "src/adapters/providers/openaiCompatible.ts",
+        "src/adapters/providers/openaiCompatible.test.ts",
+        "src/adapters/providers/anthropic.ts",
+        "src/adapters/providers/anthropic.test.ts",
+        "src/adapters/providers/openaiResponses.ts",
+        "src/adapters/providers/openaiResponses.test.ts",
+        "src/adapters/providers/opencode.ts",
+        "src/adapters/providers/opencode.test.ts",
+        "src/adapters/providers/__fixtures__/opencode.ts"
+      ],
+      "definitionOfDone": [
+        "Deps aprobadas por el usuario (2026-09-15): mammoth 1.12.3 (.docx->texto) + pdfjs-dist 6.3.289 (PDF texto + render); imagenes sin deps (canvas resize JPEG)",
+        "MessageContent suma image {dataUrl,mime,name}; WireMessage user acepta partes texto+imagen; capabilities.images se cablea por proveedor",
+        ".doc binario viejo rechazado con aviso accionable (convertir a .docx); .docx/.pdf multipagina extraidos como DATA delimitada, nunca instrucciones",
+        "PDF escaneado sin capa de texto cae a render de pagina como imagen (capado N paginas); todo con tests y sin console.log",
+        "Proveedor sin vision degrada a descriptor texto [imagen no soportada]; tsc -b + pnpm test + build verdes"
+      ],
+      "evaluatorVerdict": null
+    },
+    {
+      "id": "T18",
+      "milestone": "M7",
+      "title": "Composer + MessageList multimodales (muchos docs, varias hojas)",
+      "status": "COMPLETED",
+      "wave": 12,
+      "assignee": null,
+      "dependencies": [
+        "T17"
+      ],
+      "estimateHours": 5,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/features/chat/components/Composer.tsx",
+        "src/features/chat/components/Composer.test.tsx",
+        "src/features/chat/components/MessageList.tsx",
+        "src/features/chat/components/MessageList.test.tsx",
+        "src/features/chat/components/MessageActions.tsx",
+        "src/features/chat/state/chatStore.ts",
+        "src/features/chat/state/chatStore.test.ts",
+        "src/features/chat/state/__fixtures__/chatTestHarness.ts",
+        "src/features/chat/hooks/useChatController.ts",
+        "src/i18n/dicts/chat.ts"
+      ],
+      "definitionOfDone": [
+        "Adjuntar .txt/.md/.json/.csv + .docx + .pdf + .png/.jpg/.webp (boton + drag-drop + selector Android); chips con quitar y aviso de rechazo",
+        "Cotas: N archivos por mensaje y tope por archivo visibles al usuario; truncado marcado; preview de imagen antes de enviar",
+        "El historial persiste texto extraido + imagen comprimida en IndexedDB sin romper contrato; export .md sigue funcionando",
+        "i18n es/en con paridad; tests Composer/MessageList; tsc -b + pnpm test verdes"
+      ],
+      "evaluatorVerdict": null
+    },
+    {
+      "id": "T19",
+      "milestone": "M7",
+      "title": "Circuito legal 4 partes (redactor multi-doc, atacante, juez ciego con %, sintesis pulida)",
+      "status": "COMPLETED",
+      "wave": 12,
+      "assignee": null,
+      "dependencies": [
+        "T18"
+      ],
+      "estimateHours": 6,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/domain/legal/circuit.ts",
+        "src/domain/legal/circuit.test.ts",
+        "src/domain/legal/prompt.ts",
+        "src/domain/legal/prompt.test.ts",
+        "src/domain/types/legal.ts",
+        "src/domain/types/conversation.ts",
+        "src/adapters/storage/conversationContract.ts",
+        "src/features/conversations/state/conversationsStore.ts",
+        "src/features/conversations/state/conversationsStore.test.ts",
+        "src/features/chat/state/chatStore.legal.test.ts",
+        "src/features/chat/components/CircuitDialog.tsx",
+        "src/features/chat/components/CircuitDialog.test.tsx",
+        "src/features/chat/ChatPage.tsx",
+        "src/features/chat/ChatPage.test.tsx",
+        "src/features/chat/state/chatStore.ts",
+        "src/i18n/dicts/chat.ts"
+      ],
+      "definitionOfDone": [
+        "Chat1 redactor recibe N docs + relato y arma escrito Markdown de varias paginas con [COMPLETAR]/[VERIFICAR]",
+        "Chat2 atacante recibe escrito via semilla, ataca con todo lo licito usando legal_search/cite_article + research; cada tesis con cita verificada o [VERIFICAR]",
+        "Chat3 juez ciego: solo caso + parte A + parte B, sin redactar ni tomar lado previo; veredicto obligatorio con % (A x% / B y%) + fundamento por tesis",
+        "Chat4 sintesis: fusiona escrito + ataque + veredicto en documento pulido iterativo (el usuario sigue pidiendo pulidos); seeds data-only, reglas en scaffold",
+        "Gating AND: juez exige escrito+ataque, sintesis exige las tres partes; botones por messageCount>=2 (ida y vuelta)",
+        "CircuitDialog muestra 4 etapas encadenadas; tests de seeds + scaffold + derivacion; tsc -b + pnpm test + build verdes"
+      ],
+      "evaluatorVerdict": null
+    },
+    {
+      "id": "T20",
+      "milestone": "M7",
+      "title": "Gate M7 + release (APK + web + version.json)",
+      "status": "PLANNED",
+      "wave": 13,
+      "assignee": null,
+      "dependencies": [
+        "T17",
+        "T18",
+        "T19"
+      ],
+      "estimateHours": 3,
+      "parallelWith": [],
+      "allowedFiles": [
+        "version.json",
+        "docs/firebase.md",
+        "docs/e2e-smoke.md"
+      ],
+      "definitionOfDone": [
+        "tsc -b + pnpm test (cero fallos) + pnpm build + verify-packs verdes",
+        "version/versionCode/sha256 sincronizados en version.json; deploy web + APK debug firmado + App Distribution",
+        "Smoke: adjuntar .docx + .pdf + foto, correr circuito 1->4 y descargar .md final",
+        "tsc -b + pnpm test + build verdes"
+      ],
+      "evaluatorVerdict": null
     }
   ],
-  "phase": "DONE"
+  "phase": "PLANNED"
 }

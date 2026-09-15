@@ -33,6 +33,14 @@
 
 :root {
   color-scheme: light;
+  /* Las vistas consumen estas vars; sin declararlas el padding colapsa a 0 en
+     iOS/Capacitor. `env()` con fallback cubre desktop y WebViews viejos. */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark {
@@ -74,4 +82,193 @@ body {
 ::selection {
   background-color: var(--color-primary-soft);
   color: var(--color-text);
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion system: solo transform/opacity/filter (GPU), duraciones      */
+/* 150-500ms con salida exponencial. Las entradas animan el montaje;   */
+/* no hay animaciones de salida (el desmontaje es inmediato).          */
+/* ------------------------------------------------------------------ */
+
+@keyframes anim-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes anim-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes anim-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+}
+
+@keyframes anim-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(4px);
+  }
+}
+
+@keyframes anim-blur-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(8px);
+  }
+}
+
+@keyframes anim-shimmer-sweep {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+
+@keyframes anim-dots-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* Respiración del composer mientras genera: la firma de la app. Un solo
+   adorno —todo lo demás permanece sobrio— y solo box-shadow (barato). */
+@keyframes anim-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-primary) 22%, transparent);
+  }
+}
+
+.anim-fade-up {
+  animation: anim-fade-up 0.5s var(--ease-out-expo) both;
+}
+
+.anim-fade {
+  animation: anim-fade 0.15s ease-out both;
+}
+
+.anim-scale-in {
+  transform-origin: var(--anim-origin, center);
+  animation: anim-scale-in 0.25s var(--ease-out-expo) both;
+}
+
+.anim-toast-in {
+  animation: anim-toast-in 0.3s var(--ease-out-expo) both;
+}
+
+.anim-blur-in {
+  animation: anim-blur-in 0.45s var(--ease-out-expo) both;
+}
+
+.anim-breathe {
+  animation: anim-breathe 2.4s ease-in-out infinite;
+}
+
+/* Typing de tres puntos: spans de 6px con stagger 150ms. */
+.anim-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.anim-dots > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background-color: currentColor;
+  animation: anim-dots-bounce 1.2s ease-in-out infinite;
+}
+
+.anim-dots > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.anim-dots > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* Barrido de brillo para skeletons (el sweep, no un pulse plano). */
+.anim-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.anim-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    color-mix(in srgb, var(--color-text) 9%, transparent) 50%,
+    transparent 75%
+  );
+  background-size: 220% 100%;
+  animation: anim-shimmer-sweep 1.4s ease infinite;
+}
+
+/* Texto "Generando…" que se ilumina de gris a texto y vuelve. */
+.anim-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    var(--color-muted) 25%,
+    var(--color-text) 50%,
+    var(--color-muted) 75%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: anim-shimmer-sweep 2.2s linear infinite;
+}
+
+@supports not (background-clip: text) {
+  .anim-shimmer-text {
+    color: var(--color-muted);
+    animation: none;
+  }
+}
+
+/* Área táctil de 44px sin cambiar el tamaño visual: el ::before no ocupa
+   layout, solo expande el hitbox (iOS/Android + ley táctil). */
+.hit-expand {
+  position: relative;
+}
+
+.hit-expand::before {
+  content: '';
+  position: absolute;
+  inset: -0.625rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { AlertBanner } from '@/app/layout/AlertBanner';
 import { useServices } from '@/app/services';
 import { useT } from '@/i18n/useT';
-import { Brain, MessageSquare, RefreshCw, Search } from '@/shared/icons';
+import { Brain, MessageSquare, RefreshCw, Search, Send } from '@/shared/icons';
 import { Button, Skeleton } from '@/shared/ui';
 import { UpdatesSection } from '@/features/updates/components/UpdatesSection';
 
@@ -15,6 +15,7 @@ import { ProviderList } from './components/ProviderList';
 import { ProxySection } from './components/ProxySection';
 import { SearchSection } from './components/SearchSection';
 import { SectionCard } from './components/SectionCard';
+import { ShareSection } from './components/ShareSection';
 import { WorkModeSection } from './components/WorkModeSection';
 import { SettingsStoreProvider, createSettingsStore, useSettingsStore } from './state/settingsStore';
 
@@ -88,6 +89,14 @@ function SettingsContent() {
       ) : null}
 
       <ProviderList />
+
+      <SectionCard
+        title={t('settings.sectionShare')}
+        description={t('settings.sectionShareDescription')}
+        icon={<Send aria-hidden="true" className="size-4" />}
+      >
+        <ShareSection />
+      </SectionCard>
 
       <SectionCard
         title={t('settings.sectionChat')}

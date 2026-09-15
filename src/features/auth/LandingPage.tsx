@@ -1,7 +1,8 @@
 import { LOGIN_HREF, navigate } from '@/app/routing';
 import { useT } from '@/i18n/useT';
-import { ArrowRight, Globe, KeyRound, Scale, ShieldCheck, Sparkles } from '@/shared/icons';
+import { ArrowRight, Globe, KeyRound, Scale, ShieldCheck } from '@/shared/icons';
 import type { LucideIcon } from '@/shared/icons';
+import { Logo } from '@/shared/brand/Logo';
 import { Button } from '@/shared/ui';
 
 interface Feature {
@@ -29,7 +30,7 @@ export function LandingPage() {
       <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-4 py-6 sm:py-10">
         <header className="flex items-center justify-between gap-3">
           <p className="flex min-w-0 items-center gap-2 text-sm font-semibold tracking-tight">
-            <Sparkles aria-hidden="true" className="size-5 shrink-0 text-primary" />
+            <Logo size={20} className="shrink-0" />
             <span className="truncate">OpenHer Chat</span>
           </p>
           <Button
@@ -44,7 +45,7 @@ export function LandingPage() {
         </header>
 
         <div className="flex flex-1 flex-col justify-center gap-8 py-10">
-          <div className="space-y-4 text-center">
+          <div className="anim-fade-up space-y-4 text-center">
             <p className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted">
               <ShieldCheck aria-hidden="true" className="size-3.5 text-primary" />
               {t('auth.landingBadge')}
@@ -69,10 +70,15 @@ export function LandingPage() {
 
           <figure
             aria-label={t('auth.sampleCaption')}
-            className="overflow-hidden rounded-xl border border-border bg-surface"
+            className="anim-fade-up overflow-hidden rounded-xl border border-border bg-surface [animation-delay:120ms]"
           >
-            <figcaption className="border-b border-border-subtle px-4 py-2 text-xs font-medium text-muted">
+            <figcaption className="flex items-center justify-between border-b border-border-subtle px-4 py-2 text-xs font-medium text-muted">
               {t('auth.sampleCaption')}
+              <span aria-hidden="true" className="anim-dots">
+                <span />
+                <span />
+                <span />
+              </span>
             </figcaption>
             <div className="space-y-3 p-4 text-sm">
               <blockquote className="rounded-lg bg-surface-subtle px-3 py-2 text-text">
@@ -89,11 +95,11 @@ export function LandingPage() {
             </div>
           </figure>
 
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="anim-fade-up grid gap-3 [animation-delay:220ms] sm:grid-cols-2">
             {FEATURES.map((feature) => (
               <li
                 key={feature.titleKey}
-                className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4"
+                className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4 transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
               >
                 <feature.icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />
                 <div className="min-w-0 space-y-1">

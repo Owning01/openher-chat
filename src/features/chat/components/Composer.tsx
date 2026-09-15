@@ -4,10 +4,31 @@ import type { KeyboardEvent } from 'react';
 import { useT } from '@/i18n/useT';
 import type { Translate } from '@/i18n/useT';
 import type { RedactionKind } from '@/domain/legal/redaction';
+import {
+  composeMessageWithAttachments,
+  isSupportedAttachment,
+  MAX_ATTACHMENTS,
+  readAttachmentText,
+  readFileBuffer,
+  toAttachmentDraft,
+} from '@/domain/chat/attachments';
+import type { AttachmentDraft } from '@/domain/chat/attachments';
+import {
+  classifyDocument,
+  isLegacyDoc,
+  MAX_DOCUMENT_BYTES,
+  MAX_IMAGES_PER_MESSAGE,
+  toDocumentDraftText,
+} from '@/domain/documents/documents';
+import type { ImageDraft } from '@/domain/documents/documents';
+import { extractDocxMarkdown } from '@/adapters/documents/docx';
+import { extractPdf } from '@/adapters/documents/pdf';
+import { compressImageFile, ImageTooLargeError } from '@/adapters/documents/images';
 import { matchCommands, expandSlashInput } from '@/domain/prompts/commands';
 import type { SlashCommand } from '@/domain/prompts/commands';
-import { Mic, Send, Square, TriangleAlert } from '@/shared/icons';
-import { Button, Switch, TextArea, Tooltip } from '@/shared/ui';
+import { Mic, Paperclip, Send, Square, TriangleAlert, X } from '@/shared/icons';
+import { Button, IconButton, Switch, TextArea, Tooltip } from '@/shared/ui';
+import { newId } from '@/shared/utils/ids';
 
 import { CommandMenu } from './CommandMenu';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
@@ -16,6 +37,43 @@ import type { ChatRunStatus } from '../state/chatStore';
 /** Errores de micrófono que conviene explicar como permiso, no como "no disponible". */
 function isPermissionError(value: string): boolean {
   return /denied|permission|not-allowed|denegado|permiso/i.test(value);
+}
+
+interface ExtractedDocument {
+  attachment: AttachmentDraft;
+  renderedImages: { name: string; mime: string; dataUrl: string }[];
+}
+
+/**
+ * Extrae texto de Word/PDF en el dispositivo. El texto se inyecta como
+ * adjunto delimitado; las páginas escaneadas del PDF vuelven como imágenes.
+ */
+async function extractDocument(file: File, kind: 'docx' | 'pdf'): Promise<ExtractedDocument> {
+  const buffer = await readFileBuffer(file);
+  if (kind === 'docx') {
+    // Markdown estructural (títulos, listas, tablas): misma información con
+    // menos ambigüedad para la IA; con HTML vacío cae solo al texto crudo.
+    const text = await extractDocxMarkdown(buffer);
+    if (text.trim() === '') throw new Error('empty-document');
+    const draft = toDocumentDraftText(text);
+    const attachment = toAttachmentDraft(newId('att'), file.name, draft.text);
+    return {
+      attachment: { ...attachment, sourceLabel: 'Documento Word', truncated: attachment.truncated || draft.truncated },
+      renderedImages: [],
+    };
+  }
+  const pdf = await extractPdf(file.name.replace(/\.[^.]*$/, ''), buffer);
+  if (pdf.text.trim() === '' && pdf.renderedImages.length === 0) throw new Error('empty-document');
+  const draft = toDocumentDraftText(pdf.text);
+  const attachment = toAttachmentDraft(newId('att'), file.name, draft.text);
+  return {
+    attachment: {
+      ...attachment,
+      sourceLabel: 'Documento PDF',
+      truncated: attachment.truncated || draft.truncated || pdf.truncatedPages,
+    },
+    renderedImages: pdf.renderedImages,
+  };
 }
 
 /**
@@ -47,7 +105,7 @@ export interface ComposerLegal {
 
 export interface ComposerProps {
   status: ChatRunStatus;
-  onSend: (text: string) => void;
+  onSend: (text: string, images?: readonly ImageDraft[]) => void;
   onStop: () => void;
   research?: ComposerResearch;
   /** Ausente = modo general (sin preview ni gate). Lo cablea T27 al vincular el expediente. */
@@ -80,6 +138,11 @@ function redactionLabel(t: Translate, kind: RedactionKind): string {
 export function Composer({ status, onSend, onStop, research, legal }: ComposerProps) {
   const t = useT();
   const [text, setText] = useState('');
+  const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
+  const [images, setImages] = useState<ImageDraft[]>([]);
+  const [attachNotice, setAttachNotice] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const busy = status !== 'idle';
   // Gate de confidencialidad (modo legal con redacción activa): bloquea el primer
   // envío hasta el consentimiento explícito. El consentimiento vale por sesión de
@@ -91,7 +154,8 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
   const consentPersisted = legal?.consentAccepted === true;
   const consentGiven = !legalGate || consentPersisted || sessionConsent;
   const needsConsent = legalGate && !consentGiven;
-  const canSend = text.trim() !== '' && !busy && !needsConsent;
+  const canSend =
+    (text.trim() !== '' || attachments.length > 0 || images.length > 0) && !busy && !needsConsent && !reading;
   const wasBusy = useRef(busy);
   const [stopReady, setStopReady] = useState(true);
   const speech = useSpeechRecognition();
@@ -127,10 +191,95 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
   const submit = (): void => {
     if (speech.isListening) speech.stop();
     if (!canSend) return;
-    onSend(expandSlashInput(text));
+    const composed = composeMessageWithAttachments(expandSlashInput(text), attachments);
+    if (images.length > 0) onSend(composed, images);
+    else onSend(composed);
     setText('');
+    setAttachments([]);
+    setImages([]);
+    setAttachNotice(null);
     setHighlighted(0);
   };
+
+  /**
+   * Lee archivos locales y los agrega como adjuntos de texto o imágenes.
+   * Texto plano, Word `.docx` y PDF se extraen en el dispositivo e inyectan
+   * delimitados; las imágenes viajan comprimidas al modelo con visión.
+   */
+  const addFiles = useCallback(
+    async (files: readonly File[]): Promise<void> => {
+      if (files.length === 0 || busy) return;
+      setReading(true);
+      setAttachNotice(null);
+      try {
+        const accepted: AttachmentDraft[] = [];
+        const acceptedImages: ImageDraft[] = [];
+        let notice: string | null = null;
+        for (const file of files) {
+          if (isLegacyDoc(file.name, file.type)) {
+            notice = t('chat.attachLegacyDoc');
+            continue;
+          }
+          const kind = classifyDocument(file.name, file.type);
+          if (kind === 'image') {
+            if (acceptedImages.length + images.length >= MAX_IMAGES_PER_MESSAGE) {
+              notice = t('chat.attachTooManyImages');
+              continue;
+            }
+            try {
+              const compressed = await compressImageFile(file);
+              acceptedImages.push({ id: newId('img'), name: file.name, mime: compressed.mime, dataUrl: compressed.dataUrl });
+            } catch (error) {
+              notice = error instanceof ImageTooLargeError ? t('chat.attachTooLarge') : t('chat.attachUnreadable');
+            }
+            continue;
+          }
+          if (accepted.length + attachments.length >= MAX_ATTACHMENTS) {
+            notice = t('chat.attachTooMany');
+            break;
+          }
+          if (kind === 'docx' || kind === 'pdf') {
+            if (file.size > MAX_DOCUMENT_BYTES) {
+              notice = t('chat.attachDocTooLarge');
+              continue;
+            }
+            const extracted = await extractDocument(file, kind).catch(() => null);
+            if (extracted === null) {
+              notice = t('chat.attachUnreadable');
+              continue;
+            }
+            accepted.push(extracted.attachment);
+            for (const rendered of extracted.renderedImages) {
+              if (acceptedImages.length + images.length >= MAX_IMAGES_PER_MESSAGE) {
+                notice = t('chat.attachTooManyImages');
+                break;
+              }
+              acceptedImages.push({ id: newId('img'), name: rendered.name, mime: rendered.mime, dataUrl: rendered.dataUrl });
+            }
+            continue;
+          }
+          if (!isSupportedAttachment(file.name, file.type)) {
+            notice = t('chat.attachUnsupported');
+            continue;
+          }
+          try {
+            const content = await readAttachmentText(file);
+            accepted.push(toAttachmentDraft(newId('att'), file.name, content));
+          } catch {
+            notice = t('chat.attachUnreadable');
+          }
+        }
+        if (accepted.length > 0) setAttachments((current) => [...current, ...accepted].slice(0, MAX_ATTACHMENTS));
+        if (acceptedImages.length > 0) {
+          setImages((current) => [...current, ...acceptedImages].slice(0, MAX_IMAGES_PER_MESSAGE));
+        }
+        if (notice !== null) setAttachNotice(notice);
+      } finally {
+        setReading(false);
+      }
+    },
+    [attachments.length, busy, images.length, t],
+  );
 
   const handleConsentChange = (accepted: boolean): void => {
     setSessionConsent(accepted);
@@ -206,6 +355,16 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
       onSubmit={(event) => {
         event.preventDefault();
         submit();
+      }}
+      onDragOver={(event) => {
+        if (!busy) event.preventDefault();
+      }}
+      onDrop={(event) => {
+        if (busy) return;
+        const dropped = Array.from(event.dataTransfer?.files ?? []);
+        if (dropped.length === 0) return;
+        event.preventDefault();
+        void addFiles(dropped);
       }}
     >
       {research !== undefined ? (
@@ -290,7 +449,28 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
           ) : null}
         </section>
       ) : null}
-      <div className="relative flex w-full items-end gap-2">
+      <div className={`relative flex w-full items-end gap-2 rounded-2xl${busy ? ' anim-breathe' : ''}`}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className="hidden"
+          aria-hidden="true"
+          tabIndex={-1}
+          accept=".txt,.md,.markdown,.json,.csv,.log,.yaml,.yml,.xml,.html,.css,.js,.ts,.tsx,.py,.docx,.pdf,.png,.jpg,.jpeg,.webp,text/plain,text/markdown,application/json,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/png,image/jpeg,image/webp"
+          onChange={(event) => {
+            void addFiles(Array.from(event.target.files ?? []));
+            event.target.value = '';
+          }}
+        />
+        <IconButton
+          size="sm"
+          label={t('chat.attach')}
+          icon={<Paperclip aria-hidden="true" className="size-4" />}
+          disabled={busy || reading || (attachments.length >= MAX_ATTACHMENTS && images.length >= MAX_IMAGES_PER_MESSAGE)}
+          onClick={() => fileInputRef.current?.click()}
+          className="mb-0.5 shrink-0"
+        />
         {commands.length > 0 ? (
           <CommandMenu
             commands={commands}
@@ -340,6 +520,64 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
           </Button>
         )}
       </div>
+      {attachments.length > 0 ? (
+        <ul aria-label={t('chat.attachments')} className="flex flex-wrap gap-1.5">
+          {attachments.map((attachment) => (
+            <li
+              key={attachment.id}
+              className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-text"
+            >
+              <span className="min-w-0 truncate" title={attachment.name}>
+                {attachment.name}
+                {attachment.truncated ? ` · ${t('chat.attachTruncated')}` : ''}
+              </span>
+              <button
+                type="button"
+                aria-label={t('chat.attachRemove', { name: attachment.name })}
+                className="hit-expand shrink-0 rounded-full p-1 text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                onClick={() =>
+                  setAttachments((current) => current.filter((entry) => entry.id !== attachment.id))
+                }
+              >
+                <X aria-hidden="true" className="size-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {images.length > 0 ? (
+        <ul aria-label={t('chat.attachedImages')} className="flex flex-wrap gap-1.5">
+          {images.map((image) => (
+            <li
+              key={image.id}
+              className="inline-flex max-w-full items-center gap-1.5 rounded-xl border border-border bg-surface py-1 pl-1 pr-2 text-xs text-text"
+            >
+              <img src={image.dataUrl} alt={image.name} title={image.name} className="h-10 w-10 rounded-lg object-cover" />
+              <span className="min-w-0 max-w-40 truncate" title={image.name}>
+                {image.name}
+              </span>
+              <button
+                type="button"
+                aria-label={t('chat.attachRemove', { name: image.name })}
+                className="hit-expand shrink-0 rounded-full p-1 text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                onClick={() => setImages((current) => current.filter((entry) => entry.id !== image.id))}
+              >
+                <X aria-hidden="true" className="size-3.5" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {legalGate && images.length > 0 ? (
+        <p role="note" className="text-xs text-warning">
+          {t('chat.attachImageLegalWarn')}
+        </p>
+      ) : null}
+      {attachNotice !== null ? (
+        <p role="status" className="text-xs text-warning">
+          {attachNotice}
+        </p>
+      ) : null}
     </form>
   );
 }

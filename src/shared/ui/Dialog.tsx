@@ -107,7 +107,7 @@ export function Dialog({ open, onClose, title, children, footer, className }: Di
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="anim-fade fixed inset-0 z-50 flex items-center justify-center p-4">
       <div aria-hidden="true" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div
         ref={panelRef}
@@ -116,7 +116,7 @@ export function Dialog({ open, onClose, title, children, footer, className }: Di
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          'relative z-10 flex w-full max-w-lg flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-xl focus:outline-none',
+          'anim-scale-in relative z-10 flex w-full max-w-lg flex-col gap-4 rounded-xl border border-border bg-surface p-5 shadow-xl focus:outline-none',
           className,
         )}
       >

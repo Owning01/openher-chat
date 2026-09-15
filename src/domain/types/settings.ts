@@ -47,6 +47,11 @@ export interface UiSettings {
   researchPanelVisible: boolean;
   /** Comprueba si hay una versión nueva al abrir la app (única llamada de red de fondo). */
   autoCheckUpdates: boolean;
+  /**
+   * Espeja proveedores + secretos + ajustes mínimos en Firestore al iniciar
+   * sesión (los baja si la nube tiene). Solo con login; apagable.
+   */
+  cloudSync: boolean;
 }
 
 export interface AppSettings {

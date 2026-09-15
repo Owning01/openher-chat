@@ -73,15 +73,15 @@ export function MobileDrawer({ open, onClose }: MobileDrawerProps) {
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-40 lg:hidden">
-      <div aria-hidden="true" className="absolute inset-0 bg-black/40" onClick={onClose} />
+    <div className="anim-fade fixed inset-0 z-40 lg:hidden">
+      <div aria-hidden="true" className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-label={t('app.sidebarLabel')}
         tabIndex={-1}
-        className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-xl focus:outline-none"
+        className="anim-scale-in absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-xl [--anim-origin:left_center] focus:outline-none"
       >
         <Sidebar className="h-full" onNavigate={onClose} />
       </div>

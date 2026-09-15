@@ -77,7 +77,15 @@ export type MessageContent =
   | { type: 'text'; text: string }
   | { type: 'reasoning'; text: string }
   | { type: 'tool-call'; toolCall: ToolCall }
-  | { type: 'tool-result'; toolCallId: string; toolName: string; result: ToolResult };
+  | { type: 'tool-result'; toolCallId: string; toolName: string; result: ToolResult }
+  /**
+   * Imagen adjunta por el usuario (M7 multimodal): se persiste tal cual en
+   * IndexedDB y viaja al proveedor sólo si el transporte declara
+   * `capabilities.images`. `dataUrl` es `data:<mime>;base64,...` ya
+   * comprimido por el adapter de documentos. Las imágenes NO pasan por la
+   * redacción legal (el texto quemado en la imagen no se puede anonimizar).
+   */
+  | { type: 'image'; imageId: string; name: string; mime: string; dataUrl: string };
 
 export interface ChatMessage {
   id: string;

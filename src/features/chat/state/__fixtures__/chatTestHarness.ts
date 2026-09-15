@@ -25,9 +25,10 @@ export class ScriptedProvider implements ProviderAdapter {
   readonly requests: ChatCompletionRequest[] = [];
   readonly scripts: ProviderScript[] = [];
   toolCalling = false;
+  imagesCapable = true;
 
   capabilities(): ProviderCapabilities {
-    return { streaming: true, toolCalling: this.toolCalling, systemPrompt: true, listModels: false, images: false };
+    return { streaming: true, toolCalling: this.toolCalling, systemPrompt: true, listModels: false, images: this.imagesCapable };
   }
 
   async listModels(): Promise<ModelInfo[]> {

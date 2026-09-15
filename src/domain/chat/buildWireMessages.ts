@@ -1,10 +1,24 @@
 import type { ChatMessage, MessageContent } from '../types/chat';
-import type { WireMessage } from '../types/stream';
+import type { WireImage, WireMessage } from '../types/stream';
 
 export interface BuildWireMessagesInput {
   system?: string;
   history: ChatMessage[];
   userMessage: ChatMessage;
+}
+
+export interface BuildWireMessagesOptions {
+  /**
+   * El transporte/modelo acepta imágenes. Con `false` las imágenes se
+   * degradan a descriptor de texto (`[imagen no soportada…]`) para no romper
+   * al proveedor con un 400. Default `true` (comportamiento multimodal).
+   */
+  imagesSupported?: boolean;
+}
+
+/** Descriptor honesto cuando el modelo no acepta visión: conserva el nombre. */
+export function unsupportedImageText(name: string): string {
+  return `[imagen no soportada por este modelo: ${name}]`;
 }
 
 /**
@@ -34,17 +48,17 @@ export const ORPHAN_TOOL_RESULT_CONTENT = '[tool not executed: no result availab
  * 3. Respuestas duplicadas al mismo `tool-call` se descartan a partir de la segunda,
  *    porque también son inválidas para el proveedor.
  */
-export function buildWireMessages(input: BuildWireMessagesInput): WireMessage[] {
-  return sanitizeToolPairs(expandWireMessages(input));
+export function buildWireMessages(input: BuildWireMessagesInput, options: BuildWireMessagesOptions = {}): WireMessage[] {
+  return sanitizeToolPairs(expandWireMessages(input, options.imagesSupported !== false));
 }
 
-function expandWireMessages(input: BuildWireMessagesInput): WireMessage[] {
+function expandWireMessages(input: BuildWireMessagesInput, imagesSupported: boolean): WireMessage[] {
   const wires: WireMessage[] = [];
   if (input.system !== undefined && input.system.trim().length > 0) {
     wires.push({ role: 'system', content: input.system });
   }
-  for (const message of input.history) appendMessage(wires, message);
-  appendMessage(wires, input.userMessage);
+  for (const message of input.history) appendMessage(wires, message, imagesSupported);
+  appendMessage(wires, input.userMessage, imagesSupported);
   return wires;
 }
 
@@ -98,13 +112,16 @@ function countToolResults(wires: WireMessage[]): Map<string, number> {
   return counts;
 }
 
-function appendMessage(wires: WireMessage[], message: ChatMessage): void {
+function appendMessage(wires: WireMessage[], message: ChatMessage, imagesSupported: boolean): void {
   if (message.role === 'assistant') {
     appendAssistant(wires, message.content);
     return;
   }
-  const text = collectText(message.content);
-  if (text.length > 0) wires.push({ role: message.role, content: text });
+  const images = message.role === 'user' && imagesSupported ? collectImages(message.content) : [];
+  const text = collectText(message.content, imagesSupported ? null : 'unsupported');
+  if (text.length > 0 || images.length > 0) {
+    wires.push(images.length > 0 ? { role: 'user', content: text, images } : { role: message.role, content: text });
+  }
   appendToolResults(wires, message.content);
 }
 
@@ -149,10 +166,22 @@ function appendToolResults(wires: WireMessage[], blocks: MessageContent[]): void
   }
 }
 
-function collectText(blocks: MessageContent[]): string {
+function collectText(blocks: MessageContent[], imageFallback: 'unsupported' | null): string {
   const texts: string[] = [];
   for (const block of blocks) {
     if (block.type === 'text') texts.push(block.text);
+    else if (block.type === 'image' && imageFallback === 'unsupported') texts.push(unsupportedImageText(block.name));
   }
-  return texts.join('\n\n');
+  // En degradación los bloques de texto vacíos ensuciarían el descriptor.
+  const meaningful = imageFallback === 'unsupported' ? texts.filter((text) => text.trim() !== '') : texts;
+  return meaningful.join('\n\n');
+}
+
+/** Imágenes del mensaje en orden; los bloques de asistente nunca las aportan. */
+function collectImages(blocks: MessageContent[]): WireImage[] {
+  const images: WireImage[] = [];
+  for (const block of blocks) {
+    if (block.type === 'image') images.push({ dataUrl: block.dataUrl, mime: block.mime, name: block.name });
+  }
+  return images;
 }

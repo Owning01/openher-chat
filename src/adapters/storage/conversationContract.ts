@@ -41,9 +41,18 @@ export function describeConversationRepositoryContract(
         lastMessagePreview: '',
         status: 'active',
       });
-      // El vínculo legal no se puebla al crear: la clave debe estar ausente.
+      // El vínculo legal y el rol no se pueblan al crear: las claves deben estar ausentes.
       expect(created).not.toHaveProperty('legalCaseId');
+      expect(created).not.toHaveProperty('legalRole');
       expect(await harness.repo.get(created.id)).toEqual(created);
+    });
+
+    it('update vincula caso y rol del circuito y null los limpia', async () => {
+      const created = await harness.repo.create({ title: 'A' });
+      const linked = await harness.repo.update(created.id, { legalCaseId: 'case-1', legalRole: 'atacante' });
+      expect(linked.legalCaseId).toBe('case-1');
+      expect(linked.legalRole).toBe('atacante');
+      expect(await harness.repo.get(created.id)).toEqual(linked);
     });
 
     it('create sin input deja nulls y título vacío', async () => {

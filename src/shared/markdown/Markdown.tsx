@@ -1,5 +1,6 @@
 import MarkdownBase from 'react-markdown';
 import type { Components, ExtraProps } from 'react-markdown';
+import { useMemo } from 'react';
 import remarkGfm from 'remark-gfm';
 
 import { cn } from '@/shared/utils/cn';
@@ -11,14 +12,14 @@ type HastNode = ExtraProps['node'];
 export interface MarkdownProps {
   children: string;
   className?: string;
+  /**
+   * El bloque que aún está llegando: difiere el highlight pesado hasta que
+   * complete (ver `CodeBlock`). Sólo lo usa el último bloque en streaming.
+   */
+  streaming?: boolean;
 }
 
-const COMPONENTS: Components = {
-  pre({ node, children }) {
-    const block = readCodeBlock(node);
-    if (block === null) return <pre>{children}</pre>;
-    return <CodeBlock code={block.code} language={block.language} />;
-  },
+const BASE_COMPONENTS: Omit<Components, 'pre'> = {
   code({ children, className }) {
     return (
       <code className={cn('rounded bg-surface-subtle px-1 py-0.5 font-mono text-[0.85em] text-text', className)}>
@@ -42,10 +43,23 @@ const COMPONENTS: Components = {
 };
 
 /** Markdown GFM sin HTML crudo: solo http/https se convierten en enlaces externos. */
-export function Markdown({ children, className }: MarkdownProps) {
+export function Markdown({ children, className, streaming = false }: MarkdownProps) {
+  // Objeto estable mientras `streaming` no cambie: si `pre` fuese una función
+  // nueva por render, react-markdown desmontaría cada CodeBlock por token.
+  const components = useMemo<Components>(
+    () => ({
+      ...BASE_COMPONENTS,
+      pre({ node, children }) {
+        const block = readCodeBlock(node);
+        if (block === null) return <pre>{children}</pre>;
+        return <CodeBlock code={block.code} language={block.language} streaming={streaming} />;
+      },
+    }),
+    [streaming],
+  );
   return (
     <div className={cn('space-y-2 break-words text-sm leading-relaxed text-text', className)}>
-      <MarkdownBase remarkPlugins={[remarkGfm]} components={COMPONENTS}>
+      <MarkdownBase remarkPlugins={[remarkGfm]} components={components}>
         {children}
       </MarkdownBase>
     </div>

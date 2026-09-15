@@ -20,8 +20,37 @@ VITE_FIREBASE_APP_ID=1:...:web:...
 ```
 
 `.env.local` está gitignoreado. La config web de Firebase es **pública por diseño**
-(no es un secreto: lo que protege los datos son las reglas del backend). Acá sólo se
-usa Hosting + Auth, sin base de datos.
+(no es un secreto: lo que protege los datos son las reglas del backend). Acá se
+usa Hosting + Auth + Firestore (sólo espejo de configuración, ver §5).
+
+## 2b. Sincronización en la nube (Firestore, opcional pero recomendado)
+
+Para que la misma cuenta vea su configuración lista en todos sus dispositivos
+(proveedores, API keys, modelo activo, pensamiento, idioma):
+
+1. En la consola: **Firestore Database → Crear base de datos** (modo producción,
+   la región que prefieras).
+2. Desplegá las reglas por usuario del repo (cada cuenta sólo lee/escribe lo
+   suyo: `users/{uid}/sync/config` y `users/{uid}/sync/secrets`):
+   ```sh
+   npx --yes firebase-tools deploy --only firestore:rules
+   ```
+3. Listo: al iniciar sesión la app baja lo de la nube si es más nuevo (o si el
+   dispositivo está vacío) y sube cada cambio con antirrebote. Si hay cambios en
+   dos dispositivos, **gana el más reciente**. Todo fallo de red degrada a
+   local sin romper nada.
+
+El interruptor está en **Ajustes → Compartir configuración → Sincronizar en la
+nube** (activado por defecto con sesión; también hay "Subir ahora"). Sin
+config de Firebase el bloque ni aparece y la app sigue 100% local.
+
+### NOTA de seguridad (honesta)
+
+Las reglas por UID frenan a cualquier otro usuario de internet, pero las API
+keys en la nube quedan **en texto plano dentro de tu proyecto**: legibles desde
+la consola de Firebase, en backups y para Google. Para una cuenta familiar que
+controlás es un riesgo aceptable; no lo uses con secretos que no puedas rotar.
+El que tenga tu archivo exportado o tu sesión gasta **tu** saldo igual.
 
 ## 3. Habilitar los métodos de ingreso (en la consola)
 
@@ -49,9 +78,11 @@ todo a `index.html` y cachea los assets con hash.
 - **Google en Android/iOS no funciona**: el WebView de Capacitor no puede completar el
   popup/redirect de Google. En el APK usá **correo y contraseña**. Para Google nativo hace
   falta `@capacitor-firebase/authentication` (plugin nativo, dependencia nueva).
-- **Los datos siguen siendo locales**: Auth sólo autentica; conversaciones, ajustes y
-  claves siguen en el dispositivo y **no se sincronizan**. Se separan por usuario
-  (ver «Datos por usuario» abajo).
+- **Los datos siguen siendo locales, salvo el espejo de configuración**: Auth sólo
+  autentica; conversaciones, ajustes y claves siguen en el dispositivo y **no se
+  sincronizan**, salvo el subset de **Ajustes → Compartir** (proveedores, API
+  keys, modelo, pensamiento, idioma) que se espeja en Firestore cuando hay
+  sesión (§2b). Se separan por usuario (ver «Datos por usuario» abajo).
 - **Sin sesión no se entra**: si configurás Firebase, la app pide login siempre.
 - La sesión se recupera offline (Firebase guarda el estado en el dispositivo).
 
@@ -101,5 +132,6 @@ Las particiones evitan que **la app** mezcle usuarios, pero localStorage e
 IndexedDB son del **origen** del navegador/WebView (sin cifrado): quien tenga
 acceso al dispositivo o al perfil del navegador puede leerlos con herramientas
 de desarrollo. No es aislamiento a nivel de sistema operativo. Las API keys nunca
-salen del dispositivo ni van a logs: sólo viajan en las llamadas directas al
-proveedor configurado.
+salen del dispositivo ni van a logs —**salvo el espejo de nube (§2b)**, que las
+sube a tu propio Firestore bajo reglas por usuario—: sólo viajan en las llamadas
+directas al proveedor configurado.

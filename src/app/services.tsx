@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { CapacitorHttpClient } from '@/adapters/http/CapacitorHttpClient';
 import { createStreamTransport } from '@/adapters/http/resolveTransport';
 import { createFirebaseAuth } from '@/adapters/auth/FirebaseAuth';
+import { createFirestoreSync } from '@/adapters/sync/FirestoreSync';
 import { createLegalCorpus } from '@/adapters/legal/LegalCorpus';
 import type { LegalCorpus } from '@/adapters/legal/LegalCorpus';
 import { createProviderAdapter } from '@/adapters/providers';
@@ -23,6 +24,7 @@ import type { LegalCaseRepository } from '@/domain/ports/LegalCaseRepository';
 import type { LegalPackStore } from '@/domain/ports/LegalPackStore';
 import type { ProviderAdapter } from '@/domain/ports/ProviderAdapter';
 import type { SettingsRepository } from '@/domain/ports/SettingsRepository';
+import type { CloudSyncPort } from '@/domain/ports/SyncPort';
 import { composeToolRegistries } from '@/domain/tools/composeRegistry';
 import type { ProviderConfig } from '@/domain/types/provider';
 import type { AppSettings } from '@/domain/types/settings';
@@ -39,6 +41,11 @@ export interface AppServices {
   transport: StreamTransport;
   /** Sólo existe si hay configuración de Firebase: si falta, la app es local-first sin login. */
   auth?: AuthPort;
+  /**
+   * Espejo de configuración en Firestore. Sólo existe con config de Firebase;
+   * sin él la app es local-first (el bloque de nube no se muestra).
+   */
+  sync?: CloudSyncPort;
   /** Expediente, packs y corpus del modo legal (opcionales para no romper literales viejos de test). */
   legalCases?: LegalCaseRepository;
   legalPacks?: LegalPackStore;
@@ -65,6 +72,7 @@ export interface CreateServicesOverrides {
   http?: HttpClient;
   transport?: StreamTransport;
   auth?: AuthPort;
+  sync?: CloudSyncPort;
   legalCases?: LegalCaseRepository;
   legalPacks?: LegalPackStore;
   legalCorpus?: LegalCorpus;
@@ -91,6 +99,7 @@ export function createServices(
   const http = overrides.http ?? new CapacitorHttpClient();
   const transport = overrides.transport ?? createStreamTransport();
   const auth = overrides.auth ?? createAuthFromEnv();
+  const sync = overrides.sync ?? createSyncFromEnv();
   const legalCases = overrides.legalCases ?? new IndexedDbLegalCases({ ownerId });
   const legalPacks = overrides.legalPacks ?? new IndexedDbLegalPacks({ ownerId });
   // El corpus usa el `http` del servicio y el pack store real; el manifiesto y
@@ -100,6 +109,7 @@ export function createServices(
 
   return {
     ...(auth === undefined ? {} : { auth }),
+    ...(sync === undefined ? {} : { sync }),
     conversations,
     settings,
     keys,
@@ -133,6 +143,13 @@ function createAuthFromEnv(): AuthPort | undefined {
   const config = readFirebaseConfig();
   if (config === null) return undefined;
   return createFirebaseAuth(config);
+}
+
+/** El espejo en la nube usa la misma condición que Auth (sólo con config). */
+function createSyncFromEnv(): CloudSyncPort | undefined {
+  const config = readFirebaseConfig();
+  if (config === null) return undefined;
+  return createFirestoreSync(config);
 }
 
 /**

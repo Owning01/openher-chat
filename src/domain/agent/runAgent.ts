@@ -178,6 +178,9 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
     const capabilities = d.provider.capabilities();
     const toolsEnabled =
       (p.enableTools ?? p.researchMode) && capabilities.toolCalling && p.model?.supportsTools !== false;
+    // Visión: transporte Y modelo. Sin ella las imágenes degradan a descriptor
+    // de texto en el wire (nunca se envían bytes que el proveedor rechazaría).
+    const imagesSupported = capabilities.images && p.model?.supportsImages !== false;
     const toolDefinitions = toolsEnabled ? d.tools.list() : [];
     const requestTools = toolDefinitions.length > 0 ? toolDefinitions : undefined;
 
@@ -240,7 +243,7 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
             system: p.systemPrompt,
             history: withEphemeralSuffix(selection.messages, p.ephemeralSuffix),
             userMessage: p.userMessage,
-          }),
+          }, { imagesSupported }),
           tools: stepTools,
           toolChoice: stepTools === undefined ? undefined : 'auto',
           temperature: p.defaults.temperature,

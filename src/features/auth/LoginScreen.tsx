@@ -7,7 +7,8 @@ import { AuthError } from '@/domain/ports/AuthPort';
 import type { AuthErrorCode, AuthPort } from '@/domain/ports/AuthPort';
 import type { MessageKey } from '@/i18n/types';
 import { useT } from '@/i18n/useT';
-import { ArrowLeft, Sparkles } from '@/shared/icons';
+import { ArrowLeft } from '@/shared/icons';
+import { Logo } from '@/shared/brand/Logo';
 import { Button, Input } from '@/shared/ui';
 
 const ERROR_KEYS: Record<AuthErrorCode, MessageKey> = {
@@ -105,7 +106,7 @@ export function LoginScreen({ auth }: LoginScreenProps) {
           </Button>
         </div>
         <div className="flex flex-col items-center gap-2 text-center">
-          <Sparkles aria-hidden="true" className="size-8 text-primary" />
+          <Logo size={40} />
           <h1 className="text-lg font-semibold tracking-tight">{t('auth.title')}</h1>
           <p className="text-sm text-muted">{t('auth.subtitle')}</p>
         </div>

@@ -8,21 +8,31 @@ import './highlight.css';
 
 export const PLAIN_TEXT_LANGUAGE = 'text';
 
+/**
+ * Bloques gigantes: highlight.js es O(bloque) por pasada y el streaming lo
+ * re-ejecuta por token (O(n²) total). Dos guardas:
+ * - en streaming, bloques de más de 4k se ven monoespaciados hasta completar;
+ * - bloques de más de 100k nunca se colorean (pegar un bundle no cuelga la pestaña).
+ */
+export const STREAMING_HIGHLIGHT_LIMIT = 4000;
+export const MAX_HIGHLIGHT_LENGTH = 100_000;
+
 export interface CodeBlockProps {
   code: string;
   language?: string | null;
   className?: string;
+  /** El código aún está llegando: difiere el highlight pesado. */
+  streaming?: boolean;
 }
 
-export function CodeBlock({ code, language, className }: CodeBlockProps) {
+export function CodeBlock({ code, language, className, streaming = false }: CodeBlockProps) {
   const resolvedLanguage = resolveLanguage(language);
-  const highlighted = useMemo(
-    () =>
-      resolvedLanguage === PLAIN_TEXT_LANGUAGE
-        ? null
-        : hljs.highlight(code, { language: resolvedLanguage, ignoreIllegals: true }).value,
-    [code, resolvedLanguage],
-  );
+  const highlighted = useMemo(() => {
+    if (resolvedLanguage === PLAIN_TEXT_LANGUAGE) return null;
+    if (code.length > MAX_HIGHLIGHT_LENGTH) return null;
+    if (streaming && code.length > STREAMING_HIGHLIGHT_LIMIT) return null;
+    return hljs.highlight(code, { language: resolvedLanguage, ignoreIllegals: true }).value;
+  }, [code, resolvedLanguage, streaming]);
 
   return (
     <div

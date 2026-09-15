@@ -5,6 +5,12 @@ import type { ToolDefinition } from '../types/tools';
 export const TOKENS_PER_MESSAGE = 4;
 /** Overhead fijo por bloque de contenido. */
 export const TOKENS_PER_BLOCK = 4;
+/**
+ * Estimación fija por imagen comprimida (~1568px): los proveedores cobran la
+ * visión por tiles, no por bytes del dataUrl; 1200 es una cota conservadora
+ * documentada para el presupuesto de contexto (nunca exacta).
+ */
+export const TOKENS_PER_IMAGE = 1200;
 
 /**
  * Longitud en bytes UTF-8 calculada sin APIs de entorno (puro JS), para que el
@@ -43,6 +49,8 @@ export function estimateBlockTokens(block: MessageContent): number {
       return estimateTokens(block.toolCall.name) + estimateTokens(block.toolCall.argumentsText) + TOKENS_PER_BLOCK;
     case 'tool-result':
       return estimateTokens(block.result.content) + TOKENS_PER_BLOCK;
+    case 'image':
+      return TOKENS_PER_IMAGE + TOKENS_PER_BLOCK;
   }
 }
 

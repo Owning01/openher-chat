@@ -10,12 +10,13 @@ import type { RunAgentParams } from '@/domain/agent/runAgent';
 import { buildSystemPrompt } from '@/domain/agent/systemPrompt';
 import { truncateText } from '@/domain/chat/truncateText';
 import { buildCaseBrief, buildLegalBriefMessages } from '@/domain/legal/brief';
-import { buildLegalSystemPrompt } from '@/domain/legal/prompt';
+import { buildLegalRolePrompt, buildLegalSystemPrompt } from '@/domain/legal/prompt';
 import { redactLegalCase } from '@/domain/legal/redaction';
 import type { RedactionMapping } from '@/domain/legal/redaction';
 import { estimateLegalTokens, searchLegalPassages } from '@/domain/legal/retrieval';
-import type { LegalPassage } from '@/domain/types/legal';
+import type { LegalCircuitRole, LegalPassage } from '@/domain/types/legal';
 import { createAssistantMessage, createUserMessage, finalizeMessage } from '@/domain/chat/messageFactory';
+import type { ImageDraft } from '@/domain/documents/documents';
 import { messagePlainText } from '@/domain/chat/messageSearch';
 import { resolveCapabilities } from '@/domain/providers/capabilities';
 import type { ConversationRepository } from '@/domain/ports/ConversationRepository';
@@ -86,6 +87,11 @@ export interface ChatState {
   /** Caso legal vinculado (pendiente o persistido); `null` = modo general. */
   legalCaseId: string | null;
   /**
+   * Rol del chat en el circuito adversarial (`redactor` → `atacante` → `juez` → `sintesis`);
+   * `null` = sin rol. Viaja con la conversación igual que `legalCaseId`.
+   */
+  legalRole: LegalCircuitRole | null;
+  /**
    * Mappings de pseudonimización por conversación (R-1): sólo memoria del
    * store, JAMÁS persistidos (el repo sólo recibe mensajes y campos de la
    * conversación). La UI los consume vía `getRedactionMapping` para
@@ -100,7 +106,12 @@ export interface ChatState {
   /** Tool que espera autorización (null si no hay ninguna pendiente). */
   pendingApproval: ToolApprovalRequest | null;
   load(conversationId: string): Promise<void>;
-  send(text: string): Promise<void>;
+  /**
+   * Envía el turno. `images` son imágenes ya comprimidas (dataUrl) del
+   * composer; el texto puede ir vacío si hay imágenes. Sin imágenes el
+   * comportamiento es idéntico al de siempre.
+   */
+  send(text: string, images?: readonly ImageDraft[]): Promise<void>;
   stop(): void;
   /** Autoriza la tool pendiente; `always` la recuerda para toda la sesión. */
   approveTool(always: boolean): void;
@@ -115,6 +126,15 @@ export interface ChatState {
   setResearchMode(enabled: boolean): Promise<void>;
   /** Vincula/desvincula el expediente legal (mismo lifecycle que `setResearchMode`). */
   setLegalCase(caseId: string | null): Promise<void>;
+  /** Fija el rol del circuito adversarial (mismo lifecycle que `setLegalCase`). */
+  setLegalRole(role: LegalCircuitRole | null): Promise<void>;
+  /**
+   * Semilla pendiente del circuito: `load()` la auto-envía una sola vez tras
+   * hidratar (nunca antes, para que el `fetch` no pise el turno). `null` = sin
+   * semilla. El consumo exige consentimiento del caso (gate H1).
+   */
+  pendingSeed: { conversationId: string; seed: string } | null;
+  setPendingSeed(seed: { conversationId: string; seed: string } | null): void;
   /** Fija proveedor/modelo de la conversación (y el último usado) desde el chat. */
   setModel(providerId: string, modelId: string): Promise<void>;
 }
@@ -173,11 +193,17 @@ function conversationSummary(messages: readonly ChatMessage[]): {
 }
 
 function previewFromMessage(message: ChatMessage): string {
+  let imageName: string | null = null;
   for (let index = message.content.length - 1; index >= 0; index -= 1) {
     const block = message.content[index];
-    if (block !== undefined && block.type === 'text') return clampPreview(stripMarkdown(block.text));
+    if (block === undefined) continue;
+    if (block.type === 'text') {
+      if (block.text.trim() !== '') return clampPreview(stripMarkdown(block.text));
+    } else if (block.type === 'image' && imageName === null) {
+      imageName = block.name;
+    }
   }
-  return '';
+  return imageName === null ? '' : clampPreview(`[imagen: ${imageName}]`);
 }
 
 /** Quita la sintaxis markdown más común: el preview de la lista es texto plano. */
@@ -460,6 +486,10 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       if (pendingLegal != null) {
         created = await repo.update(created.id, { legalCaseId: pendingLegal });
       }
+      const pendingRole = get().legalRole;
+      if (pendingRole != null) {
+        created = await repo.update(created.id, { legalRole: pendingRole });
+      }
       if (!isCurrent(token)) {
         void repo.remove(created.id).catch(() => undefined);
         return null;
@@ -470,8 +500,9 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
     }
 
     /** Secuencia de un turno ya reclamado: asegura conversación, persiste user y corre el agente. */
-    async function startTurn(content: string, token: number): Promise<void> {
-      const conversationId = await ensureConversation(content, token);
+    async function startTurn(content: string, token: number, images: readonly ImageDraft[] = []): Promise<void> {
+      const titleSource = content !== '' ? content : (images[0]?.name ?? '');
+      const conversationId = await ensureConversation(titleSource, token);
       if (conversationId === null) return;
       const conversation = await repo.get(conversationId);
       if (!isCurrent(token)) return;
@@ -479,14 +510,20 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
 
       const history = await repo.listMessages(conversationId);
       if (!isCurrent(token)) return;
-      const userMessage = createUserMessage({ id: generateId(), conversationId, text: content, now: clock() });
+      const userMessage = createUserMessage({
+        id: generateId(),
+        conversationId,
+        text: content,
+        images: images.map((image) => ({ imageId: image.id, name: image.name, mime: image.mime, dataUrl: image.dataUrl })),
+        now: clock(),
+      });
       await repo.appendMessage(userMessage);
       if (!isCurrent(token)) return;
       set((state) => ({ messages: [...state.messages, userMessage] }));
 
       let current = conversation;
-      const title = conversationTitleFromText(content);
-      if (!history.some((message) => message.role === 'user') && current.title !== title) {
+      const title = conversationTitleFromText(titleSource);
+      if (title !== '' && !history.some((message) => message.role === 'user') && current.title !== title) {
         current = await repo.update(conversationId, { title });
         if (!isCurrent(token)) return;
       }
@@ -495,6 +532,30 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       if (!isCurrent(token)) return;
 
       await runTurn({ conversation: current, userMessage, history }, token);
+    }
+
+    /**
+     * Consume la semilla pendiente del circuito tras hidratar (nunca antes: el
+     * `fetch` de `load` pisaría el turno). Exige turno idle, misma
+     * conversación y consentimiento del caso (H1: el auto-envío no pasa por el
+     * Composer, así que respeta su gate acá). Nunca lanza.
+     */
+    function consumePendingSeed(token: number): void {
+      const seed = get().pendingSeed;
+      if (seed === null || get().runStatus !== 'idle') return;
+      set({ pendingSeed: null });
+      void (async () => {
+        if (!isCurrent(token)) return;
+        if (get().conversationId !== seed.conversationId) return;
+        const caseId = get().legalCaseId;
+        const cases = services.legalCases;
+        if (caseId !== null && cases !== undefined) {
+          const legalCase = await cases.get(caseId).catch(() => null);
+          if (!isCurrent(token) || get().conversationId !== seed.conversationId) return;
+          if (legalCase?.consent === undefined) return;
+        }
+        await get().send(seed.seed);
+      })();
     }
 
     /** Registry de tools del run: override de tests, seam de `AppServices` o fallback directo. */
@@ -820,18 +881,23 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       lastError: null,
       researchMode: false,
       legalCaseId: null,
+      legalRole: null,
       redactionMappings: {},
       getRedactionMapping(conversationId) {
         if (conversationId === null) return null;
         return get().redactionMappings[conversationId] ?? null;
       },
       pendingApproval: null,
+      pendingSeed: null,
+      setPendingSeed(seed) {
+        set({ pendingSeed: seed });
+      },
 
       async load(conversationId) {
         abortRun();
         generation += 1;
         const token = generation;
-        set({ conversationId, messages: [], runStatus: 'idle', liveSteps: [], lastError: null, researchMode: false, legalCaseId: null });
+        set({ conversationId, messages: [], runStatus: 'idle', liveSteps: [], lastError: null, researchMode: false, legalCaseId: null, legalRole: null });
         try {
           const [messages, conversation] = await Promise.all([
             repo.listMessages(conversationId),
@@ -842,20 +908,22 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
               messages,
               researchMode: conversation?.researchMode ?? false,
               legalCaseId: conversation?.legalCaseId ?? null,
+              legalRole: conversation?.legalRole ?? null,
             });
+            consumePendingSeed(token);
           }
         } catch (cause) {
           if (isCurrent(token)) set({ lastError: toMessageError(cause) });
         }
       },
 
-      async send(text) {
+      async send(text, images = []) {
         const content = text.trim();
-        if (content === '') return;
+        if (content === '' && images.length === 0) return;
         const token = claimRun();
         if (token === null) return;
         try {
-          await startTurn(content, token);
+          await startTurn(content, token, images);
         } catch (cause) {
           if (!isCurrent(token)) return;
           set({ lastError: toMessageError(cause), runStatus: 'idle' });
@@ -965,7 +1033,14 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           await repo.deleteMessagesFrom(conversationId, userMessageId);
           if (!isCurrent(token)) return;
           set({ messages: messages.slice(0, index), liveSteps: [], lastError: null });
-          await startTurn(content, token);
+          // La edición conserva las imágenes del mensaje original (el texto se reescribe).
+          const keptImages: ImageDraft[] = [];
+          for (const block of target.content) {
+            if (block.type === 'image') {
+              keptImages.push({ id: block.imageId, name: block.name, mime: block.mime, dataUrl: block.dataUrl });
+            }
+          }
+          await startTurn(content, token, keptImages);
         } catch (cause) {
           if (!isCurrent(token)) return;
           set({ lastError: toMessageError(cause), runStatus: 'idle' });
@@ -1061,6 +1136,18 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           if (token === legalToggleSeq) publishConversation?.(updated);
         } catch {
           // Persistencia best-effort: el estado local ya refleja el vínculo.
+        }
+      },
+
+      async setLegalRole(role) {
+        set({ legalRole: role });
+        const conversationId = get().conversationId;
+        if (conversationId === null) return;
+        try {
+          const updated = await repo.update(conversationId, { legalRole: role });
+          publishConversation?.(updated);
+        } catch {
+          // Persistencia best-effort: el estado local ya refleja el rol.
         }
       },
 
@@ -1162,8 +1249,17 @@ function composeSystemPrompt(
           perspectives: settings.legal.perspectives,
           today: new Date(now).toISOString(),
         });
-  const combined = legal === '' ? scaffold : `${scaffold}\n\n${legal}`;
+  // El rol del circuito refina el scaffold con sus propias reglas; sin rol no
+  // se agrega nada (chat legal común). Determinista por conversación.
+  const role = legalMode === false ? '' : roleScaffold(conversation.legalRole);
+  const combined = [scaffold, legal, role].filter((part) => part !== '').join('\n\n');
   return persona === '' ? combined : `${persona}\n\n${combined}`;
+}
+
+/** Scaffold del rol del circuito; `null`/ausente = sin rol. */
+function roleScaffold(legalRole: LegalCircuitRole | null | undefined): string {
+  if (legalRole === null || legalRole === undefined) return '';
+  return buildLegalRolePrompt(legalRole);
 }
 
 /** Consulta de recuperación: título del caso + texto del usuario (sin PII extra). */
@@ -1231,6 +1327,8 @@ function cloneContent(blocks: readonly MessageContent[]): MessageContent[] {
           toolName: block.toolName,
           result: { ...block.result },
         };
+      case 'image':
+        return { type: 'image', imageId: block.imageId, name: block.name, mime: block.mime, dataUrl: block.dataUrl };
     }
   });
 }

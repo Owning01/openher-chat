@@ -19,6 +19,12 @@ export interface ModelInfo {
   supportsThinking?: boolean;
   /** Override de transporte para proveedores heterogéneos; si falta se infiere del id/kind. */
   api?: ModelApi;
+  /**
+   * El modelo acepta imágenes (visión). `undefined` = lo que diga el
+   * transporte (`capabilities.images`); `false` = degradar a descriptor de
+   * texto en el wire en vez de romper con un 400.
+   */
+  supportsImages?: boolean;
   source: 'api' | 'manual';
 }
 

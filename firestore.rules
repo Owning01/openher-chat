@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Espejo de configuración de OpenHer Chat.
+//
+// Cada cuenta sólo lee y escribe SUS documentos (`request.auth.uid == userId`):
+// - `users/{uid}/sync/config`  → proveedores (sin secretos) + ajustes mínimos.
+// - `users/{uid}/sync/secrets` → mapa keyRef → API key en texto plano.
+//
+// No hay ninguna otra colección: por defecto todo lo demás queda denegado.
+// Las API keys quedan legibles desde la consola del proyecto y para Google
+// (cifrado en tránsito/reposo, sin cifrado de aplicación): usar sólo con
+// cuentas controladas por la familia.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/sync/config {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /users/{userId}/sync/secrets {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
