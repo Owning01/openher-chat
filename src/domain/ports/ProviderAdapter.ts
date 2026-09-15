@@ -1,4 +1,4 @@
-import type { ModelInfo, ProviderCapabilities, ProviderKind } from '../types/provider';
+import type { ModelInfo, ProviderCapabilities, ProviderKind, ThinkingLevel } from '../types/provider';
 import type { StreamEvent, WireMessage } from '../types/stream';
 import type { ToolDefinition } from '../types/tools';
 import type { HttpClient, StreamTransport } from './HttpClient';
@@ -11,6 +11,18 @@ export interface ChatCompletionRequest {
   toolChoice?: 'auto' | 'none';
   temperature?: number;
   maxOutputTokens?: number | null;
+  /**
+   * Nivel de pensamiento pedido. `off`/ausente = no se envía ningún parámetro
+   * de razonamiento (comportamiento actual). Cada adapter lo traduce a su
+   * transporte; ver `thinkingSupported`.
+   */
+  thinking?: ThinkingLevel;
+  /**
+   * El modelo acepta controles de razonamiento en `chat-completions`.
+   * Los transportes nativos (Anthropic, Responses) lo ignoran: siempre saben.
+   * Si falta se trata como `false` (no enviar nada: ante la duda, no romper).
+   */
+  thinkingSupported?: boolean;
   signal: AbortSignal;
   /**
    * Id opaco y estable de la conversación. Los adapters pueden mapearlo a sus

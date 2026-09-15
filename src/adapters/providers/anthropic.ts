@@ -10,6 +10,7 @@
 import type { AdapterDeps, ChatCompletionRequest, ProviderAdapter } from '@/domain/ports/ProviderAdapter';
 import { HttpError } from '@/domain/ports/HttpClient';
 import type { StreamResult } from '@/domain/ports/HttpClient';
+import { thinkingBudgetTokens } from '@/domain/providers/thinking';
 import type { MessageError, MessageErrorCode, TokenUsage } from '@/domain/types/chat';
 import type { ModelInfo, ProviderCapabilities, ProviderConfig } from '@/domain/types/provider';
 import type { StopReason, StreamEvent, WireMessage } from '@/domain/types/stream';
@@ -251,6 +252,7 @@ interface AnthropicMessagesPayload {
   stream: true;
   system?: string | AnthropicSystemBlock[];
   temperature?: number;
+  thinking?: { type: 'enabled'; budget_tokens: number };
   tools?: AnthropicToolPayload[];
 }
 
@@ -261,19 +263,27 @@ function buildChatPayload(request: ChatCompletionRequest): AnthropicMessagesPayl
   const messages = request.messages.filter(
     (message): message is NonSystemWireMessage => message.role !== 'system',
   );
+  const maxTokens = request.maxOutputTokens ?? DEFAULT_MAX_TOKENS;
   const payload: AnthropicMessagesPayload = {
     model: request.modelId,
     // El breakpoint del system ya cubre tools+system (van antes en el prefijo);
     // los dos últimos mensajes forman la escalera móvil de la cola.
     messages: messages.map((message, index) => toAnthropicMessage(message, caching && index >= messages.length - 2)),
-    max_tokens: request.maxOutputTokens ?? DEFAULT_MAX_TOKENS,
+    max_tokens: maxTokens,
     stream: true,
   };
   const system = resolveSystem(request);
   if (system !== undefined && system !== '') {
     payload.system = caching ? [{ type: 'text', text: system, cache_control: EPHEMERAL }] : system;
   }
-  if (request.temperature !== undefined) payload.temperature = request.temperature;
+  const thinkingBudget = thinkingBudgetTokens(request.thinking ?? 'off', maxTokens);
+  if (thinkingBudget !== null) {
+    // Thinking exige `temperature: 1` y presupuesto menor que `max_tokens`.
+    payload.thinking = { type: 'enabled', budget_tokens: thinkingBudget };
+    payload.temperature = 1;
+  } else if (request.temperature !== undefined) {
+    payload.temperature = request.temperature;
+  }
   if (request.tools !== undefined && request.tools.length > 0) {
     payload.tools = request.tools.map(toAnthropicTool);
   }

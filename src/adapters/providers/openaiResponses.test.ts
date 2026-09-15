@@ -213,6 +213,37 @@ describe('streamChat payload', () => {
     expect(post.body).not.toHaveProperty('tool_choice');
     expect(post.body).not.toHaveProperty('max_output_tokens');
   });
+
+  it('thinking off no envía reasoning (comportamiento actual)', async () => {
+    const transport = fakeTransport(() => sseResult(textResponse('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(adapter.streamChat(responsesChatRequest({ thinking: 'off' })));
+
+    expect(requirePost(transport).body).not.toHaveProperty('reasoning');
+  });
+
+  it('thinking mapea el nivel a effort con resumen automático', async () => {
+    const transport = fakeTransport(() => sseResult(textResponse('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(adapter.streamChat(responsesChatRequest({ thinking: 'high' })));
+
+    expect(requirePost(transport).body).toMatchObject({
+      reasoning: { effort: 'high', summary: 'auto' },
+    });
+  });
+
+  it('thinking max se degrada a high (sin tier xhigh en todos los modelos)', async () => {
+    const transport = fakeTransport(() => sseResult(textResponse('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(adapter.streamChat(responsesChatRequest({ thinking: 'max' })));
+
+    expect(requirePost(transport).body).toMatchObject({
+      reasoning: { effort: 'high', summary: 'auto' },
+    });
+  });
 });
 
 describe('streamChat SSE', () => {

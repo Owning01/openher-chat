@@ -1,5 +1,6 @@
 import type { AgentBudget } from './agent';
 import type { LegalSettings } from './legal';
+import type { ThinkingLevel } from './provider';
 
 export type Locale = 'es' | 'en';
 export type ThemeMode = 'light' | 'dark' | 'system';
@@ -10,6 +11,8 @@ export interface ChatDefaults {
   systemPrompt: string;
   temperature: number;
   maxOutputTokens: number | null;
+  /** Nivel de pensamiento pedido al modelo; `off` = comportamiento actual. */
+  thinking: ThinkingLevel;
 }
 
 export interface HistoryBudget {

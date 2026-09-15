@@ -194,6 +194,8 @@ interface OpenAIChatPayload {
   stream_options?: { include_usage: true };
   temperature?: number;
   max_tokens?: number;
+  reasoning_effort?: 'low' | 'medium' | 'high';
+  enable_thinking?: true;
   tools?: OpenAIToolPayload[];
   tool_choice?: 'auto';
   prompt_cache_key?: string;
@@ -220,6 +222,12 @@ function buildChatPayload(config: ProviderConfig, request: ChatCompletionRequest
   if (config.quirks?.includeUsage === true) payload.stream_options = { include_usage: true };
   if (request.temperature !== undefined) payload.temperature = request.temperature;
   if (request.maxOutputTokens !== undefined && request.maxOutputTokens !== null) payload.max_tokens = request.maxOutputTokens;
+  // `chat-completions` no tiene thinking nativo: sólo se envía a modelos con
+  // soporte conocido (ante la duda no se manda nada para no provocar un 400).
+  if (request.thinking !== undefined && request.thinking !== 'off' && request.thinkingSupported === true) {
+    payload.reasoning_effort = request.thinking === 'max' ? 'high' : request.thinking;
+    if (config.quirks?.enableThinking === true) payload.enable_thinking = true;
+  }
   if (request.tools !== undefined && request.tools.length > 0) {
     payload.tools = request.tools.map(toOpenAITool);
     // `tool_choice` sin tools hace fallar a las APIs OpenAI-compatible (400).

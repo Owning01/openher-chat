@@ -254,6 +254,39 @@ describe('streamChat payload', () => {
     expect(post.body).not.toHaveProperty('stream_options');
     expect(post.body).not.toHaveProperty('max_tokens');
   });
+
+  it('thinking sin soporte no envía nada (ante la duda no rompe)', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(adapter.streamChat(chatRequest({ thinking: 'high' })));
+
+    const body = requirePost(transport).body;
+    expect(body).not.toHaveProperty('reasoning_effort');
+    expect(body).not.toHaveProperty('enable_thinking');
+  });
+
+  it('thinking con soporte envía reasoning_effort', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(adapter.streamChat(chatRequest({ thinking: 'medium', thinkingSupported: true })));
+
+    expect(requirePost(transport).body).toMatchObject({ reasoning_effort: 'medium' });
+  });
+
+  it('thinking max se degrada a high y el quirk agrega enable_thinking', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('ok')));
+    const adapter = makeAdapter(
+      transport,
+      undefined,
+      providerConfig({ quirks: { enableThinking: true } }),
+    );
+
+    await collect(adapter.streamChat(chatRequest({ thinking: 'max', thinkingSupported: true })));
+
+    expect(requirePost(transport).body).toMatchObject({ reasoning_effort: 'high', enable_thinking: true });
+  });
 });
 
 describe('streamChat SSE', () => {

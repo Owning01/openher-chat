@@ -117,7 +117,7 @@ function makeParams(overrides: Partial<RunAgentParams> = {}): RunAgentParams {
     systemPrompt: 'You are a test assistant.',
     history: [],
     userMessage: textMessage('u-current', 'user', 'hello'),
-    defaults: { temperature: 0.7, maxOutputTokens: null },
+    defaults: { temperature: 0.7, maxOutputTokens: null, thinking: 'off' },
     budget: { ...DEFAULT_AGENT_BUDGET },
     historyBudget: {
       mode: 'fixed',
@@ -273,6 +273,40 @@ describe('runAgent - caso feliz', () => {
     expect(h.provider.requests[0]?.system).toBe(h.params.systemPrompt);
     expect(h.provider.requests[0]?.messages[0]).toEqual({ role: 'system', content: h.params.systemPrompt });
     expect(h.provider.requests[0]?.tools).toBeUndefined();
+  });
+});
+
+describe('runAgent - thinking', () => {
+  async function firstRequest(params: Partial<RunAgentParams>): Promise<ChatCompletionRequest | undefined> {
+    const h = createHarness({ params });
+    h.provider.scripts.push({ events: [{ type: 'text-delta', delta: 'ok' }, { type: 'stop', reason: 'end_turn' }] });
+    await collect(runAgent(h.params, h.deps));
+    return h.provider.requests[0];
+  }
+
+  it('off por defecto: no pide thinking y lo marca no soportado', async () => {
+    const request = await firstRequest({ modelId: 'gpt-4o' });
+    expect(request?.thinking).toBe('off');
+    expect(request?.thinkingSupported).toBe(false);
+  });
+
+  it('propaga el nivel y respeta el flag explícito del modelo', async () => {
+    const request = await firstRequest({
+      modelId: 'llama-3.3-70b',
+      defaults: { temperature: 0.7, maxOutputTokens: null, thinking: 'high' },
+      model: { id: 'llama-3.3-70b', label: 'Llama', source: 'api', supportsThinking: true },
+    });
+    expect(request?.thinking).toBe('high');
+    expect(request?.thinkingSupported).toBe(true);
+  });
+
+  it('infiere soporte por id cuando el modelo no trae flag', async () => {
+    const request = await firstRequest({
+      modelId: 'deepseek-reasoner',
+      defaults: { temperature: 0.7, maxOutputTokens: null, thinking: 'medium' },
+    });
+    expect(request?.thinking).toBe('medium');
+    expect(request?.thinkingSupported).toBe(true);
   });
 });
 

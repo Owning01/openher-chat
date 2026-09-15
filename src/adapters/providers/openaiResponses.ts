@@ -9,6 +9,7 @@
 import type { AdapterDeps, ChatCompletionRequest, ProviderAdapter } from '@/domain/ports/ProviderAdapter';
 import { HttpError } from '@/domain/ports/HttpClient';
 import type { StreamResult } from '@/domain/ports/HttpClient';
+import type { ThinkingLevel } from '@/domain/types/provider';
 import type { MessageError, MessageErrorCode, TokenUsage } from '@/domain/types/chat';
 import type { ModelInfo, ProviderCapabilities, ProviderConfig } from '@/domain/types/provider';
 import type { StopReason, StreamEvent, WireMessage } from '@/domain/types/stream';
@@ -174,7 +175,15 @@ interface ResponsesPayload {
   tool_choice?: 'auto';
   temperature?: number;
   max_output_tokens?: number;
+  reasoning?: { effort: 'low' | 'medium' | 'high'; summary: 'auto' };
   stream: true;
+}
+
+/** `max` no existe en todos los modelos: se degrada a `high` en vez de arriesgar un 400. */
+function toReasoningEffort(level: ThinkingLevel): 'low' | 'medium' | 'high' {
+  if (level === 'low') return 'low';
+  if (level === 'medium') return 'medium';
+  return 'high';
 }
 
 function buildResponsesPayload(request: ChatCompletionRequest): ResponsesPayload {
@@ -191,6 +200,9 @@ function buildResponsesPayload(request: ChatCompletionRequest): ResponsesPayload
   if (request.temperature !== undefined) payload.temperature = request.temperature;
   if (request.maxOutputTokens !== undefined && request.maxOutputTokens !== null) {
     payload.max_output_tokens = request.maxOutputTokens;
+  }
+  if (request.thinking !== undefined && request.thinking !== 'off') {
+    payload.reasoning = { effort: toReasoningEffort(request.thinking), summary: 'auto' };
   }
   if (request.tools !== undefined && request.tools.length > 0) {
     payload.tools = request.tools.map(toResponseTool);

@@ -1,8 +1,8 @@
 {
-  "version": "1.2.1",
-  "versionCode": 4,
+  "version": "1.3.0",
+  "versionCode": 5,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "9315D337F111A9D2BBBB35267087A1D1E0CEEBC50598DF4F7C48B15175E53135",
-  "notes": "Corrige el login: la configuracion de Firebase no quedaba embebida por un BOM en el archivo de entorno (sin API key, la app se saltaba la portada y el login). Ahora si: portada, ingreso con correo y datos por usuario.",
-  "publishedAt": "2026-09-14"
+  "sha256": "F7B124D7C51EB2DE0DCFD4546A4C9DD76FD063D077BFCCD99B9535B29AF5F489",
+  "notes": "Ajuste Pensamiento (Off/Bajo/Medio/Alto/Maximo) en el chat: pide razonamiento visible al modelo segun su transporte (Anthropic, Responses o chat-completions compatibles).",
+  "publishedAt": "2026-09-15"
 }

@@ -42,6 +42,7 @@ export const DEFAULT_CHAT_DEFAULTS: ChatDefaults = {
   systemPrompt: DEFAULT_SYSTEM_PROMPT,
   temperature: 0.7,
   maxOutputTokens: null,
+  thinking: 'off',
 };
 
 export const DEFAULT_TOOL_SETTINGS: ToolSettings = {

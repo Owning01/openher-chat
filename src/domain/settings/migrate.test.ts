@@ -94,6 +94,13 @@ describe('migrateSettings', () => {
     expect(migrateSettings({ chat: { temperature: 'hot' } }, NOW).chat.temperature).toBe(0.7);
   });
 
+  it('sanea thinking contra el enum y cae a off', () => {
+    expect(migrateSettings({ chat: { thinking: 'high' } }, NOW).chat.thinking).toBe('high');
+    expect(migrateSettings({ chat: { thinking: 'ultra' } }, NOW).chat.thinking).toBe('off');
+    expect(migrateSettings({ chat: { thinking: 3 } }, NOW).chat.thinking).toBe('off');
+    expect(migrateSettings({}, NOW).chat.thinking).toBe('off');
+  });
+
   it('acota maxResults entre 3 y 10 y redondea', () => {
     expect(migrateSettings({ search: { maxResults: 1 } }, NOW).search.maxResults).toBe(3);
     expect(migrateSettings({ search: { maxResults: 99 } }, NOW).search.maxResults).toBe(10);

@@ -42,6 +42,7 @@ describe('defaults de settings', () => {
     expect(DEFAULT_CHAT_DEFAULTS.temperature).toBe(0.7);
     expect(DEFAULT_CHAT_DEFAULTS.maxOutputTokens).toBeNull();
     expect(DEFAULT_CHAT_DEFAULTS.systemPrompt).toBe(DEFAULT_SYSTEM_PROMPT);
+    expect(DEFAULT_CHAT_DEFAULTS.thinking).toBe('off');
     expect(DEFAULT_SYSTEM_PROMPT.trim().length).toBeGreaterThan(0);
   });
 

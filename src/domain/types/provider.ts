@@ -11,10 +11,21 @@ export interface ModelInfo {
   contextWindow?: number;
   supportsTools?: boolean;
   supportsStreaming?: boolean;
+  /**
+   * El modelo acepta controles de razonamiento en `/chat/completions`
+   * (`reasoning_effort`). Los transportes nativos (Anthropic, Responses) no lo
+   * necesitan; si falta se infiere del id (`inferThinkingSupport`).
+   */
+  supportsThinking?: boolean;
   /** Override de transporte para proveedores heterogéneos; si falta se infiere del id/kind. */
   api?: ModelApi;
   source: 'api' | 'manual';
 }
+
+/** Nivel de pensamiento pedido al modelo. `off` = comportamiento actual. */
+export type ThinkingLevel = 'off' | 'low' | 'medium' | 'high' | 'max';
+
+export const THINKING_LEVELS: readonly ThinkingLevel[] = ['off', 'low', 'medium', 'high', 'max'];
 
 /** Ajustes específicos del proveedor al construir payloads. */
 export interface ProviderQuirks {
@@ -24,6 +35,11 @@ export interface ProviderQuirks {
   promptCache?: boolean;
   /** Añade marcadores `cache_control` a los mensajes (gateways Anthropic-shaped). */
   cacheControl?: boolean;
+  /**
+   * Añade `enable_thinking: true` en `/chat/completions` (DashScope, Mistral y
+   * gateways que lo exigen además de `reasoning_effort`).
+   */
+  enableThinking?: boolean;
 }
 
 /** Configuración persistida de un proveedor. La API key nunca vive aquí (ver KeyVault). */

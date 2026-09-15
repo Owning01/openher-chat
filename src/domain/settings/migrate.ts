@@ -8,6 +8,7 @@ import type {
   LegalRetrievalBudget,
   LegalSettings,
 } from '../types/legal';
+import { THINKING_LEVELS } from '../types/provider';
 import type {
   AppSettings,
   ChatDefaults,
@@ -89,6 +90,7 @@ function migrateChat(value: unknown, fallback: ChatDefaults): ChatDefaults {
     systemPrompt: readNonEmptyString(source['systemPrompt'], fallback.systemPrompt),
     temperature: readNumber(source, 'temperature', fallback.temperature, 0, 2),
     maxOutputTokens: readOptionalInt(source['maxOutputTokens'], 1, 200_000),
+    thinking: readEnum(source, 'thinking', THINKING_LEVELS, fallback.thinking),
   };
 }
 

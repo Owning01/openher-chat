@@ -260,6 +260,43 @@ describe('streamChat payload', () => {
     expect(post.body).not.toHaveProperty('tools');
   });
 
+  it('thinking off no envía el parámetro (comportamiento actual)', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(adapter.streamChat(chatRequest({ thinking: 'off', maxOutputTokens: 4096 })));
+
+    expect(requirePost(transport).body).not.toHaveProperty('thinking');
+  });
+
+  it('thinking envía budget proporcional y fuerza temperature 1', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(
+      adapter.streamChat(chatRequest({ thinking: 'medium', temperature: 0.2, maxOutputTokens: 64000 })),
+    );
+
+    expect(requirePost(transport).body).toMatchObject({
+      max_tokens: 64000,
+      temperature: 1,
+      thinking: { type: 'enabled', budget_tokens: 16000 },
+    });
+  });
+
+  it('thinking sin ventana suficiente se omite y conserva la temperatura', async () => {
+    const transport = fakeTransport(() => sseResult(textStream('ok')));
+    const adapter = makeAdapter(transport);
+
+    await collect(
+      adapter.streamChat(chatRequest({ thinking: 'high', temperature: 0.3, maxOutputTokens: 512 })),
+    );
+
+    const body = requirePost(transport).body;
+    expect(body).not.toHaveProperty('thinking');
+    expect(body).toMatchObject({ temperature: 0.3 });
+  });
+
   it('sin apiKey omite x-api-key y conserva extraHeaders', async () => {
     const transport = fakeTransport(() => sseResult(textStream('ok')));
     const config = anthropicConfig({ requiresKey: false, extraHeaders: { 'X-Custom': '1' } });

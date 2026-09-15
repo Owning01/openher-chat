@@ -662,7 +662,11 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           systemPrompt: composeSystemPrompt(conversation, settings, clock(), webResearchMode, legalMode),
           history: applyCompaction(input.history, conversation),
           userMessage: input.userMessage,
-          defaults: { temperature: settings.chat.temperature, maxOutputTokens: settings.chat.maxOutputTokens },
+          defaults: {
+            temperature: settings.chat.temperature,
+            maxOutputTokens: settings.chat.maxOutputTokens,
+            thinking: settings.chat.thinking,
+          },
           budget: settings.agent,
           historyBudget: settings.history,
           researchMode: webResearchMode,

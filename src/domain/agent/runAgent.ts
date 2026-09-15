@@ -5,6 +5,7 @@ import { selectHistoryByBudget } from '../chat/selectHistoryByBudget';
 import { truncateText } from '../chat/truncateText';
 import type { ChatCompletionRequest, ProviderAdapter } from '../ports/ProviderAdapter';
 import type { ToolPermissionGate } from '../ports/ToolPermission';
+import { inferThinkingSupport } from '../providers/thinking';
 import type { AgentBudget, AgentEvent, AgentRunStatus } from '../types/agent';
 import type {
   ChatMessage,
@@ -17,7 +18,7 @@ import type {
   ToolErrorCode,
   ToolResult,
 } from '../types/chat';
-import type { ModelInfo } from '../types/provider';
+import type { ModelInfo, ThinkingLevel } from '../types/provider';
 import type { HistoryBudget } from '../types/settings';
 import type { StopReason } from '../types/stream';
 import type { ToolDefinition, ToolRegistry } from '../types/tools';
@@ -49,7 +50,7 @@ export interface RunAgentParams {
   systemPrompt: string;
   history: ChatMessage[];
   userMessage: ChatMessage;
-  defaults: { temperature: number; maxOutputTokens: number | null };
+  defaults: { temperature: number; maxOutputTokens: number | null; thinking: ThinkingLevel };
   budget: AgentBudget;
   historyBudget: HistoryBudget;
   researchMode: boolean;
@@ -244,6 +245,8 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
           toolChoice: stepTools === undefined ? undefined : 'auto',
           temperature: p.defaults.temperature,
           maxOutputTokens: p.defaults.maxOutputTokens,
+          thinking: p.defaults.thinking,
+          thinkingSupported: p.model?.supportsThinking ?? inferThinkingSupport(p.modelId),
           signal: p.signal,
           sessionId: p.conversationId,
           cache: { cacheControl: true },

@@ -149,6 +149,17 @@ describe('SettingsPage', () => {
     });
   });
 
+  it('persiste el nivel de pensamiento elegido', async () => {
+    const { settingsRepo } = renderPage();
+    const select = await screen.findByLabelText(t('settings.chatThinking'));
+
+    fireEvent.change(select, { target: { value: 'high' } });
+
+    await waitFor(async () => {
+      expect((await settingsRepo.load()).chat.thinking).toBe('high');
+    });
+  });
+
   it('descubre modelos desde la API del proveedor', async () => {
     const { requests } = renderPage();
 
