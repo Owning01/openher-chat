@@ -35,7 +35,7 @@ var hopHeaders = map[string]struct{}{
 func corsHeaders(h http.Header) {
 	h.Set("Access-Control-Allow-Origin", "*")
 	h.Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-	h.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	h.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-opencode-client, x-opencode-session")
 	h.Set("Access-Control-Max-Age", "3600")
 }
 
@@ -139,7 +139,7 @@ func main() {
 				w.Header().Set("Access-Control-Allow-Origin", "*")
 			}
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, x-opencode-client, x-opencode-session")
 			w.Header().Set("Access-Control-Max-Age", "3600")
 			w.WriteHeader(http.StatusNoContent)
 			return
