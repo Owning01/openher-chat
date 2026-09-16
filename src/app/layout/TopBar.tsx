@@ -114,7 +114,8 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
 function resolveTitle(route: Route, conversation: Conversation | undefined, t: Translate): string {
   if (route.name === 'settings') return t('app.settingsTitle');
   if (route.name === 'legal') return t('legalCases.title');
-  if (route.conversationId === null) return t('app.title');
-  if (conversation === undefined || conversation.title.trim() === '') return t('conversations.untitled');
-  return conversation.title;
+  // En el chat el título de la conversación ya lo muestra la cabecera propia
+  // de `ChatPage`: acá va el nombre de la app para no duplicarlo.
+  void conversation;
+  return t('app.title');
 }

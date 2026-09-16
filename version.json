@@ -1,8 +1,8 @@
 {
-  "version": "1.3.0",
-  "versionCode": 5,
+  "version": "1.4.0",
+  "versionCode": 6,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "F7B124D7C51EB2DE0DCFD4546A4C9DD76FD063D077BFCCD99B9535B29AF5F489",
-  "notes": "Ajuste Pensamiento (Off/Bajo/Medio/Alto/Maximo) en el chat: pide razonamiento visible al modelo segun su transporte (Anthropic, Responses o chat-completions compatibles).",
-  "publishedAt": "2026-09-15"
+  "sha256": "PENDING_APK_BUILD",
+  "notes": "Circuito legal 4 roles + adjuntos Word/PDF/fotos + descarga Word/MD + nube por cuenta + diseno y marca propia + titulo duplicado corregido.",
+  "publishedAt": "2026-09-16"
 }
