@@ -23,7 +23,7 @@ export interface LegalPackManifestEntry {
 
 /** Manifiesto de packs publicados. */
 export interface LegalPackManifest {
-  schema: 'openher.legal.pack/1';
+  schema: 'openher.legal.packs/1';
   packs: LegalPackManifestEntry[];
 }
 
@@ -160,7 +160,7 @@ function parseManifest(text: string): LegalPackManifest | null {
       if (parsed === null) return null;
       packs.push(parsed);
     }
-    return { schema: 'openher.legal.pack/1', packs };
+    return { schema: 'openher.legal.packs/1', packs };
   } catch {
     return null;
   }

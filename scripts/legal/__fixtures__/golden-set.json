@@ -6,102 +6,162 @@
     {
       "id": "gs-01",
       "query": "prescripción de daños",
-      "expect": { "normId": "CCyC", "article": "2560" }
+      "expect": {
+        "normId": "CCyC",
+        "article": "2560"
+      }
     },
     {
       "id": "gs-02",
       "query": "art. 330 CPCCN",
-      "expect": { "normId": "CPCCN", "article": "330" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "330"
+      }
     },
     {
       "id": "gs-03",
       "query": "daño punitivo",
-      "expect": { "normId": "LDC", "article": "52 bis" }
+      "expect": {
+        "normId": "LDC",
+        "article": "52 bis"
+      }
     },
     {
       "id": "gs-04",
       "query": "caducidad de instancia",
-      "expect": { "normId": "CPCCN", "article": "310" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "310"
+      }
     },
     {
       "id": "gs-05",
       "query": "costas al vencido",
-      "expect": { "normId": "CPCCN", "article": "68" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "68"
+      }
     },
     {
       "id": "gs-06",
       "query": "carga de la prueba",
-      "expect": { "normId": "CPCCN", "article": "377" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "377"
+      }
     },
     {
       "id": "gs-07",
       "query": "excepciones previas",
-      "expect": { "normId": "CPCCN", "article": "347" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "347"
+      }
     },
     {
       "id": "gs-08",
       "query": "requisitos de la demanda",
-      "expect": { "normId": "CPCCN", "article": "330" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "330"
+      }
     },
     {
       "id": "gs-09",
       "query": "cómputo de la caducidad de instancia",
-      "expect": { "normId": "CPCCN", "article": "311" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "311"
+      }
     },
     {
       "id": "gs-10",
       "query": "plazo genérico de prescripción cinco años",
-      "expect": { "normId": "CCyC", "article": "2560" }
+      "expect": {
+        "normId": "CCyC",
+        "article": "2560"
+      }
     },
     {
       "id": "gs-11",
       "query": "prescripción dos años",
-      "expect": { "normId": "CCyC", "article": "2562" }
+      "expect": {
+        "normId": "CCyC",
+        "article": "2562"
+      }
     },
     {
       "id": "gs-12",
       "query": "prescripción un año",
-      "expect": { "normId": "CCyC", "article": "2564" }
+      "expect": {
+        "normId": "CCyC",
+        "article": "2564"
+      }
     },
     {
       "id": "gs-13",
       "query": "comienzo del cómputo de la prescripción",
-      "expect": { "normId": "CCyC", "article": "2554" }
+      "expect": {
+        "normId": "CCyC",
+        "article": "2554"
+      }
     },
     {
       "id": "gs-14",
       "query": "prescripción de sanciones LDC",
-      "expect": { "normId": "LDC", "article": "50" }
+      "expect": {
+        "normId": "LDC",
+        "article": "50"
+      }
     },
     {
       "id": "gs-15",
       "query": "multa civil al proveedor",
-      "expect": { "normId": "LDC", "article": "52 bis" }
+      "expect": {
+        "normId": "LDC",
+        "article": "52 bis"
+      }
     },
     {
       "id": "gs-16",
       "query": "defecto legal en el modo de proponer la demanda",
-      "expect": { "normId": "CPCCN", "article": "347" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "347"
+      }
     },
     {
       "id": "gs-17",
       "query": "plazo de caducidad en primera instancia",
-      "expect": { "normId": "CPCCN", "article": "310" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "310"
+      }
     },
     {
       "id": "gs-18",
       "query": "prescribe a los cinco años",
-      "expect": { "normId": "CCyC", "article": "2560" }
+      "expect": {
+        "normId": "CCyC",
+        "article": "2560"
+      }
     },
     {
       "id": "gs-19",
       "query": "cosa juzgada excepción de previo pronunciamiento",
-      "expect": { "normId": "CPCCN", "article": "347" }
+      "expect": {
+        "normId": "CPCCN",
+        "article": "347"
+      }
     },
     {
       "id": "gs-20",
       "query": "acciones posesorias prescripción",
-      "expect": { "normId": "CCyC", "article": "2564" }
+      "expect": {
+        "normId": "CCyC",
+        "article": "2564"
+      }
     },
     {
       "id": "gs-21",
@@ -162,6 +222,86 @@
       "query": "sucesiones declaratoria de herederos",
       "expect": null,
       "gap": "derecho sucesorio"
+    },
+    {
+      "id": "gs-31",
+      "query": "acción de amparo admisible arbitrariedad manifiesta",
+      "expect": {
+        "normId": "L16986",
+        "article": "1"
+      }
+    },
+    {
+      "id": "gs-32",
+      "query": "amparo quince días hábiles demanda",
+      "expect": {
+        "normId": "L16986",
+        "article": "2"
+      }
+    },
+    {
+      "id": "gs-33",
+      "query": "amparo sentencia dentro del tercer día",
+      "expect": {
+        "normId": "L16986",
+        "article": "11"
+      }
+    },
+    {
+      "id": "gs-34",
+      "query": "retención de datos diez años telecomunicaciones",
+      "expect": {
+        "normId": "L25873",
+        "article": "2"
+      }
+    },
+    {
+      "id": "gs-35",
+      "query": "captación y derivación de comunicaciones definiciones",
+      "expect": {
+        "normId": "D1563",
+        "article": "1"
+      }
+    },
+    {
+      "id": "gs-36",
+      "query": "suspensión del decreto 1563 de 2004",
+      "expect": {
+        "normId": "D357",
+        "article": "1"
+      }
+    },
+    {
+      "id": "gs-37",
+      "query": "artículo 43 acción colectiva amparo incidencia colectiva",
+      "expect": {
+        "normId": "CN",
+        "article": "43"
+      }
+    },
+    {
+      "id": "gs-38",
+      "query": "inviolabilidad correspondencia allanamiento domicilio",
+      "expect": {
+        "normId": "CN",
+        "article": "18"
+      }
+    },
+    {
+      "id": "gs-39",
+      "query": "acciones privadas reservadas moral pública",
+      "expect": {
+        "normId": "CN",
+        "article": "19"
+      }
+    },
+    {
+      "id": "gs-40",
+      "query": "costas del amparo al vencido",
+      "expect": {
+        "normId": "L16986",
+        "article": "14"
+      }
     }
   ]
 }

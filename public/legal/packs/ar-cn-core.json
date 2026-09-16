@@ -1,0 +1,322 @@
+{
+  "schema": "openher.legal.pack/1",
+  "id": "ar-cn-core",
+  "title": "Constitución Nacional – núcleo de derechos y garantías",
+  "version": "1.0.0",
+  "publishedAt": "2026-09-16",
+  "jurisdiction": "national",
+  "matter": "civil",
+  "license": {
+    "name": "CC BY 2.5 AR (InfoLEG)",
+    "url": "http://www.infoleg.gob.ar/",
+    "attribution": "InfoLEG – Ministerio de Justicia de la Nación",
+    "verifiedAt": "2026-09-16"
+  },
+  "sources": [
+    {
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "retrievedAt": "2026-09-16",
+      "note": "Texto vigente de la Constitución Nacional publicado por el Estado Nacional."
+    }
+  ],
+  "norms": [
+    {
+      "id": "CN",
+      "short": "CN",
+      "long": "Constitución de la Nación Argentina",
+      "aliases": [
+        "Constitución Nacional",
+        "Carta Magna"
+      ],
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto"
+    }
+  ],
+  "provisions": [
+    {
+      "id": "CN-14",
+      "normId": "CN",
+      "article": "14",
+      "title": "Derechos enumerados",
+      "text": "Todos los habitantes de la Nación gozan de los siguientes derechos conforme a las leyes que reglamenten su ejercicio; a saber: de trabajar y ejercer toda industria lícita; de navegar y comerciar; de peticionar a las autoridades; de entrar, permanecer, transitar y salir del territorio argentino; de publicar sus ideas por la prensa sin censura previa; de usar y disponer de su propiedad; de asociarse con fines útiles; de profesar libremente su culto; de enseñar y aprender.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "ba1a6a27c0cdbd0759290fea2e0ffb8a3079d1c4e8aadd520e6a94e722298366",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "derechos",
+        "garantias"
+      ],
+      "synonyms": [
+        "garantía",
+        "habitantes"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-16",
+      "normId": "CN",
+      "article": "16",
+      "title": "Igualdad ante la ley",
+      "text": "La Nación Argentina no admite prerrogativas de sangre, ni de nacimiento: no hay en ella fueros personales ni títulos de nobleza. Todos sus habitantes son iguales ante la ley, y admisibles en los empleos sin otra condición que la idoneidad. La igualdad es la base del impuesto y de las cargas públicas.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "b3427f25bd10c22cec8ad79c32be6e4e0d79168907a1cbda20d3c5092cf9ab34",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "igualdad",
+        "garantias"
+      ],
+      "synonyms": [
+        "igualdad",
+        "idoneidad"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-17",
+      "normId": "CN",
+      "article": "17",
+      "title": "Propiedad inviolable",
+      "text": "La propiedad es inviolable, y ningún habitante de la Nación puede ser privado de ella, sino en virtud de sentencia fundada en ley. La expropiación por causa de utilidad pública, debe ser calificada por ley y previamente indemnizada. Sólo el Congreso impone las contribuciones que se expresan en el Artículo 4º. Ningún servicio personal es exigible, sino en virtud de ley o de sentencia fundada en ley. Todo autor o inventor es propietario exclusivo de su obra, invento o descubrimiento, por el término que le acuerde la ley. La confiscación de bienes queda borrada para siempre del Código Penal argentino. Ningún cuerpo armado puede hacer requisiciones, ni exigir auxilios de ninguna especie.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "44a84662b487b61961e9b9bbb94dbaaca61d8fe0d43f539f63abf452d705043f",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "propiedad",
+        "garantias"
+      ],
+      "synonyms": [
+        "propiedad",
+        "expropiación"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-18",
+      "normId": "CN",
+      "article": "18",
+      "title": "Debido proceso e intimidad",
+      "text": "Ningún habitante de la Nación puede ser penado sin juicio previo fundado en ley anterior al hecho del proceso, ni juzgado por comisiones especiales, o sacado de los jueces designados por la ley antes del hecho de la causa. Nadie puede ser obligado a declarar contra sí mismo; ni arrestado sino en virtud de orden escrita de autoridad competente. Es inviolable la defensa en juicio de la persona y de los derechos. El domicilio es inviolable, como también la correspondencia epistolar y los papeles privados; y una ley determinará en qué casos y con qué justificativos podrá procederse a su allanamiento y ocupación. Quedan abolidos para siempre la pena de muerte por causas políticas, toda especie de tormento y los azotes. Las cárceles de la Nación serán sanas y limpias, para seguridad y no para castigo de los reos detenidos en ellas, y toda medida que a pretexto de precaución conduzca a mortificarlos más allá de lo que aquélla exija, hará responsable al juez que la autorice.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "d6876ef8c64963ba6f15550a822d60889755ee4a51a16f7883f5d4183b7d3289",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "debido-proceso",
+        "intimidad",
+        "garantias"
+      ],
+      "synonyms": [
+        "intimidad",
+        "defensa en juicio",
+        "allanamiento",
+        "correspondencia"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-19",
+      "normId": "CN",
+      "article": "19",
+      "title": "Acciones privadas",
+      "text": "Las acciones privadas de los hombres que de ningún modo ofendan al orden y a la moral pública, ni perjudiquen a un tercero, están sólo reservadas a Dios, y exentas de la autoridad de los magistrados. Ningún habitante de la Nación será obligado a hacer lo que no manda la ley, ni privado de lo que ella no prohíbe.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "8434fb47ff553c81ba2752bac28965c90a993e6ffa1a8c4b3e1148b0be095f01",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "privacidad",
+        "garantias"
+      ],
+      "synonyms": [
+        "acciones privadas",
+        "reserva",
+        "legalidad"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-28",
+      "normId": "CN",
+      "article": "28",
+      "title": "Reglamentación sin alteración",
+      "text": "Los principios, garantías y derechos reconocidos en los anteriores artículos, no podrán ser alterados por las leyes que reglamenten su ejercicio.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "d12d21b757aa9ac037445a7a98714f3fea740d60aad1e5639735b2d7fc3647b4",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "garantias"
+      ],
+      "synonyms": [
+        "reglamentación",
+        "alteración"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-31",
+      "normId": "CN",
+      "article": "31",
+      "title": "Supremacía constitucional",
+      "text": "Esta Constitución, las leyes de la Nación que en su consecuencia se dicten por el Congreso y los tratados con las potencias extranjeras son la ley suprema de la Nación; y las autoridades de cada provincia están obligadas a conformarse a ella, no obstante cualquiera disposición en contrario que contengan las leyes o constituciones provinciales, salvo para la provincia de Buenos Aires, los tratados ratificados después del Pacto de 11 de noviembre de 1859.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "38d089330f2cc538587ee800a6e4336c22a245cb80870ec811f820429364027e",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "supremacia",
+        "constitucional"
+      ],
+      "synonyms": [
+        "supremacía",
+        "ley suprema"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-32",
+      "normId": "CN",
+      "article": "32",
+      "title": "Libertad de imprenta",
+      "text": "El Congreso federal no dictará leyes que restrinjan la libertad de imprenta o establezcan sobre ella la jurisdicción federal.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "3caad5bf0418232a92136372b6eca65bee4f688460bfda8554432a842b37edc5",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "libertad-expresion"
+      ],
+      "synonyms": [
+        "imprenta",
+        "prensa"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-33",
+      "normId": "CN",
+      "article": "33",
+      "title": "Derechos no enumerados",
+      "text": "Las declaraciones, derechos y garantías que enumera la Constitución no serán entendidos como negación de otros derechos y garantías no enumerados; pero que nacen del principio de la soberanía del pueblo y de la forma republicana de gobierno.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "56213f6daf1113bd17f02d5e76615b9f745001207ff8f5e698acd46a946c606b",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "garantias"
+      ],
+      "synonyms": [
+        "derechos implícitos",
+        "soberanía"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-41",
+      "normId": "CN",
+      "article": "41",
+      "title": "Ambiente sano",
+      "text": "Todos los habitantes gozan del derecho a un ambiente sano, equilibrado, apto para el desarrollo humano y para que las actividades productivas satisfagan las necesidades presentes sin comprometer las de las generaciones futuras; y tienen el deber de preservarlo. El daño ambiental generará prioritariamente la obligación de recomponer, según lo establezca la ley.\nLas autoridades proveerán a la protección de este derecho, a la utilización racional de los recursos naturales, a la preservación del patrimonio natural y cultural y de la diversidad biológica, y a la información y educación ambientales.\nCorresponde a la Nación dictar las normas que contengan los presupuestos mínimos de protección, y a las provincias, las necesarias para complementarlas, sin que aquéllas alteren las jurisdicciones locales.\nSe prohíbe el ingreso al territorio nacional de residuos actual o potencialmente peligrosos, y de los radiactivos.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "878b276d7cc10138d735c6a4272d41efe2faab87863d8a89bf9231f5741768fc",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "ambiente",
+        "colectivo"
+      ],
+      "synonyms": [
+        "medio ambiente",
+        "daño ambiental",
+        "recomponer"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-42",
+      "normId": "CN",
+      "article": "42",
+      "title": "Usuarios y consumidores",
+      "text": "Los consumidores y usuarios de bienes y servicios tienen derecho, en la relación de consumo, a la protección de su salud, seguridad e intereses económicos; a una información adecuada y veraz; a la libertad de elección, y a condiciones de trato equitativo y digno.\nLas autoridades proveerán a la protección de esos derechos, a la educación para el consumo, a la defensa de la competencia contra toda forma de distorsión de los mercados, al control de los monopolios naturales y legales, al de la calidad y eficiencia de los servicios públicos, y a la constitución de asociaciones de consumidores y de usuarios.\nLa legislación establecerá procedimientos eficaces para la prevención y solución de conflictos, y los marcos regulatorios de los servicios públicos de competencia nacional, previendo la necesaria participación de las asociaciones de consumidores y usuarios y de las provincias interesadas, en los organismos de control.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "9b2317ed9fbac1f4a452ae7d59b51535e91c65915c9d030b2734340dadfb4c6c",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "consumo",
+        "usuarios",
+        "colectivo"
+      ],
+      "synonyms": [
+        "consumidores",
+        "servicios públicos"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CN-43",
+      "normId": "CN",
+      "article": "43",
+      "title": "Amparo y acción colectiva",
+      "text": "Toda persona puede interponer acción expedita y rápida de amparo, siempre que no exista otro medio judicial más idóneo, contra todo acto u omisión de autoridades públicas o de particulares, que en forma actual o inminente lesione, restrinja, altere o amenace, con arbitrariedad o ilegalidad manifiesta, derechos y garantías reconocidos por esta Constitución, un tratado o una ley. En el caso, el juez podrá declarar la inconstitucionalidad de la norma en que se funde el acto u omisión lesiva.\nPodrán interponer esta acción contra cualquier forma de discriminación y en lo relativo a los derechos que protegen al ambiente, a la competencia, al usuario y al consumidor, así como a los derechos de incidencia colectiva en general, el afectado, el defensor del pueblo y las asociaciones que propendan a esos fines, registradas conforme a la ley, la que determinará los requisitos y formas de su organización.\nToda persona podrá interponer esta acción para tomar conocimiento de los datos a ella referidos y de su finalidad, que consten en registros o bancos de datos públicos, o los privados destinados a proveer informes, y en caso de falsedad o discriminación, para exigir la supresión, rectificación, confidencialidad o actualización de aquéllos. No podrá afectarse el secreto de las fuentes de información periodística.\nCuando el derecho lesionado, restringido, alterado o amenazado fuera la libertad física, o en caso de agravamiento ilegítimo en la forma o condiciones de detención, o en el de desaparición forzada de personas, la acción de hábeas corpus podrá ser interpuesta por el afectado o por cualquiera en su favor y el juez resolverá de inmediato, aun durante la vigencia del estado de sitio.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-24430-804/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "83c8366228ac0f3f005e0ba414bc4b4d5494bb596f797a4d3195151322df6944",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "accion-colectiva",
+        "habeas-data",
+        "colectivo"
+      ],
+      "synonyms": [
+        "amparo",
+        "acción colectiva",
+        "habeas corpus",
+        "hábeas data",
+        "incidencia colectiva"
+      ],
+      "verified": true
+    }
+  ],
+  "hash": "bc396a4c064fd42f31a9391e574b2caf9e471445a2b856cde4fb4786468335cf"
+}

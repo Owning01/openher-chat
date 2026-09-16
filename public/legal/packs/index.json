@@ -24,6 +24,22 @@
       "url": "legal/packs/ar-ldc-core.json",
       "available": true,
       "bytes": 3077
+    },
+    {
+      "id": "ar-cn-core",
+      "version": "1.0.0",
+      "hash": "bc396a4c064fd42f31a9391e574b2caf9e471445a2b856cde4fb4786468335cf",
+      "url": "legal/packs/ar-cn-core.json",
+      "available": true,
+      "bytes": 16905
+    },
+    {
+      "id": "ar-amparo-core",
+      "version": "1.0.0",
+      "hash": "89a5da9374011bc1c6e942bab98b8071d4426abe58ebcda0b4bf85a7fd8182ae",
+      "url": "legal/packs/ar-amparo-core.json",
+      "available": true,
+      "bytes": 28946
     }
   ]
 }

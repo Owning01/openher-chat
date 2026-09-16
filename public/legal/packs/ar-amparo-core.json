@@ -1,0 +1,637 @@
+{
+  "schema": "openher.legal.pack/1",
+  "id": "ar-amparo-core",
+  "title": "Amparo y ley espía – núcleo (16.986, 25.873, decretos)",
+  "version": "1.0.0",
+  "publishedAt": "2026-09-16",
+  "jurisdiction": "national",
+  "matter": "civil",
+  "license": {
+    "name": "CC BY 2.5 AR (InfoLEG)",
+    "url": "http://www.infoleg.gob.ar/",
+    "attribution": "InfoLEG – Ministerio de Justicia de la Nación",
+    "verifiedAt": "2026-09-16"
+  },
+  "sources": [
+    {
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "retrievedAt": "2026-09-16",
+      "note": "Texto vigente de la Ley 16.986 (amparo)."
+    },
+    {
+      "url": "https://www.argentina.gob.ar/normativa/nacional/ley-25873-92549/texto",
+      "retrievedAt": "2026-09-16",
+      "note": "Texto de la Ley 25.873 (telecomunicaciones)."
+    },
+    {
+      "url": "https://www.argentina.gob.ar/normativa/nacional/norma-100806/texto",
+      "retrievedAt": "2026-09-16",
+      "note": "Decreto 1563/04 (reglamentación, suspendida)."
+    },
+    {
+      "url": "https://www.argentina.gob.ar/normativa/nacional/decreto-357-2005-105679/texto",
+      "retrievedAt": "2026-09-16",
+      "note": "Decreto 357/05 (suspensión)."
+    }
+  ],
+  "norms": [
+    {
+      "id": "L16986",
+      "short": "Ley 16.986",
+      "long": "Ley de amparo",
+      "aliases": [
+        "Ley de amparo"
+      ],
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto"
+    },
+    {
+      "id": "L25873",
+      "short": "Ley 25.873",
+      "long": "Ley espía de telecomunicaciones",
+      "aliases": [
+        "Ley espía"
+      ],
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-25873-92549/texto"
+    },
+    {
+      "id": "D1563",
+      "short": "Dec. 1563/04",
+      "long": "Decreto reglamentario 1563/2004",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/norma-100806/texto"
+    },
+    {
+      "id": "D357",
+      "short": "Dec. 357/05",
+      "long": "Decreto 357/2005",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/decreto-357-2005-105679/texto"
+    }
+  ],
+  "provisions": [
+    {
+      "id": "A16986-1",
+      "normId": "L16986",
+      "article": "1",
+      "title": "Admisibilidad del amparo",
+      "text": "La acción de amparo será admisible contra todo acto u omisión de autoridad pública que, en forma actual o inminente, lesione, restrinja, altere o amenace, con arbitrariedad o ilegalidad manifiesta, los derechos o garantías explícita o implícitamente reconocidas por la Constitución Nacional, con excepción de la libertad individual tutelada por el habeas corpus.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "0b6cffbb331c0e800440f08d97ab02e19daef0244efc85d535d853357ebbbb6f",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "admisibilidad"
+      ],
+      "synonyms": [
+        "amparo",
+        "arbitrariedad manifiesta"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-2",
+      "normId": "L16986",
+      "article": "2",
+      "title": "Inadmisibilidad",
+      "text": "La acción de amparo no será admisible cuando: a) Existan recursos o remedios judiciales o administrativos que permitan obtener la protección del derecho o garantía constitucional de que se trate; b) El acto impugnado emanara de un órgano del Poder Judicial o haya sido adoptado por expresa aplicación de la Ley Nº 16970; c) La intervención judicial comprometiera directa o indirectamente la regularidad, continuidad y eficacia de la prestación de un servicio público, o el desenvolvimiento de actividades esenciales del Estado; d) La determinación de la eventual invalidez del acto requiriese una mayor amplitud de debate o de prueba o la declaración de inconstitucionalidad de leyes, decretos u ordenanzas; e) La demanda no hubiese sido presentada dentro de los quince días hábiles a partir de la fecha en que el acto fue ejecutado o debió producirse.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "094a9a4d7c6bf913c53f90b10ba4859ac627093f12f50a1dd688b47359d42e3c",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "plazos"
+      ],
+      "synonyms": [
+        "inadmisible",
+        "quince días",
+        "mayor debate"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-3",
+      "normId": "L16986",
+      "article": "3",
+      "title": "Rechazo sin sustanciación",
+      "text": "Si la acción fuese manifiestamente inadmisible, el juez la rechazará sin sustanciación, ordenando el archivo de las actuaciones.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "16647765d672868a14fc4747373b79df8d0ff4a9d80eee245769fcf61309e21f",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo"
+      ],
+      "synonyms": [
+        "inadmisible",
+        "archivo"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-4",
+      "normId": "L16986",
+      "article": "4",
+      "title": "Competencia",
+      "text": "Será competente para conocer de la acción de amparo el juez de Primera Instancia con jurisdicción en el lugar en que el acto se exteriorice o tuviere o pudiere tener efecto. Se observarán, en lo pertinente, las normas sobre competencia por razón de la materia, salvo que aquéllas engendraran dudas razonables al respecto, en cuyo caso el juez requerido deberá conocer de la acción. Cuando un mismo acto u omisión afectare el derecho de varias personas, entenderá en todas esas acciones el juzgado que hubiese prevenido, disponiéndose la acumulación de autos, en su caso.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "16bba53b0684650c0032949c9f741468ef136ebdc401849a8b3d425a802ec300",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "competencia"
+      ],
+      "synonyms": [
+        "competencia",
+        "prevención",
+        "acumulación"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-5",
+      "normId": "L16986",
+      "article": "5",
+      "title": "Legitimación",
+      "text": "La acción de amparo podrá deducirse por toda persona individual o jurídica, por sí o por apoderados, que se considere afectada conforme los presupuestos establecidos en el artículo 1º. Podrá también ser deducida, en las mismas condiciones, por las asociaciones que sin revestir el carácter de personas jurídicas justificaren, mediante la exhibición de sus estatutos, que no contrarían una finalidad de bien público.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "75a8541c39a9442083ae9c3cebd62f7255e66e3e383fce553a111866c65026ad",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "legitimacion"
+      ],
+      "synonyms": [
+        "legitimación",
+        "asociaciones"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-6",
+      "normId": "L16986",
+      "article": "6",
+      "title": "Contenido de la demanda",
+      "text": "La demanda deberá interponerse por escrito y contendrá: a) El nombre, apellido y domicilios real y constituido del accionante; b) La individualización, en lo posible, del autor del acto u omisión impugnados; c) La relación circunstanciada de los extremos que hayan producido o estén en vías de producir la lesión del derecho o garantía constitucional; d) La petición, en términos claros y precisos.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "575920a525f47516d386533f82806cd99895ca071eca7b344c72c2dd3c14b564",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "demanda"
+      ],
+      "synonyms": [
+        "demanda",
+        "requisitos",
+        "petición"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-7",
+      "normId": "L16986",
+      "article": "7",
+      "title": "Prueba",
+      "text": "Con el escrito de interposición, el accionante acompañará la prueba instrumental de que disponga, o la individualizará si no se encontrase en su poder, con indicación del lugar en donde se encuentre. Indicará, asimismo, los demás medios de prueba de que pretenda valerse. El número de testigos no podrá exceder de cinco por cada parte, siendo carga de éstas hacerlos comparecer a su costa a la audiencia, sin perjuicio de requerir el uso de la fuerza pública en caso de necesidad. No se admitirá la prueba de absolución de posiciones.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "831d82ee4d66528fe4ae9f042406b2b8c43f34df3f65aae249f9dfb505d1742b",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "prueba"
+      ],
+      "synonyms": [
+        "prueba",
+        "testigos",
+        "instrumental"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-8",
+      "normId": "L16986",
+      "article": "8",
+      "title": "Informe circunstanciado",
+      "text": "Cuando la acción fuera admisible, el juez requerirá la autoridad que corresponda un informe circunstanciado acerca de los antecedentes y fundamento de la medida impugnada, el que deberá ser evacuado dentro del plazo prudencial que fije. La omisión del pedido de informe es causa de nulidad del proceso.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "99142bb7bb381ddb91ba193df9b667a12797312c5dee4b8fec20063b483edee0",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "informe"
+      ],
+      "synonyms": [
+        "informe",
+        "nulidad"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-9",
+      "normId": "L16986",
+      "article": "9",
+      "title": "Audiencia de prueba",
+      "text": "Si alguna de las partes hubiese ofrecido prueba, deberá ordenarse su inmediata producción, fijándose la audiencia respectiva, la que deberá tener lugar dentro del tercer día.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "5d43735f21e5c40e1f800dcfb34afc4136a970c074943b07fe5ff79d1d24beb5",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "prueba"
+      ],
+      "synonyms": [
+        "audiencia",
+        "tercer día"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-10",
+      "normId": "L16986",
+      "article": "10",
+      "title": "Incomparecencia",
+      "text": "Si el actor no compareciera a la audiencia por sí o por apoderado, se lo tendrá por desistido, ordenándose el archivo de las actuaciones, con imposición de costas. Si fuere el accionado quien no concurriere, se recibirá la prueba del actor si la hubiere, y pasarán los autos para dictar sentencia.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "ba9d912823a3c60679223026645cba406941f6faac232b2d642e7dbca0a59f40",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "costas"
+      ],
+      "synonyms": [
+        "desistido",
+        "costas",
+        "audiencia"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-11",
+      "normId": "L16986",
+      "article": "11",
+      "title": "Plazo de sentencia",
+      "text": "Evacuado el informe a que se refiere el artículo 8 o realizada, en su caso, la audiencia de prueba, el juez dictará sentencia dentro del tercer día. Si existiera prueba pendiente de producción por causas ajenas a la diligencia de las partes, el juez podrá ampliar dicho término por igual plazo.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "84bd0cf699782891d39e21eeb89905004ebeb47e5f64236f01e1b7def7aedf8f",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "sentencia"
+      ],
+      "synonyms": [
+        "sentencia",
+        "tercer día"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-12",
+      "normId": "L16986",
+      "article": "12",
+      "title": "Contenido de la sentencia",
+      "text": "La sentencia que admita la acción deberá contener: a) La mención concreta de la autoridad contra cuya resolución, acto u omisión se concede el amparo; b) La determinación precisa de la conducta a cumplir, con las especificaciones necesarias para su debida ejecución; c) El plazo para el cumplimiento de lo resuelto.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "6e1ee740004be4a3cf58ea358d5488313c9af805071cdf97e3ee460d6c240a15",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "sentencia"
+      ],
+      "synonyms": [
+        "sentencia",
+        "contenido",
+        "plazo"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-13",
+      "normId": "L16986",
+      "article": "13",
+      "title": "Cosa juzgada",
+      "text": "La sentencia firme declarativa de la existencia o inexistencia de la lesión, restricción, alteración o amenaza arbitraria o manifiestamente ilegal de un derecho o garantía constitucional, hace cosa juzgada respecto del amparo, dejando subsistente el ejercicio de las acciones o recursos que puedan corresponder a las partes, con independencia del amparo.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "7f4469cbae22db518a742184fb3871ac05d9545024a9f329ff743ef960713ead",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "cosa-juzgada"
+      ],
+      "synonyms": [
+        "cosa juzgada"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-14",
+      "normId": "L16986",
+      "article": "14",
+      "title": "Costas",
+      "text": "Las costas se impondrán al vencido. No habrá condena en costas si antes del plazo fijado para la contestación del informe a que se refiere el artículo 8, cesara el acto u omisión en que se fundó el amparo.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "fc14b5081411f6f783814ff109d7a31b943fef805d37511c8feff6cf9dfc8866",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "costas"
+      ],
+      "synonyms": [
+        "costas",
+        "vencido"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-15",
+      "normId": "L16986",
+      "article": "15",
+      "title": "Apelación",
+      "text": "Sólo serán apelables la sentencia definitiva, las resoluciones previstas en el artículo 3º y las que dispongan medidas de no innovar o la suspensión de los efectos del acto impugnado. El recurso deberá interponerse dentro de 48 horas de notificada la resolución impugnada y ser fundado, debiendo denegarse o concederse en ambos efectos dentro de las 48 horas. En este último caso se elevará el expediente al respectivo Tribunal de Alzada dentro de las 24 horas de ser concedido. En caso de que fuera denegado, entenderá dicho Tribunal en el recurso directo que deberá articularse dentro de las 24 horas de ser notificada la denegatoria, debiendo dictarse sentencia dentro del tercer día.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "e79154841295558afd5e430d09db8180bb42aa8e80fcba88035d574d477c3b77",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "apelacion"
+      ],
+      "synonyms": [
+        "apelación",
+        "48 horas",
+        "efecto suspensivo"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-16",
+      "normId": "L16986",
+      "article": "16",
+      "title": "Trámite sin incidentes",
+      "text": "Es improcedente la recusación sin causa y no podrán articularse cuestiones de competencia, excepciones previas, ni incidentes.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "55e6ccb342483b87f58c9c1a6930e025c380a6bcd75a893af0076a4a74d5aa5f",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo"
+      ],
+      "synonyms": [
+        "recusación",
+        "incidentes",
+        "excepciones"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-17",
+      "normId": "L16986",
+      "article": "17",
+      "title": "Supletoriedad procesal",
+      "text": "Son supletorias de las normas precedentes las disposiciones procesales en vigor.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "20624ecfaf6ea215740a40528d57a84f0b8d9643626a34e512ffa0fba1601518",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo"
+      ],
+      "synonyms": [
+        "supletorio",
+        "código procesal"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-18",
+      "normId": "L16986",
+      "article": "18",
+      "title": "Ámbito de aplicación",
+      "text": "Esta ley será de aplicación en la Capital Federal y en el territorio de Tierra del Fuego, Antártida e Islas del Atlántico Sur. Asimismo, será aplicada por los jueces federales de las provincias en los casos en que el acto impugnado mediante la acción de amparo provenga de una autoridad nacional.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "eca2227a964b1f5597d5c672af2eb949a8ec48d57de0f38de23680c21cf2e5b6",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo",
+        "competencia"
+      ],
+      "synonyms": [
+        "fuero federal",
+        "ámbito"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A16986-19",
+      "normId": "L16986",
+      "article": "19",
+      "title": "Vigencia",
+      "text": "La presente ley comenzará a regir desde el día de su publicación en el Boletín Oficial.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-16986-46871/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "dba55073eef7ed9ca9fe0635b07cbc0f5afe85d0dda35bdc5c63e915418e735e",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "amparo"
+      ],
+      "synonyms": [
+        "vigencia"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A25873-1",
+      "normId": "L25873",
+      "article": "1",
+      "title": "Captación y derivación (art. 45 bis)",
+      "text": "Todo prestador de servicios de telecomunicaciones deberá disponer de los recursos humanos y tecnológicos necesarios para la captación y derivación de las comunicaciones que transmiten, para su observación remota a requerimiento del Poder Judicial o el Ministerio Público de conformidad con la legislación vigente. Los prestadores de servicios de telecomunicaciones deberán soportar los costos derivados de dicha obligación y dar inmediato cumplimiento a la misma a toda hora y todos los días del año. El Poder Ejecutivo nacional reglamentará las condiciones técnicas y de seguridad que deberán cumplir los prestadores de servicios de telecomunicaciones con relación a la captación y derivación de las comunicaciones para su observación remota por parte del Poder Judicial o el Ministerio Público.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-25873-92549/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "58b04992b7424140fe4ef3c3f70eeaa77e8ac8a1bbd6f8d7f226e655044911a0",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "telecomunicaciones",
+        "interceptacion",
+        "intimidad"
+      ],
+      "synonyms": [
+        "captación",
+        "derivación",
+        "observación remota",
+        "ley espía"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A25873-2",
+      "normId": "L25873",
+      "article": "2",
+      "title": "Retención de datos por diez años (art. 45 ter)",
+      "text": "Los prestadores de servicios de telecomunicaciones deberán registrar y sistematizar los datos filiatorios y domiciliarios de sus usuarios y clientes y los registros de tráfico de comunicaciones cursadas por los mismos para su consulta sin cargo por parte del Poder Judicial o el Ministerio Público de conformidad con la legislación vigente. La información referida en el presente deberá ser conservada por los prestadores de servicios de telecomunicaciones por el plazo de diez años.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-25873-92549/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "3ba6d51401c3970c7b78708ccbf8c5e3aa55ffa2f404c00e1268450c47974738",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "telecomunicaciones",
+        "datos",
+        "intimidad"
+      ],
+      "synonyms": [
+        "retención de datos",
+        "diez años",
+        "tráfico",
+        "ley espía"
+      ],
+      "verified": true
+    },
+    {
+      "id": "A25873-3",
+      "normId": "L25873",
+      "article": "3",
+      "title": "Responsabilidad del Estado (art. 45 quáter)",
+      "text": "El Estado nacional asume la responsabilidad por los eventuales daños y perjuicios que pudieran derivar para terceros, de la observación remota de las comunicaciones y de la utilización de la información de los datos filiatorios y domiciliarios y tráfico de comunicaciones de clientes y usuarios, provista por los prestadores de servicios de telecomunicaciones.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/ley-25873-92549/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "8e2606b4ba7ed86a9c3fa4e4b71047880918bdaafdfed93b8d6b5f7b878c6edb",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "telecomunicaciones",
+        "responsabilidad"
+      ],
+      "synonyms": [
+        "daños",
+        "responsabilidad estatal"
+      ],
+      "verified": true
+    },
+    {
+      "id": "D1563-1",
+      "normId": "D1563",
+      "article": "1",
+      "title": "Definiciones de captación y derivación",
+      "text": "A los efectos del presente decreto, se adoptan las siguientes definiciones: Telecomunicaciones: Toda transmisión, emisión o recepción de signos, señales, escritos, imágenes, sonidos o informaciones de cualquier naturaleza, por hilo, cable eléctrico, atmósfera, radio electricidad, medios ópticos y/u otros medios electromagnéticos, o de cualquier clase existentes o a crearse en el futuro. Prestador: Es el licenciatario del servicio de Telecomunicaciones, en cualquiera de sus formas o modalidades, presentes o futuras. Usuario: Es toda persona física o jurídica que utiliza los servicios de un prestador. Captación de la telecomunicación: Es la obtención e individualización, a través de medios técnicos, del contenido de una telecomunicación que se produce entre dos o más puntos o destinos. Derivación de la telecomunicación: Es la modificación de la ruta de la telecomunicación con el fin de permitir su observación remota, sin modificar su contenido y características originales. Observación remota: Es la observación de las telecomunicaciones efectuada desde las centrales de monitoreo del órgano del Estado encargado de ejecutar las interceptaciones. Información asociada: Debe entenderse por tal, toda la información original, no alterada por proceso alguno, que permita individualizar el origen y destino de las telecomunicaciones, tales como registros de tráfico, identificación y ubicación del equipo utilizado, y todo otro elemento que torne factible establecer técnicamente su existencia y características.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/norma-100806/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "8c73aae1b4c1c7f12b6a48ae2d97818467fd180b89d58c949288b740f0f6a9a8",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "telecomunicaciones",
+        "interceptacion"
+      ],
+      "synonyms": [
+        "captación",
+        "derivación",
+        "reglamentación"
+      ],
+      "verified": true
+    },
+    {
+      "id": "D357-1",
+      "normId": "D357",
+      "article": "1",
+      "title": "Suspensión del decreto 1563/04",
+      "text": "Suspéndese la aplicación del Decreto Nº 1563 del 8 de noviembre de 2004.",
+      "jurisdiction": "national",
+      "sourceUrl": "https://www.argentina.gob.ar/normativa/nacional/decreto-357-2005-105679/texto",
+      "sourceDate": "2026-09-16",
+      "textHash": "785e63291aa18b699b21105bc7a9dd056afeaa9d4df0b9dc829ca99b9a326b63",
+      "verificationMethod": "manual",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "telecomunicaciones",
+        "suspension"
+      ],
+      "synonyms": [
+        "suspensión",
+        "reglamento suspendido"
+      ],
+      "verified": true
+    }
+  ],
+  "hash": "89a5da9374011bc1c6e942bab98b8071d4426abe58ebcda0b4bf85a7fd8182ae"
+}

@@ -27,7 +27,7 @@ const GOLDEN_SET_URL = new URL(
   MODULE_URL,
 );
 const MAX_CORPUS_BYTES = 500 * 1024;
-const EXPECTED_PACK_IDS = ['ar-ccyc-core', 'ar-cpccn-core', 'ar-ldc-core'];
+const EXPECTED_PACK_IDS = ['ar-ccyc-core', 'ar-cpccn-core', 'ar-ldc-core', 'ar-cn-core', 'ar-amparo-core'];
 
 interface PackManifestEntry {
   id: string;
@@ -101,7 +101,7 @@ describe('corpus normativo publicado', () => {
     }
   });
 
-  it('el manifiesto lista los 3 packs con hash y bytes coincidentes', () => {
+  it('el manifiesto lista los packs con hash y bytes coincidentes', () => {
     const manifest = readJson(MANIFEST_URL) as PackManifest;
     expect(manifest.schema).toBe('openher.legal.packs/1');
     expect([...manifest.packs.map((entry) => entry.id)].sort()).toEqual(

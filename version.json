@@ -1,8 +1,8 @@
 {
-  "version": "1.6.0",
-  "versionCode": 11,
+  "version": "1.6.1",
+  "versionCode": 12,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "D4B5E67275E3A2D3867AAA708B01ED5EE084885C677214F934C3355B04FD9F44",
-  "notes": "Circuito adversarial real (firewall por rol + contratos de escrito) + PDF en mas navegadores + adjuntos colapsables.",
+  "sha256": "PENDING_APK_BUILD",
+  "notes": "Corpus legal x4: Constitucion (12 arts) + amparo y ley espia (24 normas). Recall verificado.",
   "publishedAt": "2026-09-16"
 }
