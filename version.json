@@ -2,7 +2,7 @@
   "version": "1.7.3",
   "versionCode": 16,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "PENDIENTE",
+  "sha256": "5AA657EB6CF37D9DD7901D1DB94634C423989CE1C7D6862C8957564D219643FA",
   "notes": "Modo abogado activa directo (sin dialogo, reutiliza o crea expediente) + tool X en la app.",
   "publishedAt": "2026-09-16"
 }
