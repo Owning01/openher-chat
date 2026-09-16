@@ -2,7 +2,7 @@
   "version": "1.4.1",
   "versionCode": 7,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "PENDING_APK_BUILD",
+  "sha256": "25D9BCCD983D4CBB96FE889923264311BAF9E8CC92D28FA677799B8472630B36",
   "notes": "Fix adjuntos: fallback a texto crudo si el Word raro falla + sin avisos fantasma ante doble gesto.",
   "publishedAt": "2026-09-16"
 }
