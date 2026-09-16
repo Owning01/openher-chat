@@ -159,7 +159,7 @@ describe('createSearchService — proxy', () => {
     });
     const service = createSearchService(searchSettings({ mode: 'brave' }), KEYS, http, {
       now: () => FIXED_NOW,
-      proxy: { mode: 'custom', baseUrl: 'https://proxy.example.com/', openCodeProxyUrl: null },
+      proxy: { mode: 'custom', baseUrl: 'https://proxy.example.com/', openCodeProxyUrl: null, xServiceUrl: null },
     });
     const outcome = await service.search(input());
     expect(outcome.provider).toBe('brave');
@@ -178,7 +178,7 @@ describe('createSearchService — proxy', () => {
     });
     const service = createSearchService(searchSettings(), KEYS, http, {
       now: () => FIXED_NOW,
-      proxy: { mode: 'custom', baseUrl: 'https://proxy.example.com/', openCodeProxyUrl: null },
+      proxy: { mode: 'custom', baseUrl: 'https://proxy.example.com/', openCodeProxyUrl: null, xServiceUrl: null },
     });
     const outcome = await service.search(input());
     expect(outcome.provider).toBe('tavily');
@@ -190,7 +190,7 @@ describe('createSearchService — proxy', () => {
     const http = fakeHttp(() => jsonResponse(BRAVE_PAYLOAD));
     const service = createSearchService(searchSettings({ mode: 'brave' }), KEYS, http, {
       now: () => FIXED_NOW,
-      proxy: { mode: 'custom', baseUrl: 'ftp://proxy.example.com', openCodeProxyUrl: null },
+      proxy: { mode: 'custom', baseUrl: 'ftp://proxy.example.com', openCodeProxyUrl: null, xServiceUrl: null },
     });
     const error = await service.search(input()).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ToolExecutionError);
@@ -203,7 +203,7 @@ describe('createSearchService — proxy', () => {
     const http = fakeHttp(() => jsonResponse(BRAVE_PAYLOAD));
     const service = createSearchService(searchSettings({ mode: 'brave' }), KEYS, http, {
       now: () => FIXED_NOW,
-      proxy: { mode: 'custom', baseUrl: null, openCodeProxyUrl: null },
+      proxy: { mode: 'custom', baseUrl: null, openCodeProxyUrl: null, xServiceUrl: null },
     });
     const error = await service.search(input()).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ToolExecutionError);
@@ -216,7 +216,7 @@ describe('createSearchService — proxy', () => {
     const http = fakeHttp(() => jsonResponse({ error: 'unauthorized' }, 401));
     const service = createSearchService(searchSettings({ mode: 'brave' }), KEYS, http, {
       now: () => FIXED_NOW,
-      proxy: { mode: 'custom', baseUrl: 'https://proxy.example.com', openCodeProxyUrl: null },
+      proxy: { mode: 'custom', baseUrl: 'https://proxy.example.com', openCodeProxyUrl: null, xServiceUrl: null },
     });
     const error = await service.search(input()).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(ToolExecutionError);
@@ -230,7 +230,7 @@ describe('createSearchService — proxy', () => {
     });
     const service = createSearchService(searchSettings(), keyVaultWith({}), http, {
       now: () => FIXED_NOW,
-      proxy: { mode: 'custom', baseUrl: 'https://proxy.example.com', openCodeProxyUrl: null },
+      proxy: { mode: 'custom', baseUrl: 'https://proxy.example.com', openCodeProxyUrl: null, xServiceUrl: null },
       isBrowser: true,
     });
     const error = await service.search(input()).catch((e: unknown) => e);

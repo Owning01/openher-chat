@@ -19,7 +19,8 @@ export interface ModesMenuProps {
   onToggleResearch: (enabled: boolean) => void;
   /** Apagar desvincula (`setLegalCase(null)`); encender sin caso lo resuelve el menú con el diálogo. */
   onToggleLegal: (enabled: boolean) => void;
-  onOpenCaseDialog: () => void;
+  /** Encender el modo: activa directo (auto-crea/vincula expediente o degrada a diálogo). */
+  onActivateLegal: () => void;
   onConfigureLegal: () => void;
   /** Acceso "Abrir expediente" (sólo con caso vinculado). */
   onOpenCase?: () => void;
@@ -42,7 +43,7 @@ export function ModesMenu({
   legalConfigured,
   onToggleResearch,
   onToggleLegal,
-  onOpenCaseDialog,
+  onActivateLegal,
   onConfigureLegal,
   onOpenCase,
   className,
@@ -93,8 +94,9 @@ export function ModesMenu({
             className="hit-expand"
             onCheckedChange={(enabled) => {
               if (enabled) {
-                // Encender sin caso abre el diálogo de vínculo en vez de inventar un caso.
-                onOpenCaseDialog();
+                // Encender activa el modo directo: el dueño auto-crea o vincula
+                // el expediente sin bloquear con un diálogo (rápido para el usuario).
+                onActivateLegal();
                 return;
               }
               onToggleLegal(false);

@@ -7,7 +7,7 @@ import { Badge, Button, Input, Select } from '@/shared/ui';
 import type { SelectOption } from '@/shared/ui';
 
 import { useSettingsStore } from '../state/settingsStore';
-import { probeProxy, probeOpenCodeProxy } from '../state/proxyProbe';
+import { probeOpenCodeProxy, probeProxy, probeXService } from '../state/proxyProbe';
 import type { ProxyProbeResult } from '../state/proxyProbe';
 import { isHttpUrl } from '../state/validation';
 
@@ -21,10 +21,13 @@ export function ProxySection() {
   const modeId = useId();
   const urlId = useId();
   const openCodeId = useId();
+  const xId = useId();
   const [url, setUrl] = useState(proxy.baseUrl ?? '');
   const [probe, setProbe] = useState<ProbeState>({ status: 'idle' });
   const [openCodeUrl, setOpenCodeUrl] = useState(proxy.openCodeProxyUrl ?? '');
   const [openCodeProbe, setOpenCodeProbe] = useState<ProbeState>({ status: 'idle' });
+  const [xUrl, setXUrl] = useState(proxy.xServiceUrl ?? '');
+  const [xProbe, setXProbe] = useState<ProbeState>({ status: 'idle' });
 
   useEffect(() => {
     setUrl(proxy.baseUrl ?? '');
@@ -33,6 +36,10 @@ export function ProxySection() {
   useEffect(() => {
     setOpenCodeUrl(proxy.openCodeProxyUrl ?? '');
   }, [proxy.openCodeProxyUrl]);
+
+  useEffect(() => {
+    setXUrl(proxy.xServiceUrl ?? '');
+  }, [proxy.xServiceUrl]);
 
   const modeOptions: SelectOption[] = [
     { value: 'direct', label: t('settings.proxyModeDirect') },
@@ -69,6 +76,22 @@ export function ProxySection() {
     setOpenCodeProbe({ status: 'testing' });
     const result = await probeOpenCodeProxy(http, openCodeUrl);
     setOpenCodeProbe(result.ok ? { status: 'ok' } : { status: 'error', result });
+  };
+
+  const commitXUrl = (): void => {
+    const trimmed = xUrl.trim().replace(/\/+$/, '');
+    if (trimmed === (proxy.xServiceUrl ?? '')) return;
+    if (trimmed === '' || !isHttpUrl(trimmed)) {
+      if (trimmed === '') void patch({ proxy: { xServiceUrl: null } });
+      return;
+    }
+    void patch({ proxy: { xServiceUrl: trimmed } });
+  };
+
+  const runXProbe = async (): Promise<void> => {
+    setXProbe({ status: 'testing' });
+    const result = await probeXService(http, xUrl);
+    setXProbe(result.ok ? { status: 'ok' } : { status: 'error', result });
   };
 
   return (
@@ -155,6 +178,38 @@ export function ProxySection() {
           ) : null}
         </div>
         <p className="text-sm text-muted">{t('settings.proxyOpenCodeHint')}</p>
+      </div>
+
+      <div className="space-y-1.5 border-t border-border-subtle pt-3">
+        <label htmlFor={xId} className="block text-sm font-medium text-text">
+          {t('settings.proxyXUrl')}
+        </label>
+        <Input
+          id={xId}
+          value={xUrl}
+          placeholder={t('settings.proxyXUrlPlaceholder')}
+          spellCheck={false}
+          onChange={(event) => setXUrl(event.target.value)}
+          onBlur={commitXUrl}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={xProbe.status === 'testing'}
+            disabled={!isHttpUrl(xUrl)}
+            onClick={() => void runXProbe()}
+          >
+            {t('common.test')}
+          </Button>
+          {xProbe.status === 'ok' ? <Badge variant="success">{t('common.connected')}</Badge> : null}
+          {xProbe.status === 'error' ? (
+            <p role="status" className="text-xs text-danger">
+              {probeMessage(t, xProbe.result)}
+            </p>
+          ) : null}
+        </div>
+        <p className="text-sm text-muted">{t('settings.proxyXHint')}</p>
       </div>
     </div>
   );

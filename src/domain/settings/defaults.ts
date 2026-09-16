@@ -62,6 +62,7 @@ export const DEFAULT_PROXY_SETTINGS: ProxySettings = {
   mode: 'direct',
   baseUrl: null,
   openCodeProxyUrl: null,
+  xServiceUrl: null,
 };
 
 export const DEFAULT_UI_SETTINGS: UiSettings = {

@@ -18,7 +18,7 @@ import { useResearchSettings } from '@/features/research/useResearchSettings';
 import { useT } from '@/i18n/useT';
 import type { Translate } from '@/i18n/useT';
 import { ChevronDown, PanelRightOpen, Scale } from '@/shared/icons';
-import { Badge, IconButton } from '@/shared/ui';
+import { Badge, IconButton, useToast } from '@/shared/ui';
 
 import { CircuitDialog, ROLE_LABEL_KEYS } from './components/CircuitDialog';
 import type { CircuitStage } from './components/CircuitDialog';
@@ -277,6 +277,41 @@ function ChatPageContent() {
   // Workspace configurado por onboarding o Ajustes; si no, el menú/diálogo ofrecen configurarlo.
   const legalConfigured =
     appSettings?.legal.setupCompleted === true || appSettings?.legal.enabled === true;
+  const { push } = useToast();
+  // Encender “Modo abogado” activa directo: con casos disponibles reutiliza el
+  // último expediente; si no hay ninguno, crea uno mínimo y avisa. Sin tienda
+  // de expedientes (servicios reducidos) degrada al diálogo de vínculo de siempre.
+  const handleActivateLegal = (): void => {
+    const api = caseApi;
+    if (api === null) {
+      setCaseDialogOpen(true);
+      return;
+    }
+    void (async () => {
+      // Reutiliza el expediente activo más reciente si ya hay alguno; si no,
+      // crea uno mínimo para que el modo quede usable al instante.
+      await api.getState().list();
+      const cases = api.getState().cases;
+      const linked = cases.find((entry) => entry.status === 'active') ?? cases[0] ?? null;
+      if (linked !== null) {
+        await setLegalCase(linked.id);
+        return;
+      }
+      const created = await api.getState().create({
+        title: t('modes.defaultCaseTitle'),
+        jurisdiction: appSettings?.legal.defaultJurisdiction ?? 'national',
+        court: '',
+        matter: 'civil',
+        clientRole: 'plaintiff',
+      });
+      if (created === null) {
+        setCaseDialogOpen(true);
+        return;
+      }
+      await setLegalCase(created.id);
+      push({ title: t('modes.legalActivated'), variant: 'success' });
+    })();
+  };
 
   // Circuito adversarial del expediente (redactor → atacante → juez → síntesis):
   // etapas existentes y derivación con semilla. El auto-envío lo consume `load()` del
@@ -383,10 +418,10 @@ function ChatPageContent() {
             void setResearchMode(enabled);
           }}
           onToggleLegal={(enabled) => {
-            // Apagar desvincula; encender sin caso lo resuelve el menú abriendo el diálogo.
+            // Apagar desvincula; encender lo resuelve `handleActivateLegal`.
             if (!enabled) void setLegalCase(null);
           }}
-          onOpenCaseDialog={() => setCaseDialogOpen(true)}
+          onActivateLegal={handleActivateLegal}
           onConfigureLegal={() => navigate(SETTINGS_HREF)}
           onOpenCase={
             legalCaseId === null ? undefined : () => navigate(`#/legal/${legalCaseId}`)

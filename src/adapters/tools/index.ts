@@ -17,6 +17,7 @@ import { resolveProxyBaseUrl } from './proxy';
 import type { ProxyResolution } from './proxy';
 import { createSearchService } from './webSearch';
 import type { SearchService } from './webSearch';
+import { createXSearchTool } from './xSearch';
 
 export const WEB_SEARCH_TOOL_NAME = 'web_search';
 export const OPEN_URL_TOOL_NAME = 'open_url';
@@ -45,9 +46,18 @@ export function createToolRegistry(settings: AppSettings, deps: ToolRegistryDeps
   });
   const webSearch = createWebSearchTool(settings, searchService, now, browser, proxy.baseUrl !== null);
   const readUrl = createOpenUrlTool(settings, deps, now, browser, proxy);
+  // Tool X opcional: solo con el proxy propio configurado en Ajustes.
+  const tools: ToolDefinition[] = [webSearch, readUrl];
+  if (settings.proxy.xServiceUrl !== null && settings.proxy.xServiceUrl.trim() !== '') {
+    try {
+      tools.push(createXSearchTool({ http: deps.http, baseUrl: settings.proxy.xServiceUrl, now }));
+    } catch {
+      // URL inválida: se ignora la tool, el resto del turno sigue igual.
+    }
+  }
   return {
-    list: () => [webSearch, readUrl],
-    get: (name) => (name === webSearch.name ? webSearch : name === readUrl.name ? readUrl : undefined),
+    list: () => tools,
+    get: (name) => tools.find((tool) => tool.name === name),
   };
 }
 

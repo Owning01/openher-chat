@@ -236,7 +236,7 @@ describe('ChatPage - menú de modos (T27)', () => {
     expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent('Modo general');
   });
 
-  it('encender el modo legal sin caso abre el diálogo de vínculo', async () => {
+  it('encender el modo legal sin caso crea un expediente mínimo y activa directo', async () => {
     const harness = createChatHarness();
     const caseStore = createCaseStore({ cases: new MemoryLegalCaseRepository() });
     renderChatPageWithCases(harness.services, caseStore);
@@ -244,14 +244,21 @@ describe('ChatPage - menú de modos (T27)', () => {
     openModesMenu();
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
 
-    expect(await screen.findByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByTestId('case-link-empty')).toBeInTheDocument();
+    // Activación directa: sin diálogo bloqueante; el expediente mínimo queda creado.
+    await waitFor(() =>
+      expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'true'),
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(caseStore.getState().cases).toHaveLength(1);
+    });
+    expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent('Consulta sin título');
   });
 
-  it('vincular un expediente desde el diálogo activa el modo legal en el menú', async () => {
+  it('con un expediente existente, encender el modo lo vincula automáticamente', async () => {
     const harness = createChatHarness();
     const legalRepo = new MemoryLegalCaseRepository();
-    const created = await legalRepo.create({
+    await legalRepo.create({
       title: 'Pérez c/ Gómez',
       jurisdiction: 'national',
       court: '',
@@ -263,12 +270,12 @@ describe('ChatPage - menú de modos (T27)', () => {
 
     openModesMenu();
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
-    fireEvent.click(await screen.findByTestId(`case-link-option-${created.id}`));
 
-    // El diálogo se cierra y el menú deriva el vínculo con su título.
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    openModesMenu();
-    expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'true');
+    // Activación directa: reutiliza el expediente existente sin diálogo.
+    await waitFor(() =>
+      expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'true'),
+    );
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent(
       'Expediente vinculado: Pérez c/ Gómez.',
     );
@@ -277,7 +284,7 @@ describe('ChatPage - menú de modos (T27)', () => {
   it('apagar el modo legal desde el menú desvincula el expediente', async () => {
     const harness = createChatHarness();
     const legalRepo = new MemoryLegalCaseRepository();
-    const created = await legalRepo.create({
+    await legalRepo.create({
       title: 'Caso testigo',
       jurisdiction: 'caba',
       court: '',
@@ -289,8 +296,9 @@ describe('ChatPage - menú de modos (T27)', () => {
 
     openModesMenu();
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
-    fireEvent.click(await screen.findByTestId(`case-link-option-${created.id}`));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'true'),
+    );
 
     openModesMenu();
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
@@ -344,11 +352,9 @@ describe('ChatPage - menú de modos (T27)', () => {
     const caseStore = createCaseStore({ cases: legalRepo });
     renderChatPageWithCases(harness.services, caseStore);
 
-    // Vincula el expediente: el modo investigación sigue apagado.
+    // Activa el modo legal (auto-vincula el expediente): investigación sigue apagada.
     openModesMenu();
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
-    fireEvent.click(await screen.findByTestId(`case-link-option-${created.id}`));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     await waitFor(async () => {
       expect((await harness.repo.get(conversation.id))?.legalCaseId).toBe(created.id);
     });
@@ -393,10 +399,8 @@ describe('ChatPage - modo legal con expediente (G1)', () => {
 
     openModesMenu();
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
-    fireEvent.click(await screen.findByTestId(`case-link-option-${created.id}`));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    // Con vínculo aparece el preview (conteos vacíos: el mapping aún no existe).
+    // Con el vínculo automático aparece el preview (conteos vacíos: el mapping aún no existe).
     const preview = await screen.findByTestId('legal-privacy-preview');
     expect(preview).toHaveTextContent('Sin datos anonimizados en este envío.');
 

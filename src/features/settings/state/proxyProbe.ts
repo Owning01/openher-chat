@@ -30,6 +30,27 @@ export async function probeOpenCodeProxy(http: HttpClient, baseUrl: string): Pro
   }
 }
 /**
+ * Probe del servicio X propio: `GET {base}/x/user-posts?user=elonmusk&count=1`.
+ * Un 2xx confirma que el proxy está vivo y con la sesión de X configurada.
+ */
+export async function probeXService(http: HttpClient, baseUrl: string): Promise<ProxyProbeResult> {
+  const base = normalizeProxyBaseUrl(baseUrl);
+  if (base === null) return { ok: false, code: 'invalid_url' };
+  try {
+    const response = await http.request({
+      url: `${base}/x/user-posts?user=elonmusk&count=1`,
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      timeoutMs: 20_000,
+    });
+    if (response.status >= 200 && response.status < 300) return { ok: true };
+    return { ok: false, code: 'http_error', status: response.status };
+  } catch {
+    return { ok: false, code: 'network' };
+  }
+}
+
+/**
  * Probe best-effort del proxy: `GET {base}/health` y, si no responde 2xx,
  * `POST {base}/v1/search` con una consulta mínima.
  */

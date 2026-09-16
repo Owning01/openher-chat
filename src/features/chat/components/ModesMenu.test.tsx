@@ -22,7 +22,7 @@ function renderMenu(overrides: Partial<ModesMenuProps> = {}): ModesMenuProps {
     legalConfigured: true,
     onToggleResearch: vi.fn(),
     onToggleLegal: vi.fn(),
-    onOpenCaseDialog: vi.fn(),
+    onActivateLegal: vi.fn(),
     onConfigureLegal: vi.fn(),
     ...overrides,
   };
@@ -134,13 +134,13 @@ describe('ModesMenu', () => {
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
     expect(props.onToggleLegal).toHaveBeenCalledTimes(1);
     expect(props.onToggleLegal).toHaveBeenCalledWith(false);
-    expect(props.onOpenCaseDialog).not.toHaveBeenCalled();
+    expect(props.onActivateLegal).not.toHaveBeenCalled();
   });
 
-  it('encender el modo abogado sin caso abre el diálogo de vínculo', () => {
+  it('encender el modo abogado activa directo (sin diálogo bloqueante)', () => {
     const props = renderMenu({ legalCaseId: null });
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
-    expect(props.onOpenCaseDialog).toHaveBeenCalledTimes(1);
+    expect(props.onActivateLegal).toHaveBeenCalledTimes(1);
     expect(props.onToggleLegal).not.toHaveBeenCalled();
   });
 
@@ -149,7 +149,7 @@ describe('ModesMenu', () => {
     fireEvent.click(screen.getByTestId('modes-menu-research'));
     expect(props.onToggleResearch).toHaveBeenCalledWith(true);
     expect(props.onToggleLegal).not.toHaveBeenCalled();
-    expect(props.onOpenCaseDialog).not.toHaveBeenCalled();
+    expect(props.onActivateLegal).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
     expect(props.onToggleLegal).toHaveBeenCalledWith(false);

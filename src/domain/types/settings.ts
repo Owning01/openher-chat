@@ -46,6 +46,11 @@ export interface ProxySettings {
    * No viaja en los paquetes compartidos (es infraestructura de cada uno).
    */
   openCodeProxyUrl: string | null;
+  /**
+   * Proxy X propio (VPS con `xproxy/`): habilita la tool `x_search` en el agente.
+   * `null` = sin acceso a X. No viaja en paquetes compartidos.
+   */
+  xServiceUrl: string | null;
 }
 
 export interface UiSettings {
