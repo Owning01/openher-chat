@@ -111,6 +111,10 @@ function ScopedApp() {
   const user = useAuthUser();
   const uid = user?.uid ?? null;
   const [scoped, setScoped] = useState<BootState>({ status: 'loading' });
+  // Remonta el shell (stores + pantallas) sin recargar la página cuando el
+  // pull tardío trae nube más nueva. Nunca re-ejecuta este efecto (no hay
+  // loop) y conserva la ruta/hash.
+  const [syncEpoch, setSyncEpoch] = useState(0);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -151,7 +155,7 @@ function ScopedApp() {
         if (outcome === BOOT_SYNC_TIMEOUT) {
           void syncTask.then(
             (late) => {
-              if (late === 'pulled') window.location.reload();
+              if (active && late === 'pulled') setSyncEpoch((epoch) => epoch + 1);
             },
             () => undefined,
           );
@@ -179,7 +183,7 @@ function ScopedApp() {
   }
   return (
     <AppShellContent
-      key={uid}
+      key={`${uid}:${syncEpoch}`}
       services={scoped.services}
       settings={scoped.settings}
       storageError={scoped.storageError}

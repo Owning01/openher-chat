@@ -56,6 +56,7 @@ async function defaultPdfJsLoader(): Promise<PdfJsLib> {
               getTextContent: async () => ({
                 items: (await page.getTextContent()).items.map((item) => ({
                   str: 'str' in item && typeof item.str === 'string' ? item.str : undefined,
+                  hasEOL: 'hasEOL' in item && item.hasEOL === true ? true : undefined,
                 })),
               }),
               getViewport: (viewportOptions) => {
