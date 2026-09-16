@@ -2,7 +2,7 @@
   "version": "1.4.2",
   "versionCode": 8,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "PENDING_APK_BUILD",
+  "sha256": "FF0A43B45001BE3E4A40351A1A4B6828C805E2D033FF7B8F7EBA93F71DD3B9C4",
   "notes": "Arranque rapido (nube en fondo) + web lista para proxy OpenCode (requiere Blaze) + bypass de cache para API.",
   "publishedAt": "2026-09-16"
 }
