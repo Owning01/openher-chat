@@ -39,9 +39,54 @@ func corsHeaders(h http.Header) {
 	h.Set("Access-Control-Max-Age", "3600")
 }
 
+// allowedOrigin decide si el navegador de ese origen puede usar el proxy.
+// Sin Origin (curl, apps nativas) siempre se permite: el que abusa igual
+// puede falsificarlo, así que la defensa real contra martilleo es el rate
+// limit de nginx; esto solo evita el uso casual desde otras webs.
+func allowedOrigin(allowList string, origin string) bool {
+	if origin == "" {
+		return true
+	}
+	for _, allowed := range strings.Split(allowList, ",") {
+		if strings.TrimSpace(allowed) == origin {
+			return true
+		}
+	}
+	return false
+}
+
+// corsWriter refleja el Origin permitido en vez del comodín.
+type corsWriter struct {
+	http.ResponseWriter
+	origin string
+	wrote  bool
+}
+
+func (w *corsWriter) WriteHeader(status int) {
+	if !w.wrote {
+		w.wrote = true
+		if w.origin != "" {
+			w.Header().Set("Access-Control-Allow-Origin", w.origin)
+		}
+	}
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *corsWriter) Write(data []byte) (int, error) {
+	if !w.wrote {
+		w.WriteHeader(http.StatusOK)
+	}
+	return w.ResponseWriter.Write(data)
+}
+
 func main() {
 	addr := flag.String("addr", "127.0.0.1:8080", "dirección de escucha")
 	upstream := flag.String("upstream", "https://opencode.ai", "origen a proxear")
+	allowOrigins := flag.String(
+		"allow-origins",
+		"https://chatopenher.web.app,http://localhost:5173",
+		"orígenes web permitidos (coma); vacío = cualquiera",
+	)
 	flag.Parse()
 
 	target, err := url.Parse(strings.TrimRight(*upstream, "/"))
@@ -81,8 +126,21 @@ func main() {
 		_, _ = w.Write([]byte("ok"))
 	})
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodOptions {
+		origin := r.Header.Get("Origin")
+		if *allowOrigins != "" && !allowedOrigin(*allowOrigins, origin) {
 			corsHeaders(w.Header())
+			http.Error(w, "origin not allowed", http.StatusForbidden)
+			return
+		}
+		if r.Method == http.MethodOptions {
+			if origin != "" {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+			} else {
+				w.Header().Set("Access-Control-Allow-Origin", "*")
+			}
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.Header().Set("Access-Control-Max-Age", "3600")
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
@@ -91,7 +149,7 @@ func main() {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		proxy.ServeHTTP(w, r)
+		proxy.ServeHTTP(&corsWriter{ResponseWriter: w, origin: origin}, r)
 	})
 
 	server := &http.Server{

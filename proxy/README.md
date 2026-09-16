@@ -1,55 +1,56 @@
-# Proxy OpenCode en tu VPS (Go, sin dependencias)
+# Proxy OpenCode en VPS (Go, sin dependencias)
 
 La web de OpenHer Chat no puede llamar directo a `https://opencode.ai`
 (el gateway no autoriza navegadores). Este binario reenvía todo tal cual
 (incluido el streaming) y agrega el permiso CORS. La API key sigue en tu
 dispositivo: viaja en tu propio header y solo se reenvía, nunca se guarda.
 
-## 1. DNS (en tu proveedor del dominio progavio)
+Flujo: **todo se cocina local, al VPS solo sube el binario listo + activar**.
+Nada se compila ni comprime en el VPS. Los datos reales (IP, puerto SSH,
+dominio) viven en `datostecnicos.md` (local, **nunca se commitea**).
 
-Crear un registro **A**: `zen` → IP pública del VPS. Esperar que resuelva:
+## 1. DNS (una vez, en tu registrador)
+
+Registro **A**: `<SUBDOMINIO>` → IP del VPS. Verificar:
 
 ```sh
-dig +short zen.tu-dominio
+dig +short <SUBDOMINIO>
 ```
 
-## 2. Compilar (en el VPS, Ubuntu con Go)
+## 2. Compilar + comprimir (local)
 
 ```sh
 cd proxy
-go build -o openher-zen-proxy .
-sudo install -m 0755 openher-zen-proxy /usr/local/bin/openher-zen-proxy
+$env:GOOS="linux"; $env:GOARCH="amd64"
+go build -ldflags="-s -w" -o <TMP>/openher-zen-proxy .
+<UPX> --best --ultra-brute <TMP>/openher-zen-proxy
 ```
 
-## 3. Servicio (systemd)
+## 3. Subir y activar (único paso en el VPS)
 
 ```sh
-sudo install -m 0644 openher-zen-proxy.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now openher-zen-proxy
-systemctl is-active openher-zen-proxy
-curl -s http://127.0.0.1:8080/healthz  # -> ok
+scp -P <PUERTO> <TMP>/openher-zen-proxy <USER>@<VPS>:/root/openher-zen-proxy
+ssh -p <PUERTO> <USER>@<VPS> "mv /root/openher-zen-proxy /usr/local/bin/openher-zen-proxy && chmod +x /usr/local/bin/openher-zen-proxy && systemctl restart openher-zen-proxy && curl -s http://127.0.0.1:8080/healthz"
+# -> ok
 ```
 
-## 4. HTTPS con Caddy (HTTPS obligatorio: la app es HTTPS)
+Servicio systemd: `openher-zen-proxy.service`
+(escucha solo en `127.0.0.1:8080`; ver `datostecnicos.md` para el usuario).
+
+Seguridad: solo `GET`/`POST` al upstream fijo (no es un proxy abierto),
+orígenes web restringidos por flag (`-allow-origins`), rate limit por IP en
+nginx y TLS obligatorio (la app es HTTPS).
+
+## 4. TLS (cuando el DNS resuelva, una vez)
 
 ```sh
-sudo apt install -y caddy
-sudo PROXY_DOMAIN=zen.tu-dominio caddy fmt --overwrite Caddyfile
-sudo install -m 0644 Caddyfile /etc/caddy/Caddyfile
-# Editar /etc/caddy/Caddyfile: reemplazar {$PROXY_DOMAIN} por zen.tu-dominio
-sudo systemctl reload caddy
+ssh -p <PUERTO> <USER>@<VPS> "certbot --nginx -d <SUBDOMINIO> --non-interactive --agree-tos -m <MAIL> && curl -s https://<SUBDOMINIO>/zen/go/v1/models | head -c 60"
 ```
 
-## 5. Probar
+Sitio nginx: `sitio-nginx.conf` (reemplazar `<SUBDOMINIO>`; buffering off +
+timeout 300s para SSE + `limit_req` 30r/m por IP).
 
-```sh
-curl -s https://zen.tu-dominio/zen/go/v1/models | head -c 120
-# -> {"object":"list","data":[...]}
-```
+## 5. En la app
 
-## 6. En la app
-
-Ajustes → Proxy → **Proxy OpenCode**: `https://zen.tu-dominio` → Probar
-(conectado) → Guardar. La API key se configura igual que siempre, en el
-proveedor OpenCode.
+Ajustes → Proxy → **Proxy OpenCode**: `https://<SUBDOMINIO>` →
+Probar (conectado) → se guarda solo.

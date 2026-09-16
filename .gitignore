@@ -18,6 +18,9 @@ scratch/
 .env.*
 !.env.example
 
+# Datos reales del VPS (nunca a GitHub)
+proxy/datostecnicos.md
+
 # Logs
 logs/
 *.log
