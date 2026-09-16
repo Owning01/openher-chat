@@ -8,20 +8,28 @@ Estado: MVP nacional (Fase 1). Todo el corpus vive en el dispositivo como
 assets estáticos versionados y verificables por hash. Nada sale del
 dispositivo: los packs se validan en runtime antes de indexarse.
 
-## 1. Contenido del corpus (v1.0.0)
+## 1. Contenido del corpus (v1.7.0)
 
 | Pack | Norma | Provisiones | Versión |
 | --- | --- | --- | --- |
-| `ar-ccyc-core` | Código Civil y Comercial de la Nación (Ley 26.994) | 4 (arts. 2554, 2560, 2562, 2564) | 1.0.0 |
-| `ar-cpccn-core` | Código Procesal Civil y Comercial de la Nación (Ley 17.454) | 6 (arts. 68, 310, 311, 330, 347, 377) | 1.0.0 |
-| `ar-ldc-core` | Ley de Defensa del Consumidor (Ley 24.240) | 2 (arts. 50, 52 bis) | 1.0.0 |
+| `ar-ccyc-full` | Código Civil y Comercial completo (Ley 26.994) | 2677 | 1.0.0 |
+| `ar-ccyc-core` | CCyC — núcleo de prescripción (arts. 2554-2564) | 4 | 1.0.0 |
+| `ar-cpccn-core` | CPCCN — núcleo | 6 | 1.0.0 |
+| `ar-ldc-core` | Ley de Defensa del Consumidor — núcleo | 2 | 1.0.0 |
+| `ar-cn-core` | Constitución Nacional — derechos y garantías | 12 | 1.0.0 |
+| `ar-amparo-core` | Amparo y ley espía (16.986, 25.873, decretos) | 24 | 1.0.0 |
+| `ar-tucuman-cpcct` | CPCCT Tucumán (Ley 9531) | 724 | 1.0.0 |
+| `ar-tucuman-familia` | Procesal de Familia Tucumán (Ley 9581) | 329 | 1.0.0 |
+| `ar-tucuman-laboral` | Procesal Laboral Tucumán (Ley 6204) | 164 | 1.0.0 |
+| `ar-tucuman-constitucion` | Constitución de Tucumán (2006) | 187 | 1.0.0 |
+| `ar-tucuman-acordadas` | Acordadas CSJ Tucumán | 52 | 1.0.0 |
 
-Total: 3 packs, 3 normas, 12 provisiones, ~16 KB. Tope del MVP: 500 KB
-(el corpus viaja en el paquete instalable; se audita `dist/legal/**`).
-El corpus es un núcleo deliberadamente acotado: cubre los artículos que los
-casos de uso típicos citan con más frecuencia (prescripción, requisitos de
-la demanda, excepciones previas, caducidad, prueba, costas y consumo).
-No es una versión completa de cada código (ver §8, gap report).
+Total: 11 packs, ~4200 provisiones, ~4.6 MB (los códigos completos son
+grandes a propósito: el índice busca en el dispositivo y solo los pasajes
+relevantes viajan al modelo). Tope: 6 MB (se audita `dist/legal/**`).
+Los packs provinciales se generaron de documentos oficiales aportados por
+el usuario (`importante/`) con `verificationMethod: scripted`.
+
 
 ## 2. Formato del pack (`openher.legal.pack/1`)
 
