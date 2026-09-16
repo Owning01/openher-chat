@@ -2,7 +2,7 @@
   "version": "1.4.3",
   "versionCode": 9,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "PENDING_APK_BUILD",
+  "sha256": "13B2DD1FDEBE210C6F35EAF6450090EE2B3370D849A16DF699C0A85523322496",
   "notes": "Fix: sin recargas al arrancar (remontaje interno) + PDF conserva saltos de linea.",
   "publishedAt": "2026-09-16"
 }
