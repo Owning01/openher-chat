@@ -36,7 +36,9 @@ self.addEventListener('fetch', (event) => {
   // El corpus legal (`/legal/`) evita el cache-first: va siempre a red.
   // Los packs se versionan con `?v=<hash>` y el manifiesto con `?t=<ahora>`,
   // así una actualización del corpus nunca queda pegada en la caché del SW.
-  if (url.pathname.startsWith('/legal/')) {
+  // El proxy de OpenCode (`/zen/`, p. ej. la lista de modelos) tampoco se
+  // cachea: son respuestas de API que deben llegar frescas.
+  if (url.pathname.startsWith('/legal/') || url.pathname.startsWith('/zen/')) {
     event.respondWith(fetch(request));
     return;
   }

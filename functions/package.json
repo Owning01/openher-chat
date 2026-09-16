@@ -1,0 +1,13 @@
+{
+  "name": "openher-chat-functions",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Proxy same-origin para el gateway de OpenCode (sin CORS en el upstream).",
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "firebase-functions": "^6.1.0"
+  }
+}

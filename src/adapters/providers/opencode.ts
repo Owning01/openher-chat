@@ -73,26 +73,33 @@ export function openCodeVariantFromBaseUrl(baseUrl: string): OpenCodeVariant {
 }
 
 /**
- * OpenCode no emite cabeceras CORS, así que en el dev server de Vite se
- * reescribe `https://opencode.ai` a la ruta relativa `/zen`, que Vite proxya al
- * gateway. Fuera de dev se deja la URL absoluta: Android nativo usa
- * `CapacitorHttp` (esquiva CORS) y el build web no tiene este proxy.
+ * OpenCode no emite cabeceras CORS, así que fuera de Android nativo
+ * (`CapacitorHttp` esquiva CORS) se usa el proxy same-origin `/zen`:
+ * en dev lo sirve Vite y en producción la función `zen` de Firebase.
  */
-export function resolveOpenCodeBaseUrl(baseUrl: string, useViteProxy: boolean): string {
+export function resolveOpenCodeBaseUrl(baseUrl: string, useSameOriginProxy: boolean): string {
   const normalized = baseUrl.replace(/\/+$/, '');
-  if (!useViteProxy) return normalized;
+  if (!useSameOriginProxy) return normalized;
   return normalized.replace(/^https?:\/\/opencode\.ai(?=\/|$)/, '');
 }
 
-/** Solo `vite dev` (MODE=development); en Vitest es `test` y en build `production`. */
-const USE_VITE_PROXY = import.meta.env.MODE === 'development';
+import { Capacitor } from '@capacitor/core';
+
+/**
+ * Proxy same-origin salvo en Android nativo. En Vitest (`test`) nunca se
+ * proxya para llamadas herméticas; en `development` lo sirve Vite y en
+ * `production` web la función de Firebase (rewrite `/zen/**`).
+ */
+const USE_SAME_ORIGIN_PROXY =
+  import.meta.env.MODE === 'development' ||
+  (import.meta.env.MODE === 'production' && !Capacitor.isNativePlatform());
 
 export function createOpenCodeAdapter(
   config: ProviderConfig,
   deps: AdapterDeps,
   delegates: OpenCodeDelegates,
 ): ProviderAdapter {
-  const baseUrl = resolveOpenCodeBaseUrl(config.baseUrl, USE_VITE_PROXY);
+  const baseUrl = resolveOpenCodeBaseUrl(config.baseUrl, USE_SAME_ORIGIN_PROXY);
   const variant = openCodeVariantFromBaseUrl(config.baseUrl);
   // El adapter hoja arma las URLs desde `config.baseUrl`; si hubo rewrite (dev),
   // le pasamos una copia con la ruta proxada para que el chat también la use.
