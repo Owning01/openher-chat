@@ -1,0 +1,4 @@
+# Binarios: sin conversión de fin de línea (un CRLF rompe xref de PDF y ZIPs).
+*.pdf binary
+*.png binary
+*.apk binary

@@ -10,7 +10,7 @@ import type { RunAgentParams } from '@/domain/agent/runAgent';
 import { buildSystemPrompt } from '@/domain/agent/systemPrompt';
 import { truncateText } from '@/domain/chat/truncateText';
 import { buildCaseBrief, buildLegalBriefMessages } from '@/domain/legal/brief';
-import { buildLegalRolePrompt, buildLegalSystemPrompt } from '@/domain/legal/prompt';
+import { buildLegalCircuitSystemPrompt, buildLegalSystemPrompt } from '@/domain/legal/prompt';
 import { redactLegalCase } from '@/domain/legal/redaction';
 import type { RedactionMapping } from '@/domain/legal/redaction';
 import { estimateLegalTokens, searchLegalPassages } from '@/domain/legal/retrieval';
@@ -1240,7 +1240,17 @@ function composeSystemPrompt(
   const override = conversation.systemPromptOverride;
   const persona = (override !== null && override.trim() !== '' ? override : settings.chat.systemPrompt).trim();
   const scaffold = buildSystemPrompt({ researchMode: webResearchMode, now, locale: settings.locale });
-  // El scaffold legal se agrega sólo en modo legal; mismos inputs ⇒ mismo string.
+  const circuitRole = legalMode === false ? null : (conversation.legalRole ?? null);
+  if (circuitRole !== null) {
+    const circuit = buildLegalCircuitSystemPrompt({
+      role: circuitRole,
+      locale: settings.locale,
+      today: new Date(now).toISOString(),
+    });
+    const combined = [scaffold, circuit].filter((part) => part !== '').join('\n\n');
+    return persona === '' ? combined : `${persona}\n\n${combined}`;
+  }
+  // El scaffold legal se agrega sólo en modo legal sin rol; mismos inputs ⇒ mismo string.
   const legal =
     legalMode === false
       ? ''
@@ -1249,17 +1259,8 @@ function composeSystemPrompt(
           perspectives: settings.legal.perspectives,
           today: new Date(now).toISOString(),
         });
-  // El rol del circuito refina el scaffold con sus propias reglas; sin rol no
-  // se agrega nada (chat legal común). Determinista por conversación.
-  const role = legalMode === false ? '' : roleScaffold(conversation.legalRole);
-  const combined = [scaffold, legal, role].filter((part) => part !== '').join('\n\n');
+  const combined = [scaffold, legal].filter((part) => part !== '').join('\n\n');
   return persona === '' ? combined : `${persona}\n\n${combined}`;
-}
-
-/** Scaffold del rol del circuito; `null`/ausente = sin rol. */
-function roleScaffold(legalRole: LegalCircuitRole | null | undefined): string {
-  if (legalRole === null || legalRole === undefined) return '';
-  return buildLegalRolePrompt(legalRole);
 }
 
 /** Consulta de recuperación: título del caso + texto del usuario (sin PII extra). */

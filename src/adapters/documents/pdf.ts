@@ -42,7 +42,28 @@ export interface PdfJsLib {
 
 export type PdfJsLoader = () => Promise<PdfJsLib>;
 
+/**
+ * pdfjs-dist 6 calcula huellas con `Uint8Array.prototype.toHex` (Baseline
+ * 2025): en motores viejos no existe y TODA extracción muere con
+ * `hashOriginal.toHex is not a function`. Polyfill mínimo y guardado (solo
+ * si falta, sin tocar nada cuando el motor ya lo trae).
+ */
+function ensureToHex(): void {
+  const proto = Uint8Array.prototype as unknown as { toHex?: unknown };
+  if (typeof proto.toHex === 'function') return;
+  Object.defineProperty(proto, 'toHex', {
+    value: function toHex(this: Uint8Array): string {
+      let out = '';
+      for (const byte of this) out += byte.toString(16).padStart(2, '0');
+      return out;
+    },
+    writable: true,
+    configurable: true,
+  });
+}
+
 async function defaultPdfJsLoader(): Promise<PdfJsLib> {
+  ensureToHex();
   const mod = await import('pdfjs-dist');
   return {
     getDocument: (options) => {

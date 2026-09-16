@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import type { ChatMessage, MessageContent, ToolResult } from '@/domain/types/chat';
+import { splitAttachmentBlocks } from '@/domain/chat/attachments';
 import { deanonymize } from '@/domain/legal/redaction';
 import type { RedactionMapping } from '@/domain/legal/redaction';
 import { useCitationGuard } from '@/features/legal/state/CitationGuardContext';
@@ -173,8 +174,7 @@ function MessageItemInner({
   // post-guard (con `[VERIFICAR]` visibles en contexto legal). En modo legal
   // además se restauran los valores con el mapping del turno (sin mapping
   // no se restaura). Fuera del provider el guard es identidad.
-  const text = legalMode ? deanonymizeOrSelf(markedText, mapping) : markedText;
-  const blocks = useMemo(
+  const text = legalMode ? deanonymizeOrSelf(markedText, mapping) : markedText;  const blocks = useMemo(
     () =>
       buildDisplayBlocks(message.content).map((block) =>
         block.type === 'text'
@@ -184,6 +184,9 @@ function MessageItemInner({
     [message.content, guard, legalMode, mapping],
   );
   const userImages = useMemo(() => blocks.filter((block) => block.type === 'image'), [blocks]);
+  // Adjuntos acoplados pero colapsados: la burbuja muestra el texto y cada
+  // documento como <details> (se abre al tocar). Solo presentación.
+  const userSplit = useMemo(() => (isUser ? splitAttachmentBlocks(text) : null), [isUser, text]);
   // Los contadores describen la salida del modelo; sólo se muestran en el
   // asistente y cuando hay citas (en modo general siempre son cero).
   const counts = useMemo(() => guard.counters(rawText), [guard, rawText]);
@@ -237,7 +240,25 @@ function MessageItemInner({
                 ))}
               </ul>
             ) : null}
-            {text.trim() !== '' ? <p className="whitespace-pre-wrap break-words">{text}</p> : null}
+            {userSplit !== null && userSplit.text !== '' ? (
+              <p className="whitespace-pre-wrap break-words">{userSplit.text}</p>
+            ) : null}
+            {userSplit?.attachments.map((attachment) => (
+              <details
+                key={attachment.name}
+                className="mt-1.5 max-w-full rounded-lg bg-black/15 px-2.5 py-1.5 text-xs"
+              >
+                <summary
+                  title={attachment.name}
+                  className="cursor-pointer truncate font-medium select-none"
+                >
+                  {attachment.name}
+                </summary>
+                <pre className="mt-1 max-h-40 overflow-auto font-mono whitespace-pre-wrap break-words opacity-90">
+                  {attachment.body}
+                </pre>
+              </details>
+            ))}
           </div>
         )
       ) : (

@@ -1,8 +1,8 @@
 {
-  "version": "1.5.0",
-  "versionCode": 10,
+  "version": "1.6.0",
+  "versionCode": 11,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "8D121D739BF1A9CA8B4F05444D91EADFED72ED1B40EB4AF0B10C252D58CAD61D",
-  "notes": "Proxy OpenCode propio (VPS): campo en Ajustes + proxy Go verificado. Sin dependencias nuevas en la app.",
+  "sha256": "PENDING_APK_BUILD",
+  "notes": "Circuito adversarial real (firewall por rol + contratos de escrito) + PDF en mas navegadores + adjuntos colapsables.",
   "publishedAt": "2026-09-16"
 }

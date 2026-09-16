@@ -100,3 +100,29 @@ export function composeMessageWithAttachments(draft: string, attachments: readon
   if (blocks.length === 0) return draft;
   return `${trimmed}\n\n${blocks.join('\n\n')}`;
 }
+
+export interface SplitMessage {
+  /** Texto propio del usuario, sin bloques de adjuntos. */
+  text: string;
+  /** Adjuntos en orden de aparición (solo presentación; el dato sigue intacto). */
+  attachments: { name: string; body: string }[];
+}
+
+const ATTACHMENT_PATTERN = /^## (.+): (.+)\n```\n([\s\S]*?)\n```$/gm;
+
+/**
+ * Separa el texto propio de los bloques de adjuntos para mostrarlos
+ * colapsados en la burbuja del usuario. Solo presentación: le copiado,
+ * edición e IA usan el texto completo.
+ */
+export function splitAttachmentBlocks(message: string): SplitMessage {
+  const attachments: { name: string; body: string }[] = [];
+  const text = message
+    .replace(ATTACHMENT_PATTERN, (_match, _label: string, name: string, body: string) => {
+      attachments.push({ name: name.trim(), body });
+      return '';
+    })
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return { text, attachments };
+}

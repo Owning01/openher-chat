@@ -929,6 +929,31 @@
         "tsc -b + pnpm test + build verdes"
       ],
       "evaluatorVerdict": null
+    },
+    {
+      "id": "T21",
+      "milestone": "M-CIRCUIT-FIX",
+      "title": "Teamwork circuito adversarial real + dossier serio + release v1.6.0",
+      "status": "IN_PROGRESS",
+      "wave": 14,
+      "assignee": "teamwork-standard",
+      "dependencies": [],
+      "estimateHours": 2,
+      "parallelWith": [],
+      "allowedFiles": [
+        "src/domain/legal/prompt.ts",
+        "src/domain/legal/circuit.ts",
+        "src/features/chat/state/chatStore.ts",
+        "src/adapters/documents/pdf.ts",
+        "src/domain/chat/attachments.ts",
+        "src/features/chat/components/MessageList.tsx",
+        "version.json"
+      ],
+      "definitionOfDone": [
+        "tsc -b + pnpm test + pnpm build verdes",
+        "firewall de rol + contratos + dossier verificados (evaluator)",
+        "version/versionCode/sha256 en sync + web + APK + App Distribution"
+      ]
     }
   ],
   "phase": "PLANNED"

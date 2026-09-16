@@ -158,6 +158,31 @@ describe('MessageList', () => {
     expect(screen.queryByRole('button', { name: 'Descargar como archivo' })).not.toBeInTheDocument();
   });
 
+  it('el adjunto del usuario va acoplado pero colapsado (se abre al tocar)', () => {
+    const composed = 'mira el caso\n\n## Documento PDF: fallo.pdf\n```\ntexto largo del fallo\n```';
+    const { container } = render(
+      <MessageList messages={[userMessage('u1', composed)]} runStatus="idle" {...handlers()} />,
+    );
+
+    expect(screen.getByText('mira el caso')).toBeInTheDocument();
+    const details = container.querySelector('details');
+    expect(details).not.toBeNull();
+    expect(details?.querySelector('summary')?.textContent).toBe('fallo.pdf');
+    expect(details?.hasAttribute('open')).toBe(false);
+  });
+
+  it('el asistente no colapsa sus bloques de código', () => {
+    const { container } = render(
+      <MessageList
+        messages={[assistantMessage('a1', [{ type: 'text', text: '## Título\n```\ncódigo\n```' }])]}
+        runStatus="idle"
+        {...handlers()}
+      />,
+    );
+
+    expect(container.querySelector('details')).toBeNull();
+  });
+
   it('el mensaje de usuario muestra las imágenes adjuntas', () => {
     const message = userMessage('u1', '');
     message.content.push({

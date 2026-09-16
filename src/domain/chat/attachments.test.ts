@@ -5,6 +5,7 @@ import {
   formatAttachmentBlock,
   isSupportedAttachment,
   MAX_ATTACHMENT_CHARS,
+  splitAttachmentBlocks,
   toAttachmentDraft,
 } from './attachments';
 
@@ -58,5 +59,25 @@ describe('composeMessageWithAttachments', () => {
   it('marca el truncado en el bloque', () => {
     const block = formatAttachmentBlock({ id: 'a1', name: 'a.txt', text: 'parte', truncated: true });
     expect(block).toContain('[…truncado]');
+  });
+});
+
+describe('splitAttachmentBlocks', () => {
+  it('separa texto y adjuntos del mensaje compuesto (ida y vuelta)', () => {
+    const composed = composeMessageWithAttachments('miren esto', [
+      { id: 'a1', name: 'a.txt', text: 'contenido uno', truncated: false },
+      { id: 'a2', name: 'b.pdf', text: 'contenido dos', truncated: true, sourceLabel: 'Documento PDF' },
+    ]);
+    const split = splitAttachmentBlocks(composed);
+    expect(split.text).toBe('miren esto');
+    expect(split.attachments).toHaveLength(2);
+    expect(split.attachments[0]).toEqual({ name: 'a.txt', body: 'contenido uno' });
+    expect(split.attachments[1]?.name).toBe('b.pdf');
+    expect(split.attachments[1]?.body).toContain('contenido dos');
+  });
+
+  it('sin bloques devuelve el texto intacto', () => {
+    expect(splitAttachmentBlocks('hola mundo')).toEqual({ text: 'hola mundo', attachments: [] });
+    expect(splitAttachmentBlocks('   ')).toEqual({ text: '', attachments: [] });
   });
 });
