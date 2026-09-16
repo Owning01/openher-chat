@@ -1,8 +1,8 @@
 {
-  "version": "1.6.1",
-  "versionCode": 12,
+  "version": "1.7.0",
+  "versionCode": 13,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "5CBE17ECE2E8EB1A0E12D0F58887239EDB55ECA416287DD6A339475506670FBE",
-  "notes": "Corpus legal x4: Constitucion (12 arts) + amparo y ley espia (24 normas). Recall verificado.",
+  "sha256": "PENDING_APK_BUILD",
+  "notes": "Corpus legal completo: CCyC entero (2677 arts) + codigos de Tucuman (CPCCT, Familia, Laboral, Constitucion) + nacionales.",
   "publishedAt": "2026-09-16"
 }

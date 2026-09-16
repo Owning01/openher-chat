@@ -1,0 +1,3317 @@
+{
+  "schema": "openher.legal.pack/1",
+  "id": "ar-tucuman-laboral",
+  "title": "Código Procesal Laboral de Tucumán (Ley 6204)",
+  "version": "1.0.0",
+  "publishedAt": "2026-09-16",
+  "jurisdiction": "tucuman",
+  "matter": "civil-commercial",
+  "license": {
+    "name": "Documento oficial provincial (uso interno)",
+    "url": "https://legislaturadetucuman.gob.ar/",
+    "attribution": "Legislatura / Poder Judicial de Tucumán",
+    "verifiedAt": "2026-09-16"
+  },
+  "sources": [
+    {
+      "url": "importante/Código Procesal Laboral.txt",
+      "retrievedAt": "2026-09-16",
+      "note": "Documento provincial aportado por el usuario (Código Procesal Laboral.txt)."
+    }
+  ],
+  "norms": [
+    {
+      "id": "CPLT",
+      "short": "CPL Tucumán",
+      "long": "Código Procesal Laboral de Tucumán",
+      "aliases": [
+        "Ley 6204"
+      ],
+      "jurisdiction": "tucuman",
+      "sourceUrl": "https://legislaturadetucuman.gob.ar/"
+    }
+  ],
+  "provisions": [
+    {
+      "id": "CPLT-1",
+      "normId": "CPLT",
+      "article": "1",
+      "title": "- Magistratura del Trabajo",
+      "text": "- Magistratura del Trabajo. La Magistratura del Trabajo estarácompuesta por:\n\nLa Corte Suprema de Justicia, en la composición que determinanlas normas que reglamentan su ejercicio.\n\nLa Cámara de Apelación del Trabajo, en el número que establece laLey Orgánica del Poder Judicial, divididas en salas de dos (2)miembros cada una.\n\nLos Juzgados del Trabajo de Primera Instancia funcionarán enforma unipersonal y en el número que establezca la Ley Orgánicadel Poder Judicial.\n\nTÍTULO II\n\nCompetencia por Grado",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "fa3747ec20c988b606b27266d86e2a851abf49504278631a51535a8224375bba",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-2",
+      "normId": "CPLT",
+      "article": "2",
+      "title": "- Competencia de la Corte Suprema de Justicia",
+      "text": "- Competencia de la Corte Suprema de Justicia. La Corte Suprema de\n\nJusticia entenderá en los recursos de casación e inconstitucionalidad.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "823a0babad6e43b45641256c6f0804370412649dffd5699e15d16c9030c18738",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-3",
+      "normId": "CPLT",
+      "article": "3",
+      "title": "- Competencia de las Cámaras del Trabajo",
+      "text": "- Competencia de las Cámaras del Trabajo. La Cámara de Apelación delTrabajo conocerá como tribunal de apelación en los juicios ordinarios de trabajo y de las demás resoluciones dictadas por los jueces del Trabajo de primera instancia, cuando correspondiere.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "f1974332ec74b08b84234aa85bfb31c37f8695beecc2545f6cfb7ae7fe10a27e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-4",
+      "normId": "CPLT",
+      "article": "4",
+      "title": "- Competencia de los Jueces del Trabajo",
+      "text": "- Competencia de los Jueces del Trabajo. Los Jueces del Trabajoconocerán y decidirán:\n\nEn la tramitación, sentencia y ejecución de los juiciosordinarios.\n\nEn la resolución y ejecución de las cuestiones incidentales.\n\nEn los supuestos de terminación excepcional de los procesosprevistos en este Código.\n\nComo jueces de tramitación, sentencia y ejecución, en losprocedimientos especiales contemplados en la presente Ley, y enlos casos establecidos por leyes especiales.\n\nEn la homologación de convenios.\n\nEn la imposición de costas y regulación de honorarios de lassentencias que dictaren.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "e3ad65039a29bf95e02f1a0281e6d296a3ee5c60655afb46105647abfee8c52a",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-5",
+      "normId": "CPLT",
+      "article": "5",
+      "title": "- Recusación",
+      "text": "- Recusación. Los Jueces del Trabajo sólo podrán ser recusados porlas causas establecidas en el Código Procesal en lo Civil y Comercial, noadmitiéndose la recusación sin causa.\n\nTÍTULO III\n\nCompetencia por Materia",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a6297cf2f2745cb37cf0aa7c72e8ca66747ba7e1b784eb2a533894257493c0bc",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-6",
+      "normId": "CPLT",
+      "article": "6",
+      "title": "- Supuestos de competencia material",
+      "text": "- Supuestos de competencia material. La Justicia del Trabajo conocerá:\n\nEn los conflictos jurídicos individuales derivados del contratode trabajo, cualquiera sea la norma legal que deba aplicarse.Se excluyen los litigios entre partes vinculadas por una relaciónde empleo público, aun cuando se discutiere la aplicación denormas de Derecho del Trabajo, convenciones colectivas o laudoscon fuerza de tales o accidentes y enfermedades del trabajo.\n\nEn las demandas de desalojo de inmuebles concedidos a lostrabajadores como accesorio de la relación de trabajo, sinperjuicio de las disposiciones especiales de los estatutosprofesionales.\n\nEn las acciones por cobro de aportes y contribuciones de obrassociales, cuotas gremiales y demás instituidas por leyes,decretos, resoluciones o convenciones colectivas de trabajo.\n\nEn los conflictos derivados del Derecho Colectivo del Trabajo,cuando las leyes de fondo así lo determinen.\n\nEn las ejecuciones de multas impuestas por la AutoridadAdministrativa del trabajo.\n\nEn los recursos contra resoluciones de la AutoridadAdministrativa del Trabajo.\n\nTÍTULO IV\n\nCompetencia Territorial",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "10026f980c06354f95ee78c21ee510b67cd12f2571dbdb9d36315f27184e410e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-7",
+      "normId": "CPLT",
+      "article": "7",
+      "title": "- Demanda iniciada por el trabajador",
+      "text": "- Demanda iniciada por el trabajador. La demanda entablada por el\n\ntrabajador, o sus causahabientes, podrá iniciarse indistintamente a su elección:\n\nAnte el juez del domicilio del demandado.\n\nAnte el juez del lugar en que se ha prestado el trabajo.\n\nAnte el juez del lugar de celebración del contrato de trabajo.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "e9733d0751dd52c51d8036de547abcd0eff8c102a091ec89bc8010080c82f570",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-8",
+      "normId": "CPLT",
+      "article": "8",
+      "title": "- Demanda iniciada por el empleador",
+      "text": "- Demanda iniciada por el empleador. La demanda entablada por elempleador deberá deducirse ante el juez del domicilio del trabajador o del lugar de trabajo.\n\nLIBRO II\n\nDisposiciones Generales\n\nTÍTULO I\n\nHechos y Actos Jurídicos\n\nCAPÍTULO I\n\nPrincipios Generales",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "95f55d85ee6f7b6a445d5ed7cc9958e61ae98ca4d69e1771df00c87b3d5ac4dd",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-9",
+      "normId": "CPLT",
+      "article": "9",
+      "title": "- Registración digital y doble instancia",
+      "text": "- Registración digital y doble instancia. Los procesos laboralesserán digitales y de doble instancia.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a0ae2b409b8899e7fdb1da8b64b89155ea6f79df0913e292d2d86ca0ca01896b",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-10",
+      "normId": "CPLT",
+      "article": "10",
+      "title": "- Facultades de los Magistrados",
+      "text": "- Facultades de los Magistrados. Los magistrados del Trabajo tienenla dirección y contralor en la tramitación de los juicios que conozcan, pudiendo disponer de oficio todas las diligencias que estimen convenientes paraestablecer la verdad de los hechos cuestionados o evitar nulidades de procedimiento, tratando de no lesionar el derecho de defensa de las partes,ni suplir su negligencia, ni romper la igualdad en el proceso.\n\nDe oficio, el juez deberá tomar las medidas tendientes a prevenir osancionar cualquier acto contrario a la dignidad de la Justicia, así comolas faltas a la lealtad y probidad que impliquen obstaculizar o dilatar eltrámite del juicio.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a8beb71cb32201fda60618a5632ae91583022b439f976f03815194fcaa1d2390",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-11",
+      "normId": "CPLT",
+      "article": "11",
+      "title": "- Impulso procesal",
+      "text": "- Impulso procesal. El impulso procesal corresponde a las partes.Sin perjuicio de ello, el juez podrá disponer de oficio, sin recurso alguno,las medidas tendientes a evitar la paralización de los procesos.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5cb0fb1abf4fad930407a927aed98653d2cf14ba036a4abff77217f35a3d5d07",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-12",
+      "normId": "CPLT",
+      "article": "12",
+      "title": "- Urgencia",
+      "text": "- Urgencia. Las actuaciones procesales del Trabajo tienen el carácter de urgentes y los organismos nacionales, provinciales, municipales yreparticiones descentralizadas o autónomas, están obligadas a prestarpreferente atención y dar pronto despacho a las diligencias que se lesencomienden.\n\nA tal efecto, los jueces podrán dirigirse directamente a cualquier autoridadu oficina sin seguir la vía jerárquica.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3fa680a68131fe3c4a74d40d314665846d4d8902b7761994ca26cfe1e3552b64",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-13",
+      "normId": "CPLT",
+      "article": "13",
+      "title": "- Gratuidad",
+      "text": "- Gratuidad. El trabajador y sus causahabientes gozarán, en susdiligencias, del beneficio de gratuidad y actuarán en papel simple durante latramitación del juicio, estando eximidos de todo derecho, impuesto, tasa ocontribución. Ninguna norma arancelaria o impositiva podrá suspender el dictadode la sentencia, debiendo practicarse toda planilla fiscal durante la etapa desu cumplimiento.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "0f4ca8d933072d9926045762d4924c52615ea5706801b6679f4205836f4decbf",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-14",
+      "normId": "CPLT",
+      "article": "14",
+      "title": "- Supletoriedad",
+      "text": "- Supletoriedad. En el proceso laboral, son de aplicación supletorialas disposiciones contenidas en el Código Procesal en lo Civil y Comercial, enlos supuestos no regidos por este Código y siempre que fueren compatibles conel mismo, con el orden público laboral, con los principios propios del derechodel trabajo, con la estructura especial del proceso laboral y con la normativadel expediente digital.\n\nEn caso de duda, deberá estarse al trámite que importe mayor economíaprocesal.\n\nCAPÍTULO II\n\nActos Procesales",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "d327bdde3ba6fe1b8a31ead13a68db6ea6d2b4fefd62bf384680288cf73488ca",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-15",
+      "normId": "CPLT",
+      "article": "15",
+      "title": "- Términos Procesales",
+      "text": "- Términos Procesales. Suspensión. Todos los términos procesalesestablecidos por la presente Ley son perentorios e improrrogables y correrán apartir del día siguiente al de su notificación. Si fueran comunes, comenzarándesde el día siguiente al de la última notificación.\n\nLas partes de común acuerdo y antes de su vencimiento, podrán prorrogarloso suspenderlos con expresa indicación del plazo convenido.\n\nPodrán ser suspendidos también en caso de fuerza mayor o causas graves\n\napreciadas prudencialmente por el juez. Esta decisión será irrecurrible.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "0de084c0c771c358e06354c888517d7aa870957e5381ce144ebe195314669015",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-16",
+      "normId": "CPLT",
+      "article": "16",
+      "title": "- Notificaciones",
+      "text": "- Notificaciones. Formas. Las notificaciones serán digitales y serealizarán de conformidad con lo previsto por el Código Procesal Civil yComercial, salvo las excepciones dispuestas en el presente Código.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "60429d1f003c504e34d5f180e1f7e4e266f780dff4281bb1f6eb61d4848512a2",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-17",
+      "normId": "CPLT",
+      "article": "17",
+      "title": "- Notificación en domicilio real",
+      "text": "- Notificación en domicilio real. Se notificará en el domicilioreal de las partes:\n\nEl traslado de la demanda.\n\nLa audiencia de conciliación.\n\nLa audiencia para absolver posiciones.\n\nLas intimaciones previstas en los artículos 22, 87 inciso 3. y 90de este Código.\n\nLa citación al actor para examen médico.\n\nLas regulaciones de honorarios.\n\nLas sentencias definitivas.\n\nLa providencia que ordene sacar a remate los bienes embargados.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "28d1e364b0a94a57ca2ab42f66c9ca266632ab81b2463279bd1f4f75482d660b",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-18",
+      "normId": "CPLT",
+      "article": "18",
+      "title": "- Notificaciones",
+      "text": "- Notificaciones. Las notificaciones a domicilio digital serealizarán de conformidad con lo dispuesto por el Artículo 197 y ccdantes. delCódigo Procesal Civil y Comercial.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ca0066f525825bc8ace37bd5bf02889023d89dd6eb754681d74a5c4d20fa42c0",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-19",
+      "normId": "CPLT",
+      "article": "19",
+      "title": "- Préstamo de expedientes",
+      "text": "- Préstamo de expedientes. Los expedientes deberán permanecer en lasrespectivas secretarías bajo responsabilidad del actuario, pudiendo únicamenteser retirados en los siguientes casos:\n\nPara alegar de bien probado.\n\nPara practicar liquidaciones y pericias.\n\nPara expresar y contestar agravios.\n\nCuando el magistrado lo dispusiere por resolución fundada.\n\nEn estos supuestos el expediente será entregado bajo firma y responsabilidad\n\ndel profesional o perito, a quienes se les fijará un término para su devolución.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "730f537c7e657988b0f7b3273dac28dd10709d325c8ab5196756fa1d130eab13",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-20",
+      "normId": "CPLT",
+      "article": "20",
+      "title": "- Domicilio real fuera de la Provincia",
+      "text": "- Domicilio real fuera de la Provincia. Cuando el demandado tengadomicilio real fuera de la Provincia, las notificaciones a que se refiere elartículo 17 se efectuarán conforme lo establece el Código Procesal en lo Civily Comercial, salvo que se tratare de sociedades, compañías o corporaciones consucursal o establecimiento en la Provincia, en cuyo caso se notificará en eldomicilio de dicha sucursal o establecimiento.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2aa01fb336620a519ce0deb9df721cf0a81af3ac1fc32c4bf4cca066329930d7",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-21",
+      "normId": "CPLT",
+      "article": "21",
+      "title": "- Domicilio ignorado",
+      "text": "- Domicilio ignorado. Traslado de demanda. Cuando deba corrersetraslado de la demanda a personas de domicilio ignorado, deberán publicarseedictos en la página web del Poder Judicial por cinco (5) días, con transcripción de una síntesis de aquella redactada por secretaría.\n\nEl plazo para contestar la demanda correrá a partir de la última publicación.A los fines de acreditar que el domicilio es ignorado, deberán requerirse\n\ninformes a los registros correspondientes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "bb93dd252186444593cfe02ba672ee57f21d81e25b7be1a01ddea99e8130e8ad",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-22",
+      "normId": "CPLT",
+      "article": "22",
+      "title": "- Incomparecencia",
+      "text": "- Incomparecencia. Abandono del juicio. Cuando la parte legalmentecitada no comparece, las sucesivas notificaciones se efectuarán en los estradosdigitales del juzgado, con excepción de la apertura a prueba, la audiencia deconciliación, la sentencia definitiva y el auto que ordene sacar a remate losbienes embargados.\n\nSi el domicilio fuera ignorado, estos actos se notificarán en la página webdel Poder Judicial por el término de tres (3) días.\n\nSi habiendo comparecido, abandonare el juicio, previa intimación por eltérmino de cinco (5) días, se lo notificará en el domicilio que haya constituido al momento de su presentación, salvo en los supuestos en que éste haya perdido vigencia, en cuyo caso se procederá conforme los párrafos anteriores.\n\nCAPÍTULO III\n\nNulidades",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "819b2873de6b62982211ad63737a9a4afa91d278203e3b12ff8868f04476c6e1",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-23",
+      "normId": "CPLT",
+      "article": "23",
+      "title": "- Principios generales",
+      "text": "- Principios generales. Remisión. Las nulidades se regirán por lasnormas establecidas en el Código Procesal en lo Civil y Comercial, con lasexcepciones que se establecen en el presente digesto.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8a2496424fc0dd5b5fd0c47cc8e6834dace43de248ada60975754fc83482bbbf",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-24",
+      "normId": "CPLT",
+      "article": "24",
+      "title": "- Nulidad de procedimiento",
+      "text": "- Nulidad de procedimiento. Las nulidades de procedimiento sólopodrán atacarse por vía de incidente en la misma instancia, salvo los casos enque este Código haya previsto un procedimiento especial.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2c403795a72274a1bcd515f331a5d100c397424631cbe4d9d3ed2539a1f50efd",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-25",
+      "normId": "CPLT",
+      "article": "25",
+      "title": "- Nulidad de sentencia",
+      "text": "- Nulidad de sentencia. La nulidad de sentencia se regirá por lodispuesto en los artículos 133, 134, 136 y 143 de este Código.\n\nTÍTULO II\n\nLas Partes\n\nCAPÍTULO I\n\nActuación en Juicio",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "e40a7a86cee0c12c4135513e4e749533440561c944fd906ddee5efafa47b8ef5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-26",
+      "normId": "CPLT",
+      "article": "26",
+      "title": "- Poder Ad-litem",
+      "text": "- Poder Ad-litem. Las partes o los representantes necesarios podránactuar por sí con patrocinio letrado o por apoderado.\n\nEl trabajador o sus causahabientes podrán hacerse representar mediante poderespecial ad-litem, que otorgarán a procuradores o abogados ante la secretaríaadministrativa de la Corte Suprema de Justicia de la Provincia o Juzgados dePaz.\n\nEl poder contendrá las facultades de estilo para litigar y la enunciaciónde la o las personas a demandar.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2e2607e40a87c8ea80c56db88a56d01cc8da87f2686b07572a5de4591ae6b546",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-27",
+      "normId": "CPLT",
+      "article": "27",
+      "title": "- Menores de edad",
+      "text": "- Menores de edad. Los mayores de catorce (14) años y menores dedieciocho (18) años podrán litigar por sí, con la intervención promiscua delMinisterio Público, por cuestiones derivadas de su relación de trabajo yconferir poder suficiente ante Escribano Público, Juez de Paz o en la formadeterminada por el artículo 26 de este Código.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "34231127b9978f3a34d115c153ca2dcefab5cd952c8ea0af1c194b220fe0db30",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-28",
+      "normId": "CPLT",
+      "article": "28",
+      "title": "- Consultor técnico",
+      "text": "- Consultor técnico. En cualquier estado del proceso, las partespodrán designar profesionales como consultores técnicos, sin que su intervención implique suspender o retrotraer el procedimiento. Podrán asistir a los actos procesales, con o sin las partes, de acuerdo a su naturaleza. En todos los casos, sus honorarios serán a cargo de la parte que los designe, conprescindencia de la condenación en costas.\n\nCAPÍTULO II\n\nAcumulación de Acciones",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "af151784ffb6e2761c51c0c1bb51e5eac72564e37563e7117c7d991e990e22d3",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-29",
+      "normId": "CPLT",
+      "article": "29",
+      "title": "- Supletoriedad",
+      "text": "- Supletoriedad. Límite. La acumulación de acciones se regirá porel Código Procesal en lo Civil y Comercial, pero en caso de litis consorciofacultativo, sólo podrán acumularse acciones basadas en los mismos hechos yhasta un máximo de veinte (20) actores por juicio.\n\nEl juez podrá ordenar la separación de los procesos si, a su juicio, laacumulación fuera inconveniente. También podrá disponer que la totalidad o parte de la prueba se produzca en una sola causa, siendo válida para las restantes. Estas decisiones serán inapelables.\n\nTÍTULO III\n\nMedidas de Conservación\n\nCAPÍTULO I\n\nMedidas Preparatorias",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5101f658be3368f1780cbd4512c451444acf78f22a0284e243984f0ccded46a5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-30",
+      "normId": "CPLT",
+      "article": "30",
+      "title": "- Supuestos de procedencia",
+      "text": "- Supuestos de procedencia. Todo aquél que se proponga demandarpodrá pedir:\n\nExhibición de la documentación laboral suscripta por elpeticionante que se encontrare en poder de aquél a quien sepretende demandar.\n\nConstatación judicial al solo efecto de determinar quién es elpropietario del establecimiento en el que manifiesta el actorhaber prestado servicios.\n\nQue se tome declaración a algún testigo de avanzada edad, o quese halle enfermo o próximo a ausentarse del país o provincia. Sudeclaración será recibida con citación de la persona contra lacual se intente hacer valer la declaración o el fiscal en caso deno conocer su domicilio o estar el mismo fuera de la Provincia.Esta medida podrá ser impugnada en la etapa probatoria del juiciopor la contraparte, quien podrá solicitar el comparendo del\n\ndeclarante para su interrogatorio, si procediera.\n\nDictamen pericial sobre hechos o cosas sin cuyo conocimiento nopuede demandarse o que puedan alterarse o desaparecer por eltranscurso del tiempo u otra causa.\n\nEstas pericias o dictámenes se recibirán también con citación dela parte contra quien intente oponerse, de la misma forma que enel inciso anterior.\n\nInformes o antecedentes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "85acc7265e5039d6a932795926b436fb66c328395766794a30ba70ecd77e5348",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-31",
+      "normId": "CPLT",
+      "article": "31",
+      "title": "- Trámite",
+      "text": "- Trámite. En los casos de los incisos 3. y 4. del artículo anterior,el juez deberá resolver el pedido con audiencia de partes. La resolución que se dicte será inapelable.\n\nCAPÍTULO II\n\nMedidas Cautelares",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "6fab1fcf5e282460a3d60dcee187907d06dfff2acfe740c15bb07a3466363be8",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-32",
+      "normId": "CPLT",
+      "article": "32",
+      "title": "- Supletoriedad y condiciones especiales",
+      "text": "- Supletoriedad y condiciones especiales. Las medidas cautelares seregirán por lo dispuesto en el Código Procesal en lo Civil y Comercial con lassiguientes modificaciones:\n\nEl monto de la cautelar surgirá de planilla provisoria que deberáacompañar el solicitante. En los casos de ejercitarse la accióndel derecho común por infortunio laboral, el monto de la cautelarserá determinado prudencialmente por el juez.\n\nEl embargo preventivo trabado sobre determinados bienes podrá sersustituido, a solicitud del interesado, ofreciendo bienes,valores o garantías suficientes para cubrir el monto embargado.Del pedido de sustitución se dará vista al embargante por dos (2)días bajo apercibimiento de conformidad, en caso de silencio. Laresolución que recaiga sólo será apelable si fuera denegatoria.\n\nSe presumirá que concurren los extremos exigidos por el CódigoProcesal en lo Civil y Comercial para la procedencia del embargopreventivo, en los siguientes casos: 1) falta de contestación dedemanda; 2) indemnización tarifada por infortunios laborales,siempre que estos hayan sido reconocidos en sede administrativa;\n\ndespido directo sin expresión de causa cuando la cesantíaresulte documentadamente acreditada; 4) despido directo fundadoen fuerza mayor, falta o disminución de trabajo hasta el importede la indemnización reducida, siempre que la cesantía resultedocumentadamente acreditada.\n\nTÍTULO IV\n\nSituaciones Especiales\n\nCAPÍTULO I\n\nIncidentes",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3eb9d2bec25edae2dc67cee092762ad2ba83a44993302f9d5754d776c8344739",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-33",
+      "normId": "CPLT",
+      "article": "33",
+      "title": "- Trámite",
+      "text": "- Trámite. Con el escrito de deducción el incidentista deberá ofrecer la prueba de la que intentará valerse.\n\nDe su presentación se correrá traslado a la contraparte por el término de\n\ntres (3) días. Ésta deberá ofrecer su prueba con la contestación.\n\nContestado el traslado y salvo que la cuestión fuere de puro derecho,se abrirá el incidente a prueba por el término de quince (15) días, al soloefecto de producir la ofrecida por las partes en oportunidad del planteo ycontestación.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "21325dfd1a68e5ac9ca336d0122d9d6185d6ada83a45d8711b0fcfce8571c87d",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-34",
+      "normId": "CPLT",
+      "article": "34",
+      "title": "- Resolución",
+      "text": "- Resolución. No contestado el traslado, vencido el término de prueba o siendo la cuestión de puro derecho, el incidente pasará a sentencia, debiendo el juez resolverlo dentro del plazo que fija este código.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "f2144d67eed2cd286a8bda04230edf24e1a68a7bcf0dfde9e390ed863bf32e73",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-35",
+      "normId": "CPLT",
+      "article": "35",
+      "title": "- Rechazo in limine",
+      "text": "- Rechazo in limine. Si de los términos de la presentación surgierala improcedencia del incidente o su propósito dilatorio, el juez lo rechazarásin más trámite por auto fundado.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5d9bb2b590ef0b9c1f27a652ad3507677fcc895ce40af078a234d72236c1fe56",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-36",
+      "normId": "CPLT",
+      "article": "36",
+      "title": "- Efectos",
+      "text": "- Efectos. Los incidentes no suspenderán el juicio principal ytramitarán por cuerda separada, salvo aquellos sin cuya previa resolución seaimposible la prosecución de la causa.\n\nCAPÍTULO II\n\nHecho Nuevo",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "74ff6118bc693b06371723d0ff14387a40ba13b74cfd196cc05a0f7477fc95a5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-37",
+      "normId": "CPLT",
+      "article": "37",
+      "title": "- Oportunidad de invocarlo",
+      "text": "- Oportunidad de invocarlo. Si con posterioridad a la traba de lalitis sucediera o llegara a conocimiento de las partes algún hecho o documentovinculado al litigio, podrá alegarse y probarse por el trámite previsto en esteCódigo para los incidentes, por cuerda separada.\n\nEl hecho nuevo sólo podrá invocarse ante la Juez del trabajo hasta elvencimiento del plazo probatorio. Si fuera posterior al plazo de prueba, podráinvocarse y probarse en segunda instancia hasta tres (3) días después denotificado el llamamiento de autos para sentencia.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "fafce9f11649476ec00225ae57219736f3b7cdb5b737155b36fb766cb9ee3ffb",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-38",
+      "normId": "CPLT",
+      "article": "38",
+      "title": "- Procedencia",
+      "text": "- Procedencia. Prueba. Sólo se aceptarán como hechos o documentosnuevos los de fecha posterior a la traba de la litis o, en el caso de seranteriores, cuando se acreditare la imposibilidad de invocarlos oindividualizarlos con anterioridad a este acto procesal.\n\nLa prueba sobre la existencia del impedimento insalvable se produciráconjuntamente con la del hecho o documento.\n\nSi se rechazara el hecho nuevo, el incidente no será agregado a los autosni considerado en la sentencia.\n\nCAPÍTULO III\n\nModos Excepcionales de Terminación del Proceso\n\nSección I\n\nAllanamiento",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "701b75d4fa5d6e0d5649f2c50262523ed70443da476eca3eba8f07a45fdeb202",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-39",
+      "normId": "CPLT",
+      "article": "39",
+      "title": "- Trámite",
+      "text": "- Trámite. Sentencia. El demandado podrá allanarse a la demanda encualquier estado de la causa anterior a la sentencia. Si el allanamiento fueraparcial, previa vista a la contraparte, el juez dispondrá sin recurso alguno laformación de incidente.\n\nEn todos los casos y sin más trámite, el juez dictará sentencia sobre lo quehubiere sido materia de allanamiento.\n\nEsta sentencia deberá contener, en lo pertinente, los requisitos previstosen el artículo 46 de este código.\n\nSección II\n\nCaducidad de Instancia",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "531780f6dc2f49fd3c8f7b20fbdc1f568fdae937d12afdc6051cf93c5a7cb960",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-40",
+      "normId": "CPLT",
+      "article": "40",
+      "title": "- Plazos de caducidad",
+      "text": "- Plazos de caducidad. La caducidad de instancia operará, si no seinsta el curso de proceso, en los siguientes plazos:\n\nUn (1) año en todo tipo de proceso.\n\nSeis (6) meses en los incidentes y recursos.\n\nSerán aplicables las disposiciones contenidas en el Código Procesal en loCivil y Comercial con relación a este instituto, a excepción del trámite, elque se regirá por el previsto en este Código para los incidentes.\n\nSección III\n\nConciliación - Transacción",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "62de123e00283fc4fff67dda5c16a640c7f54f86f3ddb3767d44710d6f539406",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-41",
+      "normId": "CPLT",
+      "article": "41",
+      "title": "- A instancia de parte",
+      "text": "- A instancia de parte. En cualquier estado del proceso las partespodrán arribar a conciliaciones o transacciones.\n\nPresentado el acuerdo, el juez convocará a una audiencia que se celebrarádentro de los cinco (5) días. En dicha audiencia el juez oirá a las partes,debiendo en el mismo acto dictar resolución homologando o rechazando elconvenio. Esta resolución será apelable si fuera denegatoria.\n\nSólo en caso de no comparecer de manera injustificada el actor, el acuerdose tendrá por no presentado, desagregándoselo de autos y no pudiendo serconsiderado en la sentencia.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "c22e728e2c7b797b476d9bb51ad8d9daf45022b3e7fade234c7f897a8421ebec",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-42",
+      "normId": "CPLT",
+      "article": "42",
+      "title": "- A instancia del juez",
+      "text": "- A instancia del juez. El juez procurará que los litigantes pongantérmino a sus diferencias, a cuyo efecto podrá citarlos en cualquier estado dela causa y proponer bases de conciliación.\n\nLas partes deberán concurrir personalmente a la audiencia a que fuerancitadas. La audiencia y resolución deberán instrumentarse conforme lo previstoen el párrafo primero de los artículos 74 y 76 de este Código.\n\nSección IV\n\nDesistimiento",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b6e0fc60bb4aea402a6510d105f91574c83903fbddd8bd0091aff4829352bdf5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-43",
+      "normId": "CPLT",
+      "article": "43",
+      "title": "- Desistimiento del proceso",
+      "text": "- Desistimiento del proceso. El desistimiento del proceso se regirápor las normas del Código Procesal en lo Civil y Comercial, requiriendo laratificación personal del trabajador o sus causahabientes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "957b7bb4c668ad56d4b9fc326776641b724cce0f2f452e8067188b609b340a70",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-44",
+      "normId": "CPLT",
+      "article": "44",
+      "title": "- Desistimiento del derecho",
+      "text": "- Desistimiento del derecho. El desistimiento del derecho procederáen los supuestos previstos por la ley de fondo.\n\nPrevio a resolver, el juez deberá interrogar personalmente al actor o a suscausahabientes, a fin de conocer si han comprendido los alcances del acto y susmotivaciones. Sin más trámite, homologará o no dicho desistimiento, siendo sudecisión apelable si fuera denegatoria.\n\nTÍTULO V\n\nResoluciones Judiciales\n\nCAPÍTULO I\n\nPlazos de Pronunciamiento",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "9a48894f4d3d3b09f4f9cbda80de31b236d57f91cdb14b7482312540ceaa3c6f",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-45",
+      "normId": "CPLT",
+      "article": "45",
+      "title": "- Términos",
+      "text": "- Términos. Los jueces del Trabajo, en primera instancia, deberándictar sentencia definitiva en los siguientes plazos:\n\nCuarenta y cinco (45) días en los juicios ordinarios.\n\nQuince (15) días en los incidentes.\n\nDiez (10) días en los juicios sumarísimos, ejecutivos y trámitesespeciales.\n\nCAPÍTULO II\n\nForma y Contenido",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "493c4c8dce64bfe740cfd994805723279e06a5674d4fe9e0f3093f802e006cc2",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-46",
+      "normId": "CPLT",
+      "article": "46",
+      "title": "- Requisitos",
+      "text": "- Requisitos. Las resoluciones que se dicten en los procesosprevistos en el presente Código, deberán observar los requisitos contempladosen el Código Procesal en lo Civil y Comercial.\n\nLas sentencias definitivas deberán contener además:\n\nEl monto actualizado –si correspondiere actualización- de lacondena con más sus intereses, con indicación del plazo en quedebe ser satisfecha.\n\nLa regulación de honorarios a los profesionales intervinientes,tanto por el principal como por los incidentes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "eec9dc2b4c9e8fcb9c03ce56e19474efa9d7b4c0ecf150328e72353bc913d0ef",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-47",
+      "normId": "CPLT",
+      "article": "47",
+      "title": "- Ultra petita",
+      "text": "- Ultra petita. En los procesos laborales el juez o el tribunalestán facultados para resolver ultra petita, de conformidad con las accionespromovidas y de acuerdo a la forma en que se trabó la litis.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b04503ab85e59cb295f2f72fb1e870d3400273833c94d1e3454770c5b77a36f9",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-48",
+      "normId": "CPLT",
+      "article": "48",
+      "title": "- Error material",
+      "text": "- Error material. De oficio, el juez o tribunal podrá corregircualquier error material, aclarar algún concepto oscuro, o suplir cualquieromisión de la sentencia, sin alterar lo sustancial de la decisión. Esta facultad podrá utilizarse antes de la primera notificación de la sentencia.\n\nCAPÍTULO III\n\nCostas y Honorarios",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "69f0d3d68111089dad36c65638582e07cfb0b1b196ed35cbc60fad39e4aa9fcf",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-49",
+      "normId": "CPLT",
+      "article": "49",
+      "title": "- Costas",
+      "text": "- Costas. En materia de imposición de costas, regirán lasdisposiciones establecidas en el Código Procesal en lo Civil y Comercial. Sinperjuicio de ello y si de los antecedentes del proceso resultare plus peticióninexcusable, las costas deberán ser soportadas por el profesional actuante y laparte, en forma solidaria o mancomunada, a criterio del juzgador.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ce02e40e6c54c7296d96fd4467f57e07da7d0ca150057854d53d991e3b506d21",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-50",
+      "normId": "CPLT",
+      "article": "50",
+      "title": "- Honorarios",
+      "text": "- Honorarios. En los juicios laborales, se considerará monto que servirá de base para la regulación de honorarios: \n\n1. La suma que resulte de la sentencia, conciliación o transacción. \n\n2. Cuando la demanda fuere totalmente rechazada o se operare la caducidad de instancia o mediare desistimiento o prosperare por suma inferior al cincuenta por ciento (50%) de lo reclamado, la suma que determine el juez o tribunal, entre el treinta por ciento (30%) y el sesenta por ciento (60%) del monto de la demanda. \n\nEl monto base a fijar judicialmente podrá ser distinto para cadauno de los profesionales, de acuerdo a las reglas valorativascontenidas en la ley arancelaria.\n\nEn los casos de transacción o conciliación, el profesional quehabiendo intervenido en el proceso no lo hizo en dichos actos,podrá solicitar que para la regulación de sus honorarios se tome\n\ncomo base la que corresponda, según el inciso anterior.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "face7f136c148451ba75cdc4f7476de0f266144a68beea40deff9020e3e7a0f6",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-51",
+      "normId": "CPLT",
+      "article": "51",
+      "title": "- Honorarios de peritos",
+      "text": "- Honorarios de peritos. Bases regulatorias. Para regular loshonorarios de los peritos, se tomarán exclusivamente, como base regulatoria,los puntos de la litis sobre los que emitió dictamen. Será aplicable para losperitos lo dispuesto en el artículo 50, con las limitaciones establecidas en elpárrafo anterior.\n\nLos honorarios se fijarán en un porcentaje del uno (1) al cuatro por ciento(4%), pudiendo el juez o tribunal, excepcionalmente y por auto fundado, aumentarel mismo hasta un seis por ciento (6%) en función de la importancia del peritaje.Cuando se hubieren designado varios peritos, cualquiera sea su especializacióno rama de conocimiento técnico, sus honorarios, en conjunto, no podrán excederel quince por ciento (15%) del monto determinado según el artículo 50 deeste Código.\n\nLos honorarios de los consultores técnicos que ofrezcan las partes seránfijados en hasta un cincuenta por ciento (50%) de los que se determinen paralos peritos.\n\nLa sola aceptación del cargo no dará derecho a regulación de honorarios,salvo que el perito probare la realización de tareas y que el dictamen no pudoproducirse por circunstancias ajenas a él. Esta cuestión tramitará por lasreglas previstas para los incidentes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8009265ac73c81b2c6e4ab9a0b06c50fb01b3d48b591a14ac43e651a0e92b85c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-52",
+      "normId": "CPLT",
+      "article": "52",
+      "title": "- Base de regulación",
+      "text": "- Base de regulación. En todos los casos, a efectos de la regulaciónde honorarios, se considerará como base económica el importe que resultare delcapital actualizado con los índices legales, cuando corresponda, con más susintereses y otros rubros que integren la demanda o la condena.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "f6701ef3d306e54555766a82e32e64c7879ae4ba8c83f64ae53e47f5b04292c6",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-53",
+      "normId": "CPLT",
+      "article": "53",
+      "title": "- Recursos",
+      "text": "- Recursos. Las regulaciones de honorarios practicadas por los Jueces del Trabajo serán apelables ante la Cámara de Apelación del Trabajo. Las que dictare la Cámara sólo serán susceptibles de reconsideración ante el mismotribunal.\n\nLos recursos e incidentes en materia de honorarios tramitarán por cuerdaseparada sin suspender el curso del principal.\n\nLIBRO III\n\nProcesos Laborales\n\nTÍTULO I\n\nJuicio Ordinario\n\nCAPÍTULO I\n\nDemanda y Contestación",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3072fe74b2b86fda1bd16ee7c2bbf82bf90fd90e92ad9df2e42c0d3436a306a0",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-54",
+      "normId": "CPLT",
+      "article": "54",
+      "title": "- Principio general",
+      "text": "- Principio general. Los juicios no sujetos a un régimen especialtramitarán con arreglo a las disposiciones del presente título. La parte actorapodrá optar por este procedimiento, renunciando a cualquier otro que lecorrespondiera.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "1f21355c0be9ed66bf979401dd9aadee8519653ecf024946ca3452f0d474b33f",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-55",
+      "normId": "CPLT",
+      "article": "55",
+      "title": "- Demanda",
+      "text": "- Demanda. La demanda se presentará por escrito, debiendo expresar:\n\nNombre y apellido del demandante, nacionalidad, estado civil,documento de identidad, profesión, domicilio real y domiciliodigital.\n\nNombre y apellido, domicilio y condiciones personales que conozcadel demandado.\n\nObjeto de la demanda, fecha de ingreso del trabajador y de egresosi la hubiera, categoría profesional, horario, descripcióndetallada de las tareas cumplidas, carácter permanente otemporario de las mismas, ámbito físico del desempeño,remuneración percibida y que debía percibir, forma de su pago yperfeccionamiento o capacitación durante la relación. A tal finagregará una planilla estimativa de los rubros y cantidadesreclamadas.\n\nLos hechos y el derecho en que funda la demanda.\n\nLas peticiones formuladas en términos claros y precisos.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "eb20c2bfe29c092705fea83b8f0ca5e9eed91b274bb51cd05c19daa6198e9e40",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-56",
+      "normId": "CPLT",
+      "article": "56",
+      "title": "- Agregación de la prueba documental",
+      "text": "- Agregación de la prueba documental. El actor deberá acompañar conla demanda la totalidad de la documentación que obrare en su poder relacionadacon el juicio. Si no la tuviera, la individualizará indicando su contenido y ellugar donde se encuentra.\n\nEl demandado, al contestar la demanda, deberá acompañar toda la documentación que se proponga hacer valer relacionada con el juicio. A este fin y con el escrito de contestación de demanda, podrá solicitar un plazo no mayor de diez (10) días, el que se concederá por una (1) sola vez.\n\nSi la documentación no obrara en su poder, indicará claramente el contenidoy lugar donde será requerida.\n\nLa documentación que se presentare u ofreciera fuera de esta oportunidad,no será agregada a los autos ni considerada en la sentencia.\n\nLa documentación en poder de terceros será requerida en el acto de suofrecimiento, pudiendo ser agregada conforme a lo dispuesto en la pruebainstrumental.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8dd6606d0e61636988566ece4a2a95414e930a419e04cbe226ed6eaa1c0f8b02",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-57",
+      "normId": "CPLT",
+      "article": "57",
+      "title": "- Defectos o imprecisiones de la demanda",
+      "text": "- Defectos o imprecisiones de la demanda. Recibida la demanda y sifuera competente, el juez examinará si la misma se ajusta a las exigencias delartículo 55.\n\nSi observara defectos de forma, oscuridad o imprecisiones, intimará al actora subsanarlos en el término de cinco (5) días, bajo apercibimiento de tener porno presentada la demanda sin más trámite ni recurso.\n\nEl demandado también podrá solicitar, dentro de los cinco (5) días de\n\nnotificado, la subsanación de algún defecto de forma, omisión o imprecisión.\n\nEl juez resolverá en todos los casos sin sustanciación alguna, medianteprovidencia de mero trámite, la que será irrecurrible.\n\nEn caso de admitir la petición, dará vista al actor para que proceda asubsanar el defecto anotado, dentro de los cinco (5) días, bajo apercibimientode tener por no presentada, total o parcialmente, la demanda.\n\nEn cualquiera de los casos se suspenderá el término para contestar lademanda, el que será reabierto de oficio o a petición de parte, reiniciándoseel cómputo a partir del día siguiente de la notificación.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "267965c5950d3c33ca84a26794b4200f6f4fc261595b4129a9871247a6df82a4",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-58",
+      "normId": "CPLT",
+      "article": "58",
+      "title": "- Traslado de la demanda",
+      "text": "- Traslado de la demanda. Falta de contestación. Presentada lademanda, el juez dispondrá su traslado, emplazando al demandado para quecomparezca a estar a derecho y la conteste dentro del término de quince (15)días.\n\nEn caso de falta de contestación, se presumirán como ciertos los hechosinvocados, y como auténticos y recepcionados los documentos acompañados a lademanda, salvo prueba en contrario. Esta presunción procederá si el trabajadoracreditare la prestación de servicios.\n\nEl demandado podrá tomar intervención en cualquier estado de la causa yejercitar los actos procesales que correspondieran a la misma.\n\nEn ningún caso su intervención suspenderá o retrotraerá el procedimiento.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "c3faebd831d66859ff59b3962834837a3be50f748392311e81354b520f350175",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-59",
+      "normId": "CPLT",
+      "article": "59",
+      "title": "- Traslado de la demanda fuera de la Provincia",
+      "text": "- Traslado de la demanda fuera de la Provincia. Plazo. Cuando eltraslado de la demanda debiera efectuarse fuera de la Provincia o se notificarepor edictos, el término para comparecer a estar a derecho y contestar la demanda será de veinte (20) días.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2792c92e39b3ae282dbbffe75a59b381e29bc982533a965fff4b40e0fa838247",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-60",
+      "normId": "CPLT",
+      "article": "60",
+      "title": "- Contenido del responde",
+      "text": "- Contenido del responde. Reconvención. La contestación contendrá,en lo aplicable, los requisitos exigidos para la demanda, debiendo oponerse conella todas las defensas y excepciones de fondo y las que este Código autorizacomo de previo pronunciamiento.\n\nEl demandado deberá reconocer o negar los hechos en que se funda la demanda.\n\nSu silencio o respuestas evasivas se interpretarán como reconocimiento.\n\nAdemás, el demandado deberá proporcionar su versión de los hechos, bajoapercibimiento de tenerlo por conforme con los invocados en la demanda, a pesarde su negativa.\n\nEn la misma oportunidad podrá el demandado deducir reconvención, siempre quetenga conexidad con la demanda.\n\nLa reconvención y su contestación se regirán por las mismas normas que este\n\nCódigo establece para demanda y contestación.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "34355d7d19d251e5b7ea704ae28cb572efd51bf2f3c43ba6a66a32b10705fd25",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-61",
+      "normId": "CPLT",
+      "article": "61",
+      "title": "- Documentación laboral y contable",
+      "text": "- Documentación laboral y contable. A partir de la notificación dela demanda, el demandado deberá mantener su documentación laboral y contable adisposición del juzgado, a cuyo efecto informará con el responde el lugar enque se encuentra. Asimismo deberá informar los sucesivos traslados de que fueraobjeto durante la sustanciación del proceso.\n\nLa omisión de este requisito o la falsa información que se proporcione,previo requerimiento judicial, autorizará al juez o tribunal a tener por ciertas las afirmaciones del trabajador o sus causahabientes sobre las circunstancias que deban constar en tales asientos, salvo que se discutiera el monto de las remuneraciones, en cuyo caso deberá estarse a lo dispuesto por la ley de fondo.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3e297f2f1ff2c689416f3f30b1d4f736f2fe603b33d34d660e362257a527cf12",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-62",
+      "normId": "CPLT",
+      "article": "62",
+      "title": "- Citación a la aseguradora con suspensión del plazo para contestardemanda",
+      "text": "- Citación a la aseguradora con suspensión del plazo para contestardemanda. En los juicios ordinarios, el demandado que se encontrara aseguradocon relación al objeto de la litis, podrá solicitar, dentro de los diez (10)días de la notificación de la demanda, que se cite al asegurador.\n\nA tal fin deberá acompañar la póliza correspondiente y, en caso de no obrarla misma en su poder, la individualizará, declarando bajo juramento el nombrede la aseguradora, domicilio, riesgo asegurado y su vigencia al momento deproducirse los hechos.\n\nEsta petición suspenderá el plazo para contestar la demanda, el que sereabrirá de pleno derecho con la notificación del responde de la aseguradora oel proveído que declare vencido dicho término.\n\nSi el demandado faltare a la verdad en cuanto a la existencia y coberturadel seguro, su conducta será considerada como temeraria y maliciosa, facultandola aplicación de las sanciones previstas por la ley sustantiva.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2ae664ec904e22c4aabd2c15bc86ad04f432f7fa670a42ed26309ce0beec8364",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-63",
+      "normId": "CPLT",
+      "article": "63",
+      "title": "- Citación de la aseguradora sin suspensión del plazo para contestarla demanda",
+      "text": "- Citación de la aseguradora sin suspensión del plazo para contestarla demanda. Vencido el término previsto en el artículo anterior y dentro de losplazos fijados por la ley de fondo, el demandado podrá citar a la aseguradora,quien de intervenir en el juicio, lo hará en el estado en que se encuentre.\n\nEste trámite no suspenderá ni retrotraerá el procedimiento, debiendo\n\nsustanciarse por cuerda separada el incidente de exclusión, si fuera deducido.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "cf0305dde5eadcb70fbae3d869d4e663f09fa1790dee6602274828815bc501d0",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-64",
+      "normId": "CPLT",
+      "article": "64",
+      "title": "- Agravamiento de enfermedad",
+      "text": "- Agravamiento de enfermedad. Antes del llamamiento de autos parasentencia, en los juicios por infortunios laborales, el actor podrá ampliar supetición por agravamiento de su enfermedad, acompañando los certificados médicos pertinentes.\n\nDe esta petición se dará traslado a la contraparte por el término de cinco\n\n(5) días.\n\nEn caso de falta de contestación o negativa, el juez dispondrá de oficio larealización de una pericia médica ampliatoria.\n\nCAPÍTULO II\n\nExcepciones Previas",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3f420c9f8632f572cfc5f4c5343ed0202672c124a94863addcd769a34b8c2875",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-65",
+      "normId": "CPLT",
+      "article": "65",
+      "title": "- Excepciones admisibles",
+      "text": "- Excepciones admisibles. Las únicas excepciones de pronunciamientoprevio son:\n\nIncompetencia.\n\nFalta de capacidad de las partes o de personería ensus representantes.\n\nLitispendencia.\n\nCosa juzgada.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "fe70939409a197de1f1070ef340c48818e08660a04bed632c1f0a1bce3cbfc02",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-66",
+      "normId": "CPLT",
+      "article": "66",
+      "title": "- Trámite",
+      "text": "- Trámite. Estas excepciones tramitarán por las reglas previstas eneste Código para los incidentes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "34c02ce6229c98473d78cbb319a97dbc8572b5df7f95f11f95fb947c54f825ab",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-67",
+      "normId": "CPLT",
+      "article": "67",
+      "title": "- Efectos",
+      "text": "- Efectos. De proceder las excepciones, se aplicarán lasdisposiciones del Código Procesal en lo Civil y Comercial.\n\nCAPÍTULO III\n\nOfrecimiento y Admisibilidad de la Prueba - Conciliación",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "f4ac665cbdd13d9e7bdcf4c3a2ba0e9e007528060f43d71f058c86bfcab9c3b5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-68",
+      "normId": "CPLT",
+      "article": "68",
+      "title": "- Apertura de la causa a prueba",
+      "text": "- Apertura de la causa a prueba. Ofrecimiento. Contestada la demandao resueltas las excepciones previas, el juez deberá abrir la causa a prueba, deoficio o a petición de parte, dentro del plazo de cuarenta y ocho (48) horas.\n\nLas pruebas deberán ofrecerse dentro de los cinco (5) días, término que serácomún.\n\nCada prueba, según su naturaleza, será ofrecida en cuadernos separados.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a952ad800d3ed3ff016e725b3fed7b2084c6466af114345093d9fb98920ed9b4",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-69",
+      "normId": "CPLT",
+      "article": "69",
+      "title": "- Fijación de la audiencia de conciliación",
+      "text": "- Fijación de la audiencia de conciliación. Plazos. Vencido el plazopara ofrecer pruebas, el juez llamará a audiencia de conciliación, la que sefijará dentro de un término no mayor de veinte (20) días.\n\nLas partes y sus letrados apoderados deberán ser notificados con antelaciónno inferior a cinco (5) días.\n\nA los fines de posibilitar el cumplimiento de los plazos fijados en esta\n\nnorma, el juez queda facultado para fijar la audiencia en día y hora inhábil.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b0ae65934cf09b7c2f0407fb499c69a7224015e1f66df129db0fe9c303965fcd",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-70",
+      "normId": "CPLT",
+      "article": "70",
+      "title": "- Pericia médica previa",
+      "text": "- Pericia médica previa. En forma previa a la audiencia de conciliación, cuando se discutieran enfermedades o incapacidades del trabajador, el juez deberá disponer, fijando plazo al efecto, la realización de una pericia por parte del Cuerpo Médico Oficial tendiente a determinar la existencia y grado de la enfermedad o incapacidad y su eventual relación causal o concausal con las tareas que el actor dice, en la demanda, haber prestado para el empleador.\n\nLos consultores técnicos que hubieren designado las partes podrán concurriral acto pericial, debiendo emitir dictamen dentro del plazo fijado por el juez,bajo apercibimiento de pérdida del derecho a regulación de honorarios.\n\nDentro de los tres (3) días de notificada la pericia, las partes por sí opor medio de sus consultores técnicos, podrán efectuar las observaciones queestimen pertinentes.\n\nSin más trámite, el juez convocará a la audiencia prevista en el artículoanterior, a la que deberán concurrir el perito y los consultores técnicos, bajoapercibimiento de pérdida del derecho a regulación de honorarios.\n\nLas conclusiones médicas serán consideradas por el juez a los fines de laaudiencia de conciliación y valoradas por el tribunal al dictar sentencia, sinperjuicio de prueba en contrario.\n\nLa falta de comparecencia del actor al examen médico o su oposición asometerse a él o a practicar estudios complementarios, autoriza al juez a darpor concluido el trámite y fijar la audiencia de conciliación, debiendovalorarse esta conducta en dicha audiencia y al momento de dictarse sentencia.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a59daa7d93a3b60e5b1dc744bf829ed55ca28170d1c8b7350743f00fffa78984",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-71",
+      "normId": "CPLT",
+      "article": "71",
+      "title": "- Audiencia de conciliación",
+      "text": "- Audiencia de conciliación. La audiencia deberá ser celebrada conla intervención directa del Juez, sin poder delegar sus funciones a personalsubalterno, debiendo empezar y terminar el día indicado. En caso de ausenciadel Juez de la causa, la audiencia deberá celebrarse en la fecha y hora fijadapor ante el Juez de la siguiente nominación.\n\nAnte licencias prolongadas del titular del juzgado, o de vacancia, la CorteSuprema de Justicia dispondrá los reemplazos, procurando hacerlo con antelaciónsuficiente para permitir a los subrogantes compatibilizar sus calendarios.\n\nEl Juez podrá disponer la realización de la audiencia sin la presencia delos letrados. Si alguna de las partes compareciera sin patrocinio letrado, elJuez le ofrecerá la asistencia del Defensor oficial; si el patrocinio jurídicofuera rehusado por el interesado, la audiencia se llevará a cabo con la parteen persona, debiendo ser ilustrada sobre los alcances del acto.\n\nLa intervención del Juez y la mera proposición de fórmulas conciliatoriasno importará prejuzgamiento.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5700c430c89509d399690b1479da5b4e9d9fbbb546fce1fd8e196a97a88b5cd0",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-72",
+      "normId": "CPLT",
+      "article": "72",
+      "title": "- Representación de las partes",
+      "text": "- Representación de las partes. Las partes podrán comparecerpersonalmente o mediante apoderados a la audiencia del artículo 71; en elsupuesto de la demandada, deberá ser con facultades suficientes para obligarse.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2c3b5340d566037eb6d88df0be43a1c54394d8acf35901a2c95b067691d67b2e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-73",
+      "normId": "CPLT",
+      "article": "73",
+      "title": "- Incomparecencia a la audiencia de conciliación",
+      "text": "- Incomparecencia a la audiencia de conciliación. Si alguna de laspartes no comparece a la audiencia, se tendrá por intentado el acto y seentenderá que las partes no arriban a conciliación. De ello se dejará constancia en acta y se procederá de acuerdo a lo previsto en el Art. 76 de este Código.\n\nSin perjuicio de ello, las partes podrán solicitar, en cualquier etapa delproceso, antes del dictado de la sentencia definitiva, la fijación de unaaudiencia a los fines conciliatorios en los términos del Art. 42, sin que estetrámite suspenda el curso del juicio principal.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "9b7954ff8076e1708fbec78be2e6248d98731d88e6ec374932027ec117e27a11",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-74",
+      "normId": "CPLT",
+      "article": "74",
+      "title": "- Instrumentación de la audiencia",
+      "text": "- Instrumentación de la audiencia. Conciliación. Si se produjera laconciliación total o parcial, se labrará acta circunstanciada que hará las veces de sentencia homologatoria, suscripta por las partes y/o sus representantes, el juez y el secretario, salvo que el trabajador no haya concurrido personalmente a la audiencia, en cuyo supuesto, se requerirá la ratificación personal del acta, en el plazo que el juez establezca. Cumplido este requisito, el juez suscribirá el acta, la que tendrá los efectos previstos en el párrafo anterior.\n\nSi no se ratificara la conciliación, el acta será desagregada de autos,quedando sin ningún valor lo allí expresado, no pudiendo ser invocado por laspartes ni considerado en la sentencia, debiendo el juez proveer las pruebas enel plazo de cuarenta y ocho (48) horas.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "786f8e8f836b2e3133bcff9ddf08be29b7b51f43edf851b9d133691a9b054c41",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-75",
+      "normId": "CPLT",
+      "article": "75",
+      "title": "- Cumplimiento",
+      "text": "- Cumplimiento. Trámite. De arribarse a conciliación total o parcial, podrá exigirse su cumplimiento por el procedimiento establecido en el Libro VI de este Código.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "4517fcb21c1075b656220532bfb2d7092ffaccf27377b2537183db48b48ff905",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-76",
+      "normId": "CPLT",
+      "article": "76",
+      "title": "- Instrumentación de la audiencia no habiendo conciliación.Pertinencia de la prueba",
+      "text": "- Instrumentación de la audiencia no habiendo conciliación.Pertinencia de la prueba. Si no se arribara a un acuerdo, se hará constar enacta esta circunstancia, no pudiendo ser interrogadas las partes ni loscomparecientes acerca de lo ocurrido en la audiencia.\n\nEn el mismo acto, el juez proveerá las pruebas ofrecidas, tratando desimplificarlas, reducir los hechos litigiosos o declarar la cuestión de puroderecho. Cuando se ofrecieran pruebas sobre hechos notoriamente impertinentes,serán desechadas de oficio.\n\nTambién, en el mismo acto, las partes serán notificadas de lo proveído encada uno de los cuadernillos de prueba. Si hubieran comparecido personalmente,absolverán posiciones y reconocerán documentación.\n\nCAPÍTULO IV\n\nLa Prueba\n\nSECCIÓN I\n\nPrueba en General",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8415327626ac840248aed6331278b4d674e8450fc87dff690018b5548230cd2f",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-77",
+      "normId": "CPLT",
+      "article": "77",
+      "title": "- Plazo de producción",
+      "text": "- Plazo de producción. Cómputo. El término para producir pruebasserá de treinta (30) días y comenzará a correr a partir de la conclusión de laaudiencia de conciliación.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "cad0c10f8b0c265a7fab2d5f1990d15d50eb83eb0811af63f18b6e95e58421c6",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-78",
+      "normId": "CPLT",
+      "article": "78",
+      "title": "- Término extraordinario",
+      "text": "- Término extraordinario. Las partes podrán peticionar, dentro deltérmino de ofrecimiento de prueba, la ampliación del plazo de producción, cuando la misma deba tramitarse fuera de la Provincia.\n\nLa misma será concedida prudencialmente por el juez y comenzará a correr acontinuación del término ordinario.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "7fe5fc661664b882450dcd59820c8c2af68478de1d97740faf6cdb22aee2b8cd",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-79",
+      "normId": "CPLT",
+      "article": "79",
+      "title": "- Oportunidad de recepción",
+      "text": "- Oportunidad de recepción. La prueba deberá ser producida dentrodel término probatorio, pudiendo sin embargo el juez disponer su recepción aúnvencido el mismo, si la considera necesaria para el esclarecimiento de la verdad material.\n\nSECCIÓN II\n\nOposición a la Prueba",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "672453080a719a8cb4182a217f2af2471ff4165acf845fa17392bcdf239b322a",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-80",
+      "normId": "CPLT",
+      "article": "80",
+      "title": "- Oposición",
+      "text": "- Oposición. Trámite. Dentro de los tres (3) días de notificadas delo proveído en las pruebas ofrecidas, las partes, por escrito fundado, podránoponerse en forma total o parcial a la decisión judicial.\n\nEl juez dará vista de la oposición a la contraparte por idéntico plazo.Contestada la vista o vencido el término para hacerlo, el juez resolverá sin\n\nmás trámite, siendo su decisión irrecurrible.\n\nEsta será la única vía para tramitar toda cuestión relacionada con la\n\nadmisibilidad de la prueba, sustituyendo el trámite en los recursos y nulidades.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "9dad9de4d6e350dd11ff83c7d7db1bedafa0f754426b233266c715ff2561e8b3",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-81",
+      "normId": "CPLT",
+      "article": "81",
+      "title": "- Suspensión",
+      "text": "- Suspensión. Reapertura. La deducción de esta oposición suspenderálos términos en el cuadernillo en que se hubiere planteado y en aquellos quetuvieran directa vinculación con la oposición.\n\nLos términos quedarán reabiertos de pleno derecho con la notificación de laresolución.\n\nSECCIÓN III\n\nProducción de la Prueba",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "4c2fd784e04d241622de0c63e31283f6a3513b021303cbebbaa0fd6075967c16",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-82",
+      "normId": "CPLT",
+      "article": "82",
+      "title": "- Resoluciones inapelables",
+      "text": "- Resoluciones inapelables. Serán inapelables las resoluciones delJuez del Trabajo sobre producción, denegación y sustanciación de las pruebas,pero si se hubiese negado alguna medida, la parte interesada podrá solicitar ala Cámara de Apelación del Trabajo que la diligencie cuando el expediente lefuera remitido para que conozca del recurso contra la sentencia definitiva.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b1be2fb070e4463e508d25f23d4a7ae5dd0075c72fcc06df233ba46fb63b42db",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-83",
+      "normId": "CPLT",
+      "article": "83",
+      "title": "- Impugnaciones u observaciones",
+      "text": "- Impugnaciones u observaciones. Trámite. Las impugnaciones uobservaciones que se efectúen a la producción de alguna prueba, deberándeducirse dentro del tercer día y se regirán por los siguientes trámites:\n\nSe dará vista del escrito de impugnación a las partes, peritos yterceros, si correspondiera.\n\nDe considerarlo necesario, el juez abrirá la incidencia a pruebapor un plazo no mayor de quince (15) días.\n\nNo habrá resolución previa sobre las impugnaciones, cuyo méritose apreciará conjuntamente con la prueba principal en laoportunidad de dictar sentencia.\n\nCAPÍTULO V\n\nMedios de Prueba",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "d90395eec2009aadc81b5c9a985409c7b0e99d2f62a7902659cfdb71b7c07389",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-84",
+      "normId": "CPLT",
+      "article": "84",
+      "title": "- Normas Aplicables",
+      "text": "- Normas Aplicables. Los medios de prueba, su ofrecimiento yproducción, se regirán por las previsiones de este Código, aplicándose elArtículo 14, en lo que resulte pertinente y compatible. Cuando se produjeren enaudiencias serán videograbadas y podrán realizarse en sede judicial o porvideoconferencia. El Juez podrá autorizar que la prueba confesional otestimonial sea recepcionada por un funcionario.\n\nSECCIÓN I\n\nConfesión",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "680465d5c6b085cd0df289b64616c7b5a0f9c12a0bb76c82d54daab794f70a6f",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-85",
+      "normId": "CPLT",
+      "article": "85",
+      "title": "- Procedencia",
+      "text": "- Procedencia. Cada parte podrá exigir que la contraria, bajojuramento o promesa de decir verdad sea citada a absolver posiciones. Lasposiciones se presentarán directamente al expediente digital en un escritofirmado, el que será reservado hasta el momento del inicio del acto de laaudiencia.\n\nCada posición contendrá la afirmación de un solo hecho referente al pleitoy será redactada en forma clara y de fácil comprensión. En los incidentes sereferirán exclusivamente a la cuestión materia del mismo. Cada posiciónimportará para el ponente el reconocimiento del hecho a que se refiere.\n\nAdmitidas las posiciones o aclaradas si fuera necesario, el Juez ofuncionario autorizado las presentará al absolvente una por una, quienresponderá sucesivamente y por sí solo a cada una de ellas, en forma afirmativao negativa, pudiendo dar las explicaciones que creyera conveniente. En caso deque manifestara no recordar los hechos, el Juez apreciará su actitud endefinitiva.\n\nLa parte ponente y los abogados y procuradores asistentes al acto no tendránintervención alguna en las contestaciones del absolvente.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "739954a60e90b6bf98b740474b1294f89add44af3d62d8076720d27ebe0e6b9d",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-86",
+      "normId": "CPLT",
+      "article": "86",
+      "title": "- Aclaraciones",
+      "text": "- Aclaraciones. En la audiencia las partes podrán requerirserecíprocamente aclaraciones sobre los hechos contenidos en las posiciones ysobre las respuestas dadas por el absolvente, no admitiéndose la presentaciónde posiciones nuevas. El Juez o funcionario autorizado podrá formularles todaslas preguntas que creyera necesarias para el debido esclarecimiento de loshechos.\n\nSECCIÓN II\n\nDocumental",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "d6348c6ce8254cf851b619f4aebc7f83207c7ea3ec29996211745045cd2ac60f",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-87",
+      "normId": "CPLT",
+      "article": "87",
+      "title": "- Reconocimiento",
+      "text": "- Reconocimiento. Oportunidad. Las partes deberán reconocer o negarcategóricamente los documentos que se les atribuyen y la recepción de lascartas, telegramas y facsímiles que les hubieran dirigido. El incumplimientode esta norma determinará que se tenga por reconocidos o recibidos talesdocumentos.\n\nEl reconocimiento o la negativa deberán formularse en las siguientesoportunidades:\n\nLos documentos acompañados con la demanda, hasta la oportunidadde contestarla.\n\nLos documentos acompañados con la contestación de demanda, en la\n\naudiencia de conciliación prevista en el artículo 71.\n\nCuando el actor no compareciera personalmente a dicha audiencia,dentro de los tres (3) días de ser intimado a tales fines.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "c171991909db3c0eb4ac07f7abb5a91ad7398f98ef9af06f217c1ec57f939dd8",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-88",
+      "normId": "CPLT",
+      "article": "88",
+      "title": "- Exhibición de los documentos para el reconocimiento",
+      "text": "- Exhibición de los documentos para el reconocimiento. A los finesseñalados en el artículo anterior y dentro del término fijado, las partes podrán requerir en secretaría la exhibición de los documentos que se les atribuyen,lo que se hará en presencia del actuario, dejándose constancia en el cuaderno pertinente.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "958141f4ec1a3a116c60052fe73dac6abf0614164cb478e318021a98dd1758aa",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-89",
+      "normId": "CPLT",
+      "article": "89",
+      "title": "- Desconocimiento",
+      "text": "- Desconocimiento. Consecuencia. Si se negare la firma atribuida ose impugnara el documento de falsedad o adulteración, el juez ordenará el cotejo judicial designando a tal fin el perito correspondiente. Si se negare larecepción de las cartas, telegramas o facsímiles, dispondrá el libramiento deoficio a la entidad que corresponda.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b335d0319fdf07568994e9772398dd813b4635be5247a72caa9638613c94e8ab",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-90",
+      "normId": "CPLT",
+      "article": "90",
+      "title": "- Exhibición de documentación",
+      "text": "- Exhibición de documentación. Efectos. El actor podrá solicitar seintime a la contraria a la exhibición de libros, registros, planillas u otroselementos de contralor.\n\nLa falta de exhibición o defectos de estos instrumentos autorizará laaplicación del artículo 61 segundo párrafo de este Código.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "88882dc57f99443438c87990e204f2c0f16dfbe6ad579cfc51ceca7edf5fd101",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-91",
+      "normId": "CPLT",
+      "article": "91",
+      "title": "- Documentos en poder de terceros",
+      "text": "- Documentos en poder de terceros. Impugnación. Los documentos enpoder de terceros, que se agreguen durante la etapa de producción de la prueba,podrán ser impugnados por el trámite reglado en el artículo 83 de este Código.\n\nSECCIÓN III\n\nInformativa",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ce6d7a5ffcd3bf74a1cc339bd537fc63ee4df27150151ec8ca6bd8b626163de5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-92",
+      "normId": "CPLT",
+      "article": "92",
+      "title": "- Procedencia",
+      "text": "- Procedencia. Impugnación. Si se ofreciera prueba de informes paraser requerida de oficinas públicas, archivos, escribanías, entidades,establecimientos o firmas privadas. Dicha prueba deberá versar sobre hechos ocircunstancias concretas, claramente individualizadas y que resultencontrovertidas en el proceso.\n\nEstos informes podrán ser impugnados por el trámite previsto en el artículo\n\n83 de este Código.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "d5cb2e1831d59b043b7c3def3f49fb0d8e4fdf0e0469ca5497c5e0075f274746",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-93",
+      "normId": "CPLT",
+      "article": "93",
+      "title": "- Confección de oficio y diligenciamiento",
+      "text": "- Confección de oficio y diligenciamiento. Los oficios podrán serconfeccionados y diligenciados por las partes o el juzgado, debiendo serfirmados por el actuario o el juez, en su caso, dejándose copia en autos.\n\nSECCIÓN IV\n\nTestimonial",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "41b2dbc7feaa4ec08d0dcdbb3209368ef4b763f5043d2467f2f5acc263068e3b",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-94",
+      "normId": "CPLT",
+      "article": "94",
+      "title": "- Ofrecimiento de prueba testimonial",
+      "text": "- Ofrecimiento de prueba testimonial. Al ofrecer la prueba detestigos, se indicará nombre, datos personales que se conozcan, número deteléfono fijo y/o celular, y domicilio de cada uno de ellos con la especificación de todos los detalles para su debida identificación. Si se desconociere alguno de estos datos, se proporcionarán los necesarios para individualizar al testigo y hacer posible su citación. El hecho de que el nombre o demás condiciones personales dados por el testigo no coincidan exactamente con los indicados por la parte al proponerlo, no impedirá su declaración si del conjunto de tales antecedentes resultara ser la misma persona. La resolución del Juez a este respecto no será recurrible.\n\nEl número de testigos ofrecidos por los litigantes no podrá exceder de seis(6) por cada parte y el Juez podrá admitir mayor número si fuerenimprescindibles para la causa. En la misma oportunidad, podrán ofrecer hastados (2) testigos para reemplazar a los ofrecidos, cuando no pudieran declararpor causa de muerte, incapacidad, enfermedad o ausencia. El reemplazo se harápor la sola petición de la parte en la audiencia.\n\nLas preguntas se presentarán enumeradas y cada una se referirá a un solohecho vinculado con la cuestión debatida en el juicio. No podrán involucrar osugerir la respuesta, tampoco contener expresiones de carácter técnico, salvoque se dirijan a personas capacitadas para contestarlas. Su redacción deberáser clara y de fácil comprensión.\n\nCuando el testigo fuere un técnico o profesional y su declaración versarasobre cuestiones relacionadas con su especialidad, las partes podrán concurrira la audiencia con sus consultores técnicos.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "c3f5c46160aba9c5666c265ec88bc89f87ae5169714ac6a1379e27b3c85f224d",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-95",
+      "normId": "CPLT",
+      "article": "95",
+      "title": "- Notificación",
+      "text": "- Notificación. Los testigos propuestos deberán ser notificados conuna anticipación mínima de dos (2) días con indicación de urgente trámite. Lanotificación se hará por medio de la Policía de la Provincia. El Juez podránotificar a los testigos por medio telefónico, electrónico o digital, a travésde los equipos provistos por el Poder Judicial a la unidad jurisdiccional. Laparte interesada podrá, a su exclusivo cargo y bajo su responsabilidad, citara los testigos por otros medios fehacientes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8a4107e6641bf0b72b41f33f6ba436d722ed0878626052208a85c528eecb2492",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-96",
+      "normId": "CPLT",
+      "article": "96",
+      "title": "- Recepción de la declaración testimonial",
+      "text": "- Recepción de la declaración testimonial. Los testigos seránexaminados individual y sucesivamente. Deberá procurarse que los testigos quehayan declarado no tomen contacto con los que aún no lo hubieren hecho. Prestarán juramento de decir verdad y serán informados de las sanciones del falso testimonio.\n\nCada testigo será examinado por su nombre, edad, nacionalidad, profesión ydomicilio; por el conocimiento de los litigantes y si es cónyuge, conviviente osi es pariente de alguno de ellos y en qué grado; si es amigo con frecuenciade trato o enemigo, acreedor, deudor, empleado o empleador o tiene algún génerode relación o vínculo con cualquiera de los litigantes; si tiene interés en elpleito.\n\nLos testigos serán examinados a tenor del interrogatorio propuesto, cuyaspreguntas podrán ser aclaradas en caso de ser necesario o divididas para sumejor comprensión. Responderán siempre dando razón de sus dichos, sin poderleer notas o apuntes, salvo que, por la naturaleza de la cuestión, les seaimprescindible hacerlo, en cuyo caso serán autorizados, haciéndose constar estacircunstancia.\n\nTerminada la exposición del testigo, la parte que lo haya propuestopodrá exigirle directamente, bajo control del Juez o funcionario autorizado,las ampliaciones o aclaraciones que considere necesarias. La parte contrariapodrá, bajo control del Juez o funcionario autorizado, formularle directamentetodas las preguntas o requerirle todas las explicaciones y aclaraciones queconsidere necesarias, siempre que no se tratare de cuestiones desvinculadasdel Juicio y aunque no tengan estricta relación con el cuestionario y susrespuestas; de lo contrario serán denegadas por el Juez o funcionarioautorizado.\n\nEl Juez o funcionario autorizado podrá formular al testigo las preguntas queestime necesarias o exigirle las explicaciones o aclaraciones tendientes aobtener el mejor esclarecimiento de los hechos.\n\nLas audiencias serán videograbadas, y podrán realizarse en sede judicial opor videoconferencia.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2bdb0f8bf8604659b669d06c83dcc961693103317f85f5e55f33565545580aea",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-97",
+      "normId": "CPLT",
+      "article": "97",
+      "title": "- Tachas",
+      "text": "- Tachas. Procedencia. Son tachas a los testigos todas lascircunstancias que puedan inclinarlos a deponer a favor o en contra de algunade las partes en el juicio, y todas las que tiendan a disminuir o anular lafuerza probatoria de sus testimonios. Los testigos podrán ser tachados porcualquiera de las partes en su persona o en razón de sus dichos. La parte quelos hubiera propuesto no podrá tacharlos en razón de su persona.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "c56ab6e8f7583d64985599d88f90cda5f8fa2e8b9a934e1c66cfb2e2dda5648f",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-98",
+      "normId": "CPLT",
+      "article": "98",
+      "title": "- Ofrecimiento y Producción",
+      "text": "- Ofrecimiento y Producción. Las tachas a los testigos y la pruebade la que intenten valerse se formularán y sustanciarán en el acto de laaudiencia. La prueba podrá producirse hasta el llamamiento de autos paraalegar. Sólo se admitirá la prueba instrumental e informativa y excepcionalmente otros medios de prueba cuya admisibilidad será resuelta por el Juez en dicho acto.\n\nEl mérito de las tachas se apreciará en la sentencia.\n\nSECCIÓN V\n\nPericial",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3c502969d6e8189fe0fa49ed61b5f7792a15bd3d0898f0e37bd2650c8fe94cd6",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-99",
+      "normId": "CPLT",
+      "article": "99",
+      "title": "- Depósito para gastos",
+      "text": "- Depósito para gastos. Únicamente en casos excepcionales, losperitos podrán pedir y el juez disponer, que con carácter previo, la parteinteresada deposite la suma que determine el juez para gastos de la diligencia.El incumplimiento de este depósito no implicará desistimiento de la pericia.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "61324f22712c019e56fb375f9cb1a41086da7dd38ffafb089fe3682648dba7b5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-100",
+      "normId": "CPLT",
+      "article": "100",
+      "title": "- Traslado",
+      "text": "- Traslado. Aclaraciones - Impugnaciones. Presentada la pericia secorrerá traslado a las partes, quienes podrán, dentro del término de tres (3)días, requerir aclaraciones o ampliaciones conducentes al esclarecimiento delinforme.\n\nConcluido este trámite, las partes podrán impugnar u observar el dictamen\n\nmediante el procedimiento establecido en el artículo 83 de este Código.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "511c966502ed3ca359c6c03b99f2b61b9e937902cc1323d5d59bc1c572033f28",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-101",
+      "normId": "CPLT",
+      "article": "101",
+      "title": "- Pérdida de honorarios",
+      "text": "- Pérdida de honorarios. Si el perito no contestara lasaclaraciones, ampliaciones o impugnaciones, perderá el derecho a regulación dehonorarios.\n\nCAPÍTULO VI\n\nConclusión de la Causa",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5bd5b7b4740f9461320751f83b0eb3cc16ae19d384516037c5ab94be7f951a03",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-102",
+      "normId": "CPLT",
+      "article": "102",
+      "title": "- Informe del Actuario",
+      "text": "- Informe del Actuario. Alegatos. Vencido el término de prueba, deoficio o a petición de parte, el actuario informará dentro de los dos (2) díassobre las pruebas producidas y pondrá los autos para alegar por el término común de cuatro (4) días. Si el expediente no se encontrare íntegramente digitalizado, el plazo para alegar será de cuatro (4) días para cada parte y por su orden.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "52496ce28d123ae80a520d2b11375fa20b57065f373f1c382001fe77312feeea",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-103",
+      "normId": "CPLT",
+      "article": "103",
+      "title": "- Autos para sentencia",
+      "text": "- Autos para sentencia. Dentro de los dos (2) días de vencido elúltimo término para alegar, con la presentación de los alegatos o sin ellos, elJuez del Trabajo dictará la providencia disponiendo pasar la causa en calidadde autos a fines del dictado de la sentencia definitiva.\n\nSi después del dictado de dicha providencia se agregara alguna prueba porcualquiera de los medios autorizados en este código, el Juez del Trabajo antesde dictar sentencia, dará vista a cada parte por tres (3) días y por su orden,a los fines de que aleguen sobre el mérito de ellas.\n\nTÍTULO II\n\nJuicios Especiales\n\nCAPÍTULO I\n\nJuicio Sumarísimo",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "6baed5428f51d2a356ba5d918cf3332dc89b65d19879f9d30547ae5c5e24ef1b",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-104",
+      "normId": "CPLT",
+      "article": "104",
+      "title": "- Trámite",
+      "text": "- Trámite. El trámite se regirá por las normas de este Capítulo,no siendo aplicables las contenidas en el Título I del Libro III de este Código, salvo las expresamente previstas para este procedimiento especial.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2ab54962711e1586aa1ff2d61d3487bc3d4dd3067fab2de9c15c28e39d88bbdf",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-105",
+      "normId": "CPLT",
+      "article": "105",
+      "title": "- Casos de aplicación",
+      "text": "- Casos de aplicación. Los reclamos realizados por esta víaprocesal deberán contar con respaldo documental suficiente. Estarán sujetos aeste procedimiento los juicios que tengan por objeto:\n\nLa discusión de sanciones disciplinarias, vigente la relaciónlaboral.\n\nEl cobro de las indemnizaciones por despido directo sin expresiónde causa, estando la cesantía documentalmente acreditada.\n\nEl reclamo de la indemnización reducida por despido directofundado en fuerza mayor, falta o disminución de trabajo, siempre\n\nque la cesantía resulte documentadamente acreditada.\n\nEl cobro de indemnización por el fallecimiento del trabajador,siempre que se acredite con prueba instrumental, que a la fechadel deceso la relación laboral estaba vigente.\n\nLas demandas de desalojo de inmuebles concedidos al trabajadorcomo accesorio de la relación de trabajo.\n\nEl pago por consignación.\n\nLos demás casos en que las leyes dispongan el trámite sumario osumarísimo.\n\nEl cobro por el seguro de vida colectivos obligatorios y los\n\nseguros contemplados en los convenios colectivos.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "17da6a1cfe526f2c43731ef1f0f8ef2cee99f6289690a89b1110de7b38d3cafe",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-106",
+      "normId": "CPLT",
+      "article": "106",
+      "title": "- Casos Especiales",
+      "text": "- Casos Especiales. Contenido. En los casos previstos en los incisos y 3. del artículo anterior sólo podrán reclamarse las indemnizaciones porantigüedad, falta de preaviso, clientela, integración del mes de despido,remuneración del mes de despido, sueldo anual complementario e indemnizaciónpor vacaciones correspondientes al año de despido y demás rubros previstos enconvenios y normas especiales. En la hipótesis prevista en el inciso 4 delartículo anterior sólo podrá reclamarse el pago de la indemnización porfallecimiento, las remuneraciones del mes de deceso, sueldo anual complementario e indemnización por vacaciones correspondientes al año en que aquel se produjo y demás rubros previstos en convenios y normas especiales.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "0236c92594ebe984b6a02e2cda172040772f7964cffd0e9dd795e5dd45c13986",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-107",
+      "normId": "CPLT",
+      "article": "107",
+      "title": "- Desacumulación de Acciones",
+      "text": "- Desacumulación de Acciones. Cuando se reclamen créditos noprevistos en los artículos anteriores, el Juez de Oficio dispondrá ladesacumulación de las acciones improcedentes a fin de que se ejerciten por lavía y forma correspondiente.\n\nLa desacumulación también procederá a petición de parte, la que deberáformularse y resolverse en la audiencia.\n\nEn ambos supuestos la decisión será inapelable.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "db94aa7341f5e8551558b6c16c34d5eb6b162d4b0c49f368fd424b4ca4abdd83",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-108",
+      "normId": "CPLT",
+      "article": "108",
+      "title": "- Audiencia y citación",
+      "text": "- Audiencia y citación. Deducida la demanda de conformidad a loestablecido en el Art. 55 de este Código, con la que deberá acompañar latotalidad de la documentación que obrare en su poder relacionada con el juicioy, si no la tuviere, la individualizará indicando su contenido y el lugar dondese encuentra, sin que sea posible presentar u ofrecer otra documentación fuerade esta oportunidad. El Juez convocará a las partes a una audiencia, que nopodrá fijarse para después de diez (10) días, la cual será notificada con unaanticipación de por lo menos cinco (5) días y con la prevención de que deberánconcurrir a ella munidas de los medios de prueba de que intenten valerse. Conla citación, se entregarán al demandado las copias del escrito de demanda ydocumentos acompañados o se insertará en la cédula un código informático queremita a su lectura en el expediente digital, para que la parte demandadaconteste y se expida sobre éstos en la audiencia.\n\nSi las partes acreditan, con anterioridad a la audiencia, motivo justificadopara no comparecer, el Juez las citará nuevamente para dentro de un plazo nomayor a tres (3) días.\n\nLa audiencia se verificará con las partes que concurran. El actor deberáestar presente en la misma, si no concurre se le tendrá por precluido su derecho a ofrecer prueba.\n\nSi no concurre el demandado, se tendrá por incontestada la demanda, sepresumirán como ciertos los hechos invocados y como auténticos y recepcionadoslos documentos acompañados a la demanda, teniéndose por precluido su derechopara ofrecer pruebas. Se hará lugar a lo solicitado por el actor si la peticiónes arreglada a derecho y no surgiera lo contrario de la prueba agregada enautos.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "93b0e17e0b68384ccd62df690fd3552588ce9ce312eb515a4ff12e9c840bda3c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-109",
+      "normId": "CPLT",
+      "article": "109",
+      "title": "- Audiencia",
+      "text": "- Audiencia. Desarrollo. La audiencia deberá ser celebrada con laintervención directa del Juez o quien lo subrogue.\n\nEl demandado contestará la demanda, pudiendo incorporar un escrito, si asílo considera, y se expedirá sobre la prueba documental acompañada con lademanda.\n\nEl actor se expedirá sobre la prueba documental acompañada con el responde.Si no compareciere personalmente, se procederá según lo dispuesto en el Art. 87inc. 3 de este Código.\n\nLas partes, por su orden, ofrecerán pruebas.\n\nContestada que fuera la demanda, habiéndose determinado los hechoscontrovertidos y resuelto la desacumulación de acciones si fuera planteada, elJuez instará a las partes a conciliar. A tal fin serán de aplicación losArtículos 74, 75 y 76 de este Código.\n\nSi no se arribara a un acuerdo, se hará constar en acta esta circunstancia.En el mismo acto, el Juez proveerá las pruebas ofrecidas, tratando desimplificarlas, reducir los hechos litigiosos o declarar la cuestión de puroderecho. Se recibirán las pruebas que puedan producirse en la misma audiencia.Las que requieran tramitación fuera del Juzgado serán agregadas una vezproducidas, dentro del plazo que fije el Juez, que no podrá ser mayor de quince(15) días, pudiendo ampliar su recepción en los términos del Art. 79 de esteCódigo.\n\nNo se admitirán reconvención, excepciones de previo y especialpronunciamiento o cuestiones que, por su naturaleza, alteren la estructura ofin del proceso. Serán inapelables las resoluciones del Juez sobre producción,denegación y sustanciación de prueba.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "dd450cb771891ad08d6ed3f9b1ed8ce42cfcad0ba8441e49956cc1f12f82841c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-110",
+      "normId": "CPLT",
+      "article": "110",
+      "title": "- Sentencia",
+      "text": "- Sentencia. Agregadas las pruebas se pondrán los autos a despachosin necesidad de petición de parte, y la sentencia se dictará en el plazoestablecido por el Artículo 45 de este Código.\n\nCAPÍTULO II\n\nJuicio Ejecutivo",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ac492c52d10929fe7acd34d427fd3f02803170747c78e08b962a3f2ee84b7be1",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-111",
+      "normId": "CPLT",
+      "article": "111",
+      "title": "- Procedencia",
+      "text": "- Procedencia. El actor podrá optar por esta vía cuando su créditoreúna las siguientes condiciones:\n\nQue la deuda hubiera sido reconocida por aquél a quien sepretenda demandar.\n\nQue se trate de deuda líquida y exigible.\n\nQue conste en instrumento público o privado.\n\nEn este último caso, quedará habilitada la vía ejecutiva previoreconocimiento judicial del instrumento. Desconocida la firma, no procederá eljuicio ejecutivo.\n\nLos requisitos previstos en los incisos precedentes son acumulativos.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "549f20983193754c9bb03d538755915d3d351f38c653190c4dcd07b81fe436c9",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-112",
+      "normId": "CPLT",
+      "article": "112",
+      "title": "- Sanciones administrativas",
+      "text": "- Sanciones administrativas. También tramitarán por esteprocedimiento las causas previstas en los incisos 3. y 5. del artículo 6°,cuando las leyes otorguen, al instrumento base de la acción, el carácter detítulo ejecutivo.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b6181bb6e4b12238e0c29d62dfe528693e16907fcef3cf8a035978c363ea6504",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-113",
+      "normId": "CPLT",
+      "article": "113",
+      "title": "- Intimación de pago y embargo",
+      "text": "- Intimación de pago y embargo. Recibida la demanda y agregado elinstrumento público o reconocido el privado, el juez ordenará la intimación depago, embargo y citación de remate al ejecutado para que en el término de tres(3) días oponga excepciones bajo apercibimiento de llevar adelante la ejecución.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "c7add0ba71b6ddd41cac971dd0f9b3d9789a9dcb06b96fd2ddc7575dbd7a1ff8",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-114",
+      "normId": "CPLT",
+      "article": "114",
+      "title": "- Excepciones",
+      "text": "- Excepciones. Las únicas excepciones admisibles son:\n\nIncompetencia.\n\nFalta de capacidad de las partes o de personería ensus representantes.\n\nLitispendencia.\n\nCosa juzgada.\n\nFalsedad extrínseca o inhabilidad del instrumento.\n\nPago total o parcial debidamente documentado.\n\nPrescripción.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "09490f96af9681e7fc116bdc0f607e72ebe454d2bc917fa99885d3ba49e71d4c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-115",
+      "normId": "CPLT",
+      "article": "115",
+      "title": "- Trámite",
+      "text": "- Trámite. Estas excepciones tramitarán por las reglas previstasen este Código para los incidentes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "4aa1125347273b6f314a4aca1c797ccb05896605dfd600071dc29c4bcff3474a",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-116",
+      "normId": "CPLT",
+      "article": "116",
+      "title": "- Providencias inapelables",
+      "text": "- Providencias inapelables. Toda providencia que se dicte en esteproceso será inapelable, salvo la sentencia definitiva cuando se hubiera opuesto alguna excepción.\n\nLIBRO IV\n\nTrámite ante el Tribunal\n\nTÍTULO ÚNICO\n\nRadicación del Juicio ante el Tribunal\n\nCAPÍTULO I\n\nIntegración del Tribunal",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "6b6b4cedc280ee877bc3407b870016707ebda8f3c606a67fe658bb811f6573fb",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-117",
+      "normId": "CPLT",
+      "article": "117",
+      "title": "- Distribución",
+      "text": "- Distribución. Orden de Votación. Ante el recurso de apelación,el Juez del Trabajo remitirá los autos a la Sala que por turno corresponda dela Cámara de Apelación del Trabajo. Recibida por el tribunal se designará elorden de la votación.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "dde5f46236bb36fa6dbd10ed8da19538fe17a94aeb418f8df508e539e5a1f340",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-118",
+      "normId": "CPLT",
+      "article": "118",
+      "title": "- Dirección del proceso",
+      "text": "- Dirección del proceso. El vocal preopinante o quien lo reemplace,\n\nllevará la dirección del proceso, dando el trámite que corresponda a la causa.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "c9f41d92f984731cf96a2b32e0ae21118ea4c311eb487f026eb1a10598007ef5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-119",
+      "normId": "CPLT",
+      "article": "119",
+      "title": "- Integración de la Sala",
+      "text": "- Integración de la Sala. Orden de reemplazo. En caso de vacanciao cuando por causa legal alguno de los miembros de la sala estuviera impedidode pronunciarse o hubiera disidencia, se la integrará con otro vocal de la misma circunscripción judicial, conforme al siguiente orden de prelación:\n\nVocales de otra Sala del mismo fuero.\n\nJueces de Conciliación y Trámite.\n\nVocales de las Cámaras en lo Civil y Comercial Común.\n\nVocales de las Cámaras en lo Civil en Documentos y Locaciones.\n\nVocales de la Cámara Contencioso Administrativo.\n\nVocales de la Cámara Civil en Familia y Sucesiones.\n\nVocales de las Cámaras Penales.\n\nCAPÍTULO II\n\nProcedimiento",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "37d44e0c27d25e1080b5eb027237c05b651fdaa218c4ab7d238160342bd53576",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-120",
+      "normId": "CPLT",
+      "article": "120",
+      "title": "- Llamamiento de autos",
+      "text": "- Llamamiento de autos. Recibidos los autos por la Sala, en el díase llamará autos para sentencia.\n\nFirme esta providencia o concluidos los trámites que fueran pertinentes,pasarán los autos a conocimiento y resolución de la sala, que deberá dictarsentencia con voto fundado de sus miembros.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ee07c04c254e34e4deee36e4675a74dde42b76cd14e0b36d703a7cb1b6adf734",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-121",
+      "normId": "CPLT",
+      "article": "121",
+      "title": "- La Cámara de Apelación del Trabajo deberá dictar sentenciadentro de los treinta (30) días en los j",
+      "text": "- La Cámara de Apelación del Trabajo deberá dictar sentenciadentro de los treinta (30) días en los juicios ordinarios y de quince (15) díasespeciales o incidentes.\n\nLos Plazos mencionados se computarán desde que el llamamiento de autos parasentencia haya quedado firme.\n\nLIBRO V\n\nRecursos\n\nTÍTULO I\n\nRecursos Admisibles",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ae17b116193c985fc05558880374a5c34b20cef16c5d493b0ccff2a7557f1cf5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-122",
+      "normId": "CPLT",
+      "article": "122",
+      "title": "-Clases",
+      "text": "-Clases. Sólo se admitirán los siguientes recursos:\n\nAclaratoria.\n\nRevocatoria.\n\nApelación.\n\nCasación.\n\nTÍTULO II\n\nRecursos en Particular\n\nCAPÍTULO I\n\nAclaratoria",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "89320e7f67da162bd5c8541ab7f059e23937b3e1f2f00f576ca3cd417a13336b",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-123",
+      "normId": "CPLT",
+      "article": "123",
+      "title": "- Admisibilidad",
+      "text": "- Admisibilidad. Plazo. Efectos. El recurso de aclaratoria procederá contra sentencias definitivas e interlocutorias, debiendo deducirse dentro de los tres (3) días de su notificación.\n\nEste recurso interrumpirá los términos para la interposición de cualquierotro que fuere procedente. La sentencia que acoja o deniegue el presenterecurso será notificada en el domicilio digital que hayan constituido laspartes en el juicio.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "baef3b5949e396092d3de05f8712ce06104264ed57216f91a7531c75f9f0aa75",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-124",
+      "normId": "CPLT",
+      "article": "124",
+      "title": "- Contenido",
+      "text": "- Contenido. Sólo podrá fundarse en errores materiales, conceptososcuros u omisiones de la sentencia, no pudiendo por esta vía alterarse losustancial de la decisión.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "79274acdeeced4c4470d8ca554b5de6f08db15124e84fa0dd72c5af68876b51b",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-125",
+      "normId": "CPLT",
+      "article": "125",
+      "title": "- Trámite",
+      "text": "- Trámite. Sentencia. Plazo. Del recurso se correrá vista por eltérmino de tres (3) días, vencido el cual el juez o tribunal resolverá sin mástrámite dentro de los diez (10) días.\n\nCAPÍTULO II\n\nRevocatoria",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "f917330f01609cdf936c94bf0f074516c1bc335454d34d1a77ef117e3f37900e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-126",
+      "normId": "CPLT",
+      "article": "126",
+      "title": "- Supletoriedad",
+      "text": "- Supletoriedad. Sentencia. Plazo. El recurso de Revocatoriaprocederá en los casos previstos en el Código Procesal en lo Civil y Comercialy tramitará por las normas que en él se establecen. La resolución deberá dictarse en el plazo de diez (10) días.\n\nCAPÍTULO III\n\nApelación",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "46fde5a0125988ae0c44fb63b991ca37b24cffd30b38dc7e467115a169d13219",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-127",
+      "normId": "CPLT",
+      "article": "127",
+      "title": "- Resoluciones con sustanciación",
+      "text": "- Resoluciones con sustanciación. El recurso de Apelación procederácontra las sentencias definitivas, interlocutorias y demás resolucionesdictadas por el Juez del Trabajo, con sustanciación previa, salvo expresadisposición en contrario.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5379804264845a9d4df17a6a0999a561ddb5b06ee996bc93af882001e4c0e519",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-128",
+      "normId": "CPLT",
+      "article": "128",
+      "title": "- Providencias simples",
+      "text": "- Providencias simples. Requisitos. Efecto devolutivo. Lasprovidencias simples sólo serán apelables si causaran gravamen irreparable y sila apelación hubiera sido interpuesta en forma subsidiaria a la revocatoria. Entodos los casos, el recurso se concederá con efecto devolutivo.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "88ab291ac48f74a255e226d8ff1a7aa4b55c051112ccd71f16f421acb710cfd9",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-129",
+      "normId": "CPLT",
+      "article": "129",
+      "title": "- Tiempo y forma de presentación",
+      "text": "- Tiempo y forma de presentación. El recurso deberá interponerse\n\npor escrito, dentro de los tres (3) días, ante el juez que dictó la resolución.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "7c8c7c9bed0ea2a69efb9175b02374e112070f1c37700dba792c68c8bf14aadd",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-130",
+      "normId": "CPLT",
+      "article": "130",
+      "title": "- Trámite",
+      "text": "- Trámite. Forma de concesión. Concedido el recurso, se notificaráal apelante para que exprese agravios en el término de cinco (5) días. Laomisión de este trámite producirá de pleno derecho la deserción del recurso.\n\nPresentado el memorial de agravios, se dará vista a la contraparte por eltérmino de cinco (5) días. Contestada la vista o vencido el término para hacerlo, el expediente se elevará a la Cámara de Apelación sin más trámite. Este recurso se concederá siempre en relación.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2f341471fdccb98bbd00215c5d72f59dd14a52f874509e4e84622476fc5fcbb1",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-131",
+      "normId": "CPLT",
+      "article": "131",
+      "title": "- Apelación en subsidio",
+      "text": "- Apelación en subsidio. Cuando la apelación hubiera sidointerpuesta subsidiariamente a la revocatoria, habiendo mediado vista, lascopias pertinentes se elevarán a la Cámara sin más trámite.\n\nSi no se hubiera ordenado vista, el juez notificará al apelado para que enel término de cinco (5) días presente su memorial. Contestada la vista o vencido el término para hacerlo, se procederá conforme lo establecido en el párrafo anterior.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "d05e2e49e309df097fc0b14fa42d7a932c7c9e40fe629e2c1d3f1c49ff1813c1",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-132",
+      "normId": "CPLT",
+      "article": "132",
+      "title": "- Contenido de la expresión de agravios y facultades del Tribunal.La expresión de agravios deberá co",
+      "text": "- Contenido de la expresión de agravios y facultades del Tribunal.La expresión de agravios deberá contener, punto por punto, los fundamentos porlos que el apelante discrepa con la resolución. No se admitirá la remisión aexposiciones o alegaciones anteriores. La expresión de agravios da la medida delas facultades del tribunal con relación a la causa, ya que no podrá pronunciarse sobre cuestiones que no estén incluidas concretamente en ella.\n\nCuando la sentencia hubiera sido recurrida sólo por una de las partes, nopodrá ser modificada en su perjuicio.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5c0a778a0c5a67effa1854ae4591f79f5c77133c26d1f48273559a1d58b410fd",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-133",
+      "normId": "CPLT",
+      "article": "133",
+      "title": "- Nulidad",
+      "text": "- Nulidad. El recurso de Apelación comprende el de nulidad, debiendo versar sobre defectos u omisiones en la forma de la sentencia, no siendo admisible por vicios de procedimiento.\n\nLa Cámara de Apelación del Trabajo no podrá pronunciarse sobre la nulidad,\n\nsi el recurrente no la fundó en oportunidad de expresar agravios.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2c7612558f3e65c1197c6f1fe5cc5e976e7e94e061c368ba0f64cd6db739ff94",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-134",
+      "normId": "CPLT",
+      "article": "134",
+      "title": "- Efectos",
+      "text": "- Efectos. Si la Cámara de Apelación del Trabajo hiciera lugar a lanulidad, deberá en la misma sentencia dictar el pronunciamiento sustitutivo quecorresponda sobre el fondo de la cuestión.\n\nCAPÍTULO IV\n\nCasación",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "25590aec65a2ea88d087fb7e3c5b66ee02d7c16126edc0c6590930e0a7084028",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-135",
+      "normId": "CPLT",
+      "article": "135",
+      "title": "- Sentencias recurribles",
+      "text": "- Sentencias recurribles. El recurso de casación sólo será admisible:\n\nContra las sentencias definitivas pronunciadas por las cámaras,equiparándose como tales a las que, dictadas en una cuestiónincidental, terminen el pleito o hagan imposible su continuación.\n\nContra las demás sentencias, únicamente en la medida en que elpunto debatido asuma gravedad institucional.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "379c5d26aad722bc0fe4d7c1d09484872bd34b6cec28eefe2c075c3096cf205e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-136",
+      "normId": "CPLT",
+      "article": "136",
+      "title": "- Casos",
+      "text": "- Casos. El recurso de casación sólo podrá ser interpuesto por lossiguientes motivos:\n\nPor violación, inobservancia o errónea aplicación del derechosustantivo o adjetivo.\n\nCuando la interpretación de la ley, realizada por la sentencia,resultara contradictoria con anteriores pronunciamientos de lassalas de las Cámaras de Trabajo dictadas en los cinco (5) añosprecedentes.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "7177de830176ec458d1ad730c04c5d8ee9ebd93b5ce1a48e4a8a434d7861deed",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-137",
+      "normId": "CPLT",
+      "article": "137",
+      "title": "- Requisitos de admisibilidad",
+      "text": "- Requisitos de admisibilidad. El recurso se interpondrá dentro delos cinco (5) días de notificada la sentencia ante el tribunal que la dictó,debiendo cumplir los siguientes recaudos:\n\nBastarse a sí mismo, haciendo una relación completa de los puntosmateria de agravio.\n\nContener la cita de las normas que se pretenden quebrantadas,\n\nexponiendo las razones que fundamentan la afirmación.\n\nCuando el recurso se funde en la causal del inciso 2. delartículo anterior, el impugnante deberá acompañar testimonio de lasentencia que se afirma contradictoria.\n\nCumplir con lo establecido en el Artículo 138 de este Código.\n\nCuando la sentencia impugnada fuere dictada por una Sala de laCámara de Apelación del Trabajo con asiento en la ciudad deConcepción, el recurrente deberá constituir domicilio en laciudad de San Miguel de Tucumán, en la forma y modo previsto enel Código Procesal en lo Civil y Comercial.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "00973e2d8956d69727a01dc6e1bf7deece10fee25905a7a98d5f36960037648d",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-138",
+      "normId": "CPLT",
+      "article": "138",
+      "title": "- Afianzamiento",
+      "text": "- Afianzamiento. Plazo y consecuencia. Cuando el recurso fuera\n\ninterpuesto contra sentencia total o parcialmente condenatoria, el apelante\n\ndeberá depositar el monto condenado u ofrecer en embargo bienes, aval bancario o fianza suficiente.\n\nSi el patrimonio del recurrente fuera insuficiente para cubrir el monto dela condena, se considerará cumplido este requisito si diera en embargo latotalidad de sus bienes.\n\nTal depósito, embargo o garantía, deberá ser ofrecido con el escrito deinterposición del recurso y concretarse dentro de los quince (15) díassiguientes.\n\nEl incumplimiento de este requisito implicará el desistimiento del recurso.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "49f0827e9a7f046c6b8d593461132b05b5201315480d2f61cb4242f3d1a0a05e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-139",
+      "normId": "CPLT",
+      "article": "139",
+      "title": "- Embargos anteriores",
+      "text": "- Embargos anteriores. Si al momento de interposición del recursohubiera embargo trabado sobre bienes suficientes, el recurrente, adjuntandotestimonio autenticado que acredite esta circunstancia, quedará exento decumplir con lo dispuesto en el artículo anterior.\n\nSi los bienes embargados no fueran suficientes, deberá afianzar la diferencia en la forma y modo establecidos en dicho artículo.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "83d12bb4ea99ed86cc94f098d2743039e1229e70b64af52fabaced2fba13ae56",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-140",
+      "normId": "CPLT",
+      "article": "140",
+      "title": "- Excepciones al afianzamiento",
+      "text": "- Excepciones al afianzamiento. Lo dispuesto en los artículos 138y 139 no será aplicable en los casos de concurso o quiebra del recurrente ocuando el mismo acreditare, mediante carta de pobreza, que al momento deinterponer el recurso es insolvente.\n\nAcreditando la iniciación del trámite para la obtención de la carta depobreza, la parte podrá solicitar un plazo que será fijado prudencialmente porla Sala mediante providencia simple. Vencido dicho plazo, si no se presentarala constancia, operará la deserción del recurso.\n\nLa oposición de la contraria al afianzamiento parcial previsto en elartículo 138 segundo párrafo o a la declaración de insolvencia establecida en la presente, tramitará por vía de incidente sin suspender el curso del principal.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "f90ed5533060fa05b34fe3752f457867ef29edc823ad6175369965560dbcf010",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-141",
+      "normId": "CPLT",
+      "article": "141",
+      "title": "- Examen de admisibilidad",
+      "text": "- Examen de admisibilidad. Cumplido el afianzamiento o vencido eltérmino para hacerlo, la sala determinará si el recurso reúne los requisitosestablecidos en los artículos anteriores y dentro de los diez (10) díasresolverá mediante auto fundado.\n\nSi lo declarara admisible, concederá el recurso en ambos efectos y elevarálos autos a la Corte Suprema de Justicia.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "150883430aa22a1325e0e40ff2317e6f9eebac0c413133478c4d924fd09533d7",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-142",
+      "normId": "CPLT",
+      "article": "142",
+      "title": "- Trámite",
+      "text": "- Trámite. Recibido el expediente por el tribunal, se dictará laprovidencia de autos, pudiendo las partes, dentro de los cinco (5) días denotificadas, presentar memorias sobre el recurso.\n\nVencido este término, el tribunal dictará sentencia dentro del plazo decuarenta y cinco (45) días.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "4e0f97e7e9c28c2cc5f2051e49aec7059f102f3ff31bc389ab3016eb6ebb51c4",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-143",
+      "normId": "CPLT",
+      "article": "143",
+      "title": "- Efectos",
+      "text": "- Efectos. Cuando el tribunal declare procedente la Casación, deberá dictar la sentencia sustitutiva, pronunciándose sobre el fondo del asunto.\n\nCAPÍTULO V\n\nQueja",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5dbbc1390d132df760da1e5cd89e5b5e1657dfe5df6b3f0073e721f2ae3264a8",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-144",
+      "normId": "CPLT",
+      "article": "144",
+      "title": "- Procedencia",
+      "text": "- Procedencia. Ante la denegatoria de los recursos de Apelación,Casación o Inconstitucionalidad, el interesado podrá ocurrir directamente enqueja ante el tribunal superior respectivo.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ca94f0019da76747f54a5aa644203b8419758d554a4fd2e89ad1f9a50c658eba",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-145",
+      "normId": "CPLT",
+      "article": "145",
+      "title": "- Tiempo y forma de presentación",
+      "text": "- Tiempo y forma de presentación. La queja se deducirá dentro delos tres (3) días de notificada la denegatoria, por escrito fundado que deberábastarse a sí mismo. Además, se acompañará fotocopia simple de la sentenciarecurrida, del escrito de interposición del recurso y documentación que acredite el cumplimiento de los requisitos del artículo 137, de la resolución denegatoria y de la cédula o diligencia de notificación de la misma.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "862a07fbce0d56e484be370fa0ab1121c9e0ec47f754f6a1fa2153530ff5a825",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-146",
+      "normId": "CPLT",
+      "article": "146",
+      "title": "- Requerimiento de los autos",
+      "text": "- Requerimiento de los autos. Sólo en casos excepcionales eltribunal podrá requerir los autos antes de pronunciarse sobre la procedencia dela queja.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ba850b24c88daa23a6e8eb0f94a387c8b4582c8f9854b023561073a7ec485233",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-147",
+      "normId": "CPLT",
+      "article": "147",
+      "title": "- Resolución",
+      "text": "- Resolución. Plazo. El Tribunal deberá dictar resolución dentrodel plazo de diez (10) días de presentado el recurso.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "0f5250ed9e1ea63272fb4ee155c346efe6297eae62231b9d6639e123782d3b82",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-148",
+      "normId": "CPLT",
+      "article": "148",
+      "title": "- Efectos",
+      "text": "- Efectos. Si la queja fuera admitida, se requerirá el expediente,debiendo el tribunal imprimir el trámite que corresponda. Si fuera denegada, sedevolverán las actuaciones a su origen.\n\nLIBRO VI\n\nCumplimiento de la Sentencia",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b18402574dccef9110976ba9c6ea63f55564073420d426f16f1ba9c07d6b4715",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-149",
+      "normId": "CPLT",
+      "article": "149",
+      "title": "- Efectos de la sentencia definitiva",
+      "text": "- Efectos de la sentencia definitiva. Las sentencias definitivas,que se dicten en cualquier tipo de proceso, tendrán los efectos de la sentenciade remate, una vez vencido el plazo fijado para su cumplimiento.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "5c9f329d71f3939353cc7b300264c8dd955da0ac89b508ac586a1fa6804ec5fc",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-150",
+      "normId": "CPLT",
+      "article": "150",
+      "title": "- Plazo de cumplimiento",
+      "text": "- Plazo de cumplimiento. Iniciación. Firme la sentencia o devueltoen su caso el expediente, el juez deberá notificar al deudor, haciéndole saberque el plazo establecido en la sentencia para el cumplimiento de su obligación,comenzará a correr a partir de esa notificación.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2a1fa43bebf924f2eab346579b0caa53c2e70025c5e6151015be5c70673e920d",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-151",
+      "normId": "CPLT",
+      "article": "151",
+      "title": "- Vencimiento del plazo",
+      "text": "- Vencimiento del plazo. Efectos. Vencido dicho plazo y a peticiónde parte, se transformarán en definitivos los embargos preventivos queestuvieren trabados y se hará pago al acreedor de las sumas que se encontraranembargadas, siguiéndose en lo pertinente los trámites previstos en el CódigoProcesal en lo Civil y Comercial para el cumplimiento de la sentencia de remate.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "c00ea6706b237a241175d05264f44d771dbeb4ad90ae172d39359a4a0efc0754",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-152",
+      "normId": "CPLT",
+      "article": "152",
+      "title": "- Planilla de actualización",
+      "text": "- Planilla de actualización. Si el monto establecido en la sentencia hubiera quedado desactualizado, en cualquier momento del trámite el actor presentará planilla de actualización e intereses, de la que se dará traslado al demandado por cinco (5) días, con copia de esta liquidación, a la que deberá agregarse la planilla fiscal.\n\nTranscurrido dicho plazo sin que se formulen observaciones, las planillasquedarán aprobadas sin necesidad de providencia alguna.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8a7215c3b90f1618f92f1ab61002b3d173c44f626ece2b9c1d0206d32a703dc7",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-153",
+      "normId": "CPLT",
+      "article": "153",
+      "title": "- Observaciones",
+      "text": "- Observaciones. Forma y contenido. Las observaciones que seformulen deberán indicar con claridad los errores que se atribuyen a laplanilla, debiendo el impugnante acompañar los cálculos e importes que considera correctos. Las impugnaciones genéricas o las que no cumplan con el requisito de acompañar las cifras que el interesado estima corresponden, seránrechazadas de oficio, sin recurso alguno.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "bbb9183155186a88635ab74c56fdcfe580046262c8de7a57a47efa0ee9e56696",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-154",
+      "normId": "CPLT",
+      "article": "154",
+      "title": "- Trámite",
+      "text": "- Trámite. Resolución. De las observaciones se correrá traslado ala contraria por el término de tres (3) días, vencido el cual el juez resolverálas impugnaciones dentro de cinco (5) días, debiendo la misma sentenciapracticar una nueva liquidación en el supuesto de admitirse, total oparcialmente, las observaciones.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "657a0ebe68fb3098d79f87344bddabc407f86541f865f1830f2d76d9613d5b99",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-155",
+      "normId": "CPLT",
+      "article": "155",
+      "title": "- Apelación",
+      "text": "- Apelación. Efecto devolutivo. Esta resolución será apelable alsolo efecto devolutivo. El apelante deberá acompañar copia de las piezaspertinentes que el juez señalará al conceder el recurso, en el plazo de tres(3) días, bajo apercibimiento de tenérselo por desistido en caso deincumplimiento.\n\nEl apelante, de ser el demandado, podrá pedir que no se realice al actor elpago de las sumas cuestionadas.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "f6bc62c95bb8ee165f962c9321e0ede0ee32b04099a5f3a1731d7e61f5b524cb",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-156",
+      "normId": "CPLT",
+      "article": "156",
+      "title": "- Resoluciones inapelables",
+      "text": "- Resoluciones inapelables. Serán inapelables todas las otras\n\nresoluciones que se dicten en el trámite de cumplimiento de sentencia.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "896f1d3f10898a6241356524caebc52db295855c905d8e491268460f103f8231",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-157",
+      "normId": "CPLT",
+      "article": "157",
+      "title": "- Publicación para remate",
+      "text": "- Publicación para remate. Las publicaciones de edictos, previas ala subasta de bienes, se realizarán solamente en el Boletín Oficial y por elplazo de cinco (5) días.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "54bce903f85676c15b2773b7425d1802a668eb6618a2b01ad625096f9173f87d",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-158",
+      "normId": "CPLT",
+      "article": "158",
+      "title": "- Depósito judicial",
+      "text": "- Depósito judicial. El pago en juicio deberá hacerse mediantedepósito en el Banco del Tucumán -Sucursal Tribunales (u organismo o entidadfinanciera que en el futuro lo reemplace) a la orden del juzgado que hubiereintervenido y con mención de los autos correspondientes.\n\nLIBRO VII\n\nDisposiciones Complementarias y Transitorias",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "0938ba3bbe17489013562d377066c795c9abf77fee42c4b9d1c1680ec26af1f7",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-159",
+      "normId": "CPLT",
+      "article": "159",
+      "title": "- Las disposiciones de este Código se aplicarán a todos los juiciospendientes a la fecha de entrada ",
+      "text": "- Las disposiciones de este Código se aplicarán a todos los juiciospendientes a la fecha de entrada en vigencia de la presente Ley, salvo enaquellos que hasta el 29 de Diciembre de 2016 se hubiere dictado el decreto deauto de elevación para el dictado de sentencia definitiva y éste se encontrarefirme, en cuyo caso se regirán por la Ley N° 6204 y su modificatorias anteriores a la Ley N° 8969, sin perjuicio de lo dispuesto en el Art. 6º de la Ley N° 8971, modificatoria del Art. 55 de la Ley N° 6238.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "cb7054702bece94e010296d64daa846c3dfc7e2a4115ba9c79c60e2c205a9ec7",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-160",
+      "normId": "CPLT",
+      "article": "160",
+      "title": "- Juicios en estado de resolver",
+      "text": "- Juicios en estado de resolver. En aquellos juicios que hasta el29 de Diciembre de 2016 se hubiese dictado el decreto de auto de elevación parael dictado de sentencia definitiva y éste se encontrare firme, continuarán enlas Salas del tribunal que le fueron asignadas, rigiéndose por la Ley N° 6204y sus modificatorias anteriores a la Ley N° 8969.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "39fb83b5153f601f85f1c1b1ce56a03b398520aa4c978365265efd8dded9ebb3",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-161",
+      "normId": "CPLT",
+      "article": "161",
+      "title": "- Juicios radicados en la Corte Suprema de Justicia de la Provinciao Corte Suprema de Justicia de la",
+      "text": "- Juicios radicados en la Corte Suprema de Justicia de la Provinciao Corte Suprema de Justicia de la Nación. Los juicios radicados en la CorteSuprema de Justicia de la Provincia o Corte Suprema de Justicia de la Nación,continuarán rigiéndose por la Ley N° 6204 y sus modificatorias anteriores a laLey N° 8969.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "81085e44361570d1a9b3298dff2d10c3016ae407e10a36ad76f828204a6730f7",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-162",
+      "normId": "CPLT",
+      "article": "162",
+      "title": "- Pericias médicas",
+      "text": "- Pericias médicas. Peritos. Hasta que se instrumente y ponga enfuncionamiento el Cuerpo Médico Oficial, las pericias médicas serán practicadaspor peritos designados por sorteo, en la especialidad que el juez estimepertinente en los casos del artículo 70 o las que indiquen las partes con elofrecimiento de pruebas.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "45efe2b8dc4d3c8b1fb49e1ad36ed0425f3fec3133d9808ccfd86e28312872ca",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-163",
+      "normId": "CPLT",
+      "article": "163",
+      "title": "Las normas establecidas en el Juicio Sumarísimo serán aplicablesa todos los Juicios que se iniciaren",
+      "text": "Las normas establecidas en el Juicio Sumarísimo serán aplicablesa todos los Juicios que se iniciaren a partir de la fecha de la entrada envigencia de la presente Ley. Así también a todos los procesos en trámite, conexcepción de las etapas procesales precluidas.",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "6a4c788ce7011fc29bcdef984095c62360b75190baa3267fb53c5dc23a1368cb",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "CPLT-164",
+      "normId": "CPLT",
+      "article": "164",
+      "title": "- Comuníquese.-",
+      "text": "- Comuníquese.-\n\n__________________\n\n-Texto consolidado con Leyes N° 8320, 8969, 8988, 9608, 9683 y 9889.-",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Código Procesal Laboral.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "59bb8fcea5a91bddc6ce0c0f50f2eb45f172b4f784d656ea6d273ac3629d0e1c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "procesal",
+        "laboral",
+        "tucuman"
+      ],
+      "verified": true
+    }
+  ],
+  "hash": "53433d2e57e7616f5135e45adbaa482d8783f9c5a515e6aebc8ebf34dc49e9e7"
+}

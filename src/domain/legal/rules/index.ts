@@ -22,7 +22,7 @@ export const DEADLINE_RULES_NATIONAL: DeadlineRule[] = [
   ...CADUCIDAD_RULES_NATIONAL,
 ];
 
-/** Registro por jurisdicción; `pba`/`cordoba` quedan declaradas sin reglas. */
+/** Registro por jurisdicción; `pba`/`cordoba`/`tucuman` quedan declaradas sin reglas. */
 export const DEADLINE_RULES_BY_JURISDICTION: Readonly<
   Record<LegalJurisdiction, readonly DeadlineRule[]>
 > = {
@@ -30,6 +30,7 @@ export const DEADLINE_RULES_BY_JURISDICTION: Readonly<
   caba: PRESCRIPTION_RULES_CABA,
   pba: [],
   cordoba: [],
+  tucuman: [],
 };
 
 /** Devuelve las reglas de la jurisdicción pedida (copia mutable). */

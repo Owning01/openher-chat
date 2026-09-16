@@ -25,6 +25,7 @@ const JURISDICTION_LABELS: Record<LegalJurisdiction, string> = {
   caba: 'Ciudad Autónoma de Buenos Aires',
   pba: 'Provincia de Buenos Aires',
   cordoba: 'Provincia de Córdoba',
+  tucuman: 'Provincia de Tucumán',
 };
 
 const MATTER_LABELS: Record<LegalMatter, string> = {

@@ -17,7 +17,7 @@ export interface CaseFormProps {
   onCancel?: () => void;
 }
 
-const JURISDICTIONS: readonly LegalJurisdiction[] = ['national', 'caba', 'pba', 'cordoba'];
+const JURISDICTIONS: readonly LegalJurisdiction[] = ['national', 'caba', 'pba', 'cordoba', 'tucuman'];
 const MATTERS: readonly LegalMatter[] = ['civil', 'commercial', 'civil-commercial'];
 const CLIENT_ROLES: readonly LegalPartyRole[] = ['plaintiff', 'defendant', 'third-party'];
 
@@ -156,6 +156,7 @@ function jurisdictionOptions(t: Translate): readonly SelectOption[] {
     caba: t('legalCases.jurisdictionCaba'),
     pba: t('legalCases.jurisdictionPba'),
     cordoba: t('legalCases.jurisdictionCordoba'),
+    tucuman: t('legalCases.jurisdictionTucuman'),
   };
   return JURISDICTIONS.map((value) => ({ value, label: labels[value] }));
 }

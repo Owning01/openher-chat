@@ -8,6 +8,7 @@ const JURISDICTION_KEYS = {
   caba: 'settings.workModeJurisdictionCaba',
   pba: 'settings.workModeJurisdictionPba',
   cordoba: 'settings.workModeJurisdictionCordoba',
+  tucuman: 'settings.workModeJurisdictionTucuman',
 } as const;
 
 const MATTER_KEYS = {

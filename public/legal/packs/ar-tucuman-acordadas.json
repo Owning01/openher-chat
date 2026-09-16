@@ -1,0 +1,1074 @@
+{
+  "schema": "openher.legal.pack/1",
+  "id": "ar-tucuman-acordadas",
+  "title": "Acordadas CSJ Tucumán (1562/2022 y ss.)",
+  "version": "1.0.0",
+  "publishedAt": "2026-09-16",
+  "jurisdiction": "tucuman",
+  "matter": "civil-commercial",
+  "license": {
+    "name": "Documento oficial provincial (uso interno)",
+    "url": "https://legislaturadetucuman.gob.ar/",
+    "attribution": "Legislatura / Poder Judicial de Tucumán",
+    "verifiedAt": "2026-09-16"
+  },
+  "sources": [
+    {
+      "url": "importante/Acordadas  1562 - 22.txt",
+      "retrievedAt": "2026-09-16",
+      "note": "Acordadas de la Corte Suprema de Justicia de Tucumán."
+    }
+  ],
+  "norms": [
+    {
+      "id": "ACORD",
+      "short": "Acordadas CST",
+      "long": "Acordadas CSJ Tucumán",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "https://justucuman.gob.ar/"
+    }
+  ],
+  "provisions": [
+    {
+      "id": "ACORD-1-1",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Nro: 1562 Año: 2022\n\nFecha: 28/10/2022\n\nEn San Miguel de Tucumán, a 28 de Octubre de dos mil veintidos, reunidos los señores Juecesde la Excma. Corte Suprema de Justicia que suscriben, y\n\nVISTO:Las Leyes N° 9531, N° 9581, N° 9593, y la Acordada N° 236/20; y\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "cd0e9840352e7187330841ee2c85c90ee8ecda30ce9e1b41631c458a3b279516",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-2",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "CONSIDERANDO:Por medio de la Ley N° 9531 la Honorable Legislatura sancionó el Nuevo Código Procesal Civil yComercial de la Provincia de Tucumán, lo cual implicará un cambio sustancial en la administración de justicia de la provincia. Asimismo, por medio de la Ley N° 9581, se aprobó el Código Procesal de Familia de la Provincia de Tucumán, lo que también representará una modificación en la tramitación de los procesos del fuero de Familia.Mediante las nuevas dispositivas, se incorporará un sistema basado en la oralidad y la inmediatez, que otorgará una mayor celeridad a la tramitación de los procesos judiciales civiles, optimizando el servicio de justicia y agilizando la respuesta a la ciudadanía.Por su parte, la Ley N° 9593, modificó la Ley N° 9531 y reemplazó la entrada en vigencia delNuevo Código Procesal Civil y Comercial de Tucumán para el 1/11/22 por lo que, la nueva regulación regirá para los trámites y/o procesos que se generen a partir de esa fecha y, aquellosoriginados con anterioridad, seguirán las reglas hasta entonces aplicables.Por otro lado, la puesta en marcha de las citadas normas procesales traerán consigo el desarrollo y el uso de nuevas herramientas informáticas que requieren de una regulación específica, por lo que corresponde aprobar un nuevo reglamento, el que se aplicará a los expedientes que tramiten en el marco de las disposiciones adjetivas vigentes: Ley N° 9531 y modificatorias, “Código Procesal Civil y Comercial”; Ley N° 9581 y modificatorias, “Código Procesal de Familia”; Ley N° 6204 y modificatorias, “Código Procesal Laboral”; Ley N° 6944 y modificatorias, “Código Procesal Constitucional”; Ley N° 6205 y modificatorias, “Código Procesal Administrativo”; Ley N° 6203 y modificatorias, “Código Procesal Penal”; como así también toda otra normativa en vigencia, o a sancionarse en el futuro que rijan los procesos que se tramitan en el Poder Judicial de Tucumán. En virtud de lo señalado, corresponde dejar sin efecto el Reglamento de Expediente",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "67d485ba94772e2c4d3ed9711507070861871f29d56a8cab9c7aa642d5914d72",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-3",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Digital aprobado por Acordada N° 236/20 y sus modificatorias.Cabe mencionar que, con respecto al cambio de normativa, el art. 822 del CPCCT establece que:“Se aplicarán también a los juicios pendientes y en curso, con excepción de los trámites, diligencias, plazos y etapas procesales que hayan tenido principio de ejecución o empezado su curso, los cuales se regirán por las disposiciones hasta entonces aplicables”. En ese marco, y con respecto a las notificaciones de las resoluciones que hayan sido firmadas hasta el día 31/10/22, se establecerá que las mismas serán notificadas de conformidad al sistema de notificación vigente al momento de su firma. En tal sentido, resulta necesaria la habilitación del día martes 1/11/22, como día extraordinario de notificación en la oficina, para todos los centros judiciales del Poder Judicial de Tucumán.Asimismo y conforme a las disposiciones del art. 199 del NCPCCT, las notificaciones digitalesrealizadas mediante cédulas firmadas hasta el 31/10/22 podrán ser depositadas en las casillascorrespondientes.Por otro lado, y respecto a la publicación de Edictos Judiciales, se dispondrá que a partir del1/11/22, todos los edictos se publicarán en el Boletín Oficial Judicial, salvo que hayan tenidoprincipio de publicación en el Boletín Oficial de la Provincia, con anterioridad a la fecha señalada.Por último, con respecto a las presentaciones realizadas hasta el día 31/10/22 a las 23:59, podrán ser realizadas con los requisitos establecidos en la Acordada 236/20 (clave informática simple) y, las presentaciones ingresadas a partir de las 00:00 del 1/11/22 deberán ser realizadas con firma digital, de conformidad a los art. 169 y 170 del NCPCCT.Por ello, en uso de las facultades conferidas por el art. 13 de la Ley Orgánica de Tribunales, encontrándose de licencia el Sr. Vocal Dr. Daniel Oscar Posse;\n\nACORDARON:\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "178bb31f7d8c7435f3cf84e7df3df31ca0c66717eeba0617cfaaca58f3f79e8f",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-4",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "I.- APROBAR el nuevo “Reglamento de Expediente Digital” del Anexo, el que deberá implementarse en los procesos judiciales que tramitan en el Poder Judicial de Tucumán, debiendo aplicarse en el marco de las disposiciones adjetivas vigentes: Ley N° 9531 y modificatorias “Código Procesal Civil y Comercial”; Ley N° 9581, “Código Procesal de Familia”; Ley N° 6204 y modificatorias, “Código Procesal Laboral”, Ley N° 6944 y modificatorias, “Código Procesal Constitucional”; Ley N° 6205 y modificatorias, “Código Procesal Administrativo”; Ley N° 6203 y modificatorias, “Código Procesal Penal”; como así también toda otra normativa en vigencia, o a sancionarse en el futuro que rijan los procesos que se tramitan en el Poder Judicial de Tucumán.La entrada en vigencia del Reglamento de Expediente Digital que se aprueba por la presente,comenzará a regir a partir del 1/11/2022.II.- DEJAR SIN EFECTO la Acordada N° 236/20 y sus modificatorias, y cualquier otra disposición que se oponga a lo establecido en el Reglamento que se aprueba en la dispositiva I.III.- ESTABLECER que las notificaciones de las resoluciones que hayan sido firmadas hasta eldía 31/10/22, deberán ser notificadas de conformidad al sistema de notificación vigente al momento de su firma. En tal sentido, y conforme lo considerado, se HABILITARÁ el día martes1/11/22, como día extraordinario de notificación en la oficina, para todos los centros judiciales del Poder Judicial de Tucumán.IV.- DISPONER, que a partir del 1/11/22, todos los edictos judiciales se publicarán en el BoletínOficial Judicial, salvo que hayan tenido principio de publicación en el Boletín Oficial de la Provincia con anterioridad.\n\nV.- PUBLÍQUESE por un día y sin cargo en el Boletín Oficial de la Provincia y en la página web del Poder Judicial.\n\nCon lo que terminó, firmándose por ante mí, doy fe.-\n\nReglamento de Expediente Digital:\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "2653255340f40582ed0ff2feed27e30dba69931ee8349cb0268808f012d7eb73",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-5",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "TÍTULO I: PLATAFORMA DIGITAL ALBERDI 1TÍTULO II: EXPEDIENTE JUDICIAL DIGITAL 5TÍTULO III: ACTOS PROCESALES DIGITALES 7TÍTULO IV: PRESENTACIÓN DE LAS PARTES 9TÍTULO V: ACTUACIONES JUDICIALES 14TÍTULO VI: DOCUMENTACIÓN JUDICIAL 15TÍTULO VII: COMUNICACIONES 15TÍTULO VIII: AUDIENCIAS 19TÍTULO IX: SUBASTAS ELECTRÓNICAS 20\n\nTÍTULO I: PLATAFORMA DIGITAL ALBERDI\n\nArtículo 1° (PLATAFORMA DIGITAL ALBERDI: REGULACIÓN DE ACCESO Y UTILIZACIÓN). Los términos y condiciones que a continuación se detallan regulan el acceso y la utilización de los sistemas informáticos de la “Plataforma Digital Alberdi” (Acordada N° 1357/21), integrada por los sistemas informáticos SAE (Acordada N° 640/15), Portal del SAE (Acordada N° 226/20), Orion, OGA Web, la página web del Poder Judicial y la totalidad de las aplicaciones diseñadas por el Poder Judicial de Tucumán, y cuyo servicio se prestare a través del dominio:https://www.justucuman.gov.ar, de otros dominios informáticos de propiedad del Poder Judicial de Tucumán, o a través de aplicaciones diseñadas para ser instaladas en equipamientos informáticos de usuarios.\n\nArtículo 2° (CONDICIÓN DE USUARIO). Es usuario de cualquier sistema informático de la“Plataforma Digital Alberdi” aquel que utilizando los servicios de la página, de alguna de susaplicaciones, o de cualquier sistema informático que integra la plataforma consulta, incorpora,modifica o da de baja información de dicho/s sistema/s, bajo las modalidades de uso autorizadas.\n\nArtículo 3° (CLAVE INFORMÁTICA SIMPLE). Para operar en los sistemas informáticos de la“Plataforma Digital Alberdi” que no sean de acceso público, el usuario deberá tener asignada una clave informática simple -código de usuario y contraseña-, que le será propia e intransferible. Para los usuarios será obligatorio cumplir con los términos y condiciones de uso (art. 4). Losusuarios externos al Poder Judicial prestarán conformidad de manera informática al momento del otorgamiento de la clave.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "d9358b226bce027e89a73cd18f69eec1206a7a4edb7c36c52ada1b51eead6431",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-6",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 4° (TÉRMINOS Y CONDICIONES DE USO). El usuario se obliga a:No transferir su clave informática simple.No falsear su identidad haciéndose pasar por otra persona existente o inexistente.Cumplir la legislación vigente en materia de protección de datos.No utilizar los servicios de este sistema para actividades contrarias a la ley, con fines y/oefectos ilícitos, prohibidos y lesivos de derechos e intereses de terceros.No usar la conexión con el sistema de cualquier forma que pueda afectar, inutilizar, dañar,sobrecargar, o afectar su funcionamiento.No introducir archivos que sean portadores de virus o cualquier otro código malicioso, oprogramas diseñados para interrumpir, destruir o limitar el funcionamiento del software,hardware o equipo de telecomunicaciones.No autorizar a terceros al uso total o parcial del sistema, ni a incorporar como una actividadempresarial propia sus contenidos y servicios; ni efectuar acciones de decompilación odecodificación del software, incluyendo su traducción a código fuente. \n\nQueda expresamente prohibido el uso de cualquier recurso técnico, lógico y tecnológico por el cual los usuarios puedan beneficiarse directa e indirectamente, con o sin lucro, de la explotación no autorizada de los contenidos y servicios del sistema.\n\nNo hacer usos no contemplados del sistema, extracción o inserción automatizada de datos conaplicaciones de terceros, entre otros.Dar aviso de cualquier funcionamiento incorrecto o inconsistencia encontrada en el sistema,especialmente si estas ocurrencias pudieran ser evidencia de un manejo ilícito o ilegítimo de laplataforma.La Excma. Corte Suprema de Justicia de Tucumán (en adelante CSJT) se reserva la facultad demodificar en cualquier momento dichas condiciones.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a496e3172f9a7d566ffa1fa0349acd586f042b7dfcf605c703fdc8042df96a53",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-7",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 5° (DISPONIBILIDAD DEL SERVICIO). La CSJT, a través de la Dirección de Sistemas, efectuará todas las tareas necesarias para la disponibilidad y accesibilidad a los sistemasinformáticos de la “Plataforma Digital Alberdi” las veinticuatro horas durante todos los díasdel año. No obstante, debido a causas técnicas de mantenimiento que puedan requerir la suspensión del acceso o su utilización, podrán producirse interrupciones por el tiempo que resulte necesario realizar dichas tareas. Sin perjuicio de lo anterior, la CSJT no será responsable de interrupciones, suspensiones o el mal funcionamiento que se produjeran en el acceso, funcionamiento y operatividad del sistema, cuando tuvieren su origen en situaciones de causa fortuita, fuerza mayor o situaciones de urgencia extrema.Cuando la gravedad y duración del corte de servicio informático lo amerite, la CSJT dispondrála suspensión de los plazos procesales y administrativos, y/o la medida que resulte conveniente, debiendo comunicarse tal decisión a los Colegios de Abogados de Capital y del Sur, y publicarlo en la página web para su amplia difusión, al igual que la fecha de reestablecimiento del servicio.\n\nArtículo 6° (INTERRUPCIÓN EN EL SISTEMA INFORMÁTICO). En caso de interrupción en el sistema informático, las obligaciones impuestas en el presente reglamento, demás leyes yreglamentaciones, deberán cumplirse una vez que el servicio se restablezca, ya sea en horariohábil o inhábil si fuera necesario. Durante los cortes, toda audiencia, decreto y actuación judicial que pudiere concretarse se generará en documento de texto, audio o audiovisual y las actuaciones así producidas deberán incorporarse al sistema informático al restablecerse el servicio, firmadas digitalmente.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "82b61340fbab3c8b26ca63e3e427376b497053af1f106d5cd75ddfaa38cc9763",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-8",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 7° (BITÁCORA). En el sitio web del Poder Judicial de Tucumán existirá una bitácoradonde la Dirección de Sistemas deberá informar cualquier inconveniente ocurrido en los sistemas informáticos. Allí mismo se publicará o indicará la Acordada de la Excma. CSJT, Resolución de Presidencia o Circular, relacionada a dicho inconveniente, en caso que correspondiere.\n\nArtículo 8° (ENVÍO DE INFORMACIÓN Y ALMACENAMIENTO DE DATOS POR LOS USUARIOS).\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "e4964e71636fb8bf0a3b5108735fe8747b904ab13e07a99ca5c98e8c953ad9be",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-9",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Confidencialidad de la información: La CSJT, a través de la Dirección de Sisemas, efectuarátodas las tareas necesarias con el objetivo de garantizar la confidencialidad de la información, que revista tal carácter, transmitida o almacenada a través de sus equipos. No obstante ello, laCSJT no garantiza la privacidad y la seguridad en la utilización por parte de terceros no autorizados de los servicios de comunicación, gestión y almacenamiento, que accedan al contenido eliminando o suprimiendo las medidas de seguridad adoptadas por la CSJT. En ningún caso la CSJT será responsable por los daños y perjuicios de cualquier naturaleza que puedan deberse al acceso y, en su caso, a la interceptación, eliminación, alteración, modificación o manipulación de cualquier modo de los mensajes y comunicaciones de cualquier clase que terceros no autorizados realicen de los contenidos de los usuarios. La CSJT ha adoptado y adoptará todas las medidas técnicas y organizativas de seguridad que sean de obligación, de conformidad con lo establecido por la normativa vigente y los estándares de calidad existentes, a fin de garantizar al máximo la seguridad y confidencialidad de las comunicaciones. La CSJT garantizará la existencia de controles para prevenir la apertura de brechas en la seguridad u otras consecuencias negativas, adoptando las medidas organizativas y los procedimientos técnicos más adecuados con el fin de minimizar estos riesgos.a. Secreto de las comunicaciones: La CSJT dispone y podrá disponer de los mecanismos técnicos y operativos que entienda necesarios o convenientes a fin de verificar el almacenamiento o difusión de contenidos ilícitos o nocivos así como, si fuera el caso, garantizar el bloqueo, control y cancelación de la utilización del servicio por parte del usuario. En ningún caso, utilizará dichos mecanismos técnicos y operativos para llevar a cabo actividades orientadas a vulnerar la intimidad de sus usuarios.b. Responsabilidad: La utilización de los servicios, así",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "4772f6a6b86a573a628a1ad5f695a12c0668ad39078f1969cc794b8a04968d05",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-10",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "como la difusión y almacenamiento de los contenidos por los usuarios, serán de la exclusiva responsabilidad de la persona que los hayagenerado. El usuario, por tanto, es el único responsable del uso de los servicios del sistema, asícomo de todos los contenidos que almacene o difunda por medio de sus servicios.\n\nArtículo 9° (RESPONSABILIDAD POR INFORMACIÓN PÚBLICA). El Poder Judicial carece de responsabilidad por la información que pudiere publicarse en internet por los distintos motores de búsqueda, indexación u otros servicios y que surgieren del Principio XIII “Transparencia y publicidad” y del art. 148 inc. 3 de publicidad y accesibilidad del CPCCT. Los interesados en solicitar la eliminación de la información publicada, deberán realizar el trámite a través de las formalidades y por la vía establecida por cada uno de ellos, quedando el Poder Judicial de Tucumán exento de cualquier tipo de responsabilidad.\n\nArtículo 10° (CANCELACIÓN DEL ACCESO A/LOS SISTEMA/S). El uso de los servicios por el usuario está supeditado al estricto cumplimiento de las condiciones establecidas. Suincumplimiento facultará a la CSJT a denegar, retirar, suspender o bloquear, el acceso a loscontenidos o la prestación de los servicios a aquellos usuarios que incumplan las condicionesestablecidas. Dicha medida será comunicada a la Dirección de Sistemas para su cumplimientoefectivo. La CSJT no asumirá responsabilidad alguna frente al usuario o terceros por la cancelación del acceso al servicio. En caso de operadores del Poder Judicial, podrán sustanciarse, adicionalmente, las medidas disciplinarias correspondientes.\n\nArtículo 11° (AUDITORÍA). Las bases de datos podrán ser auditadas por orden judicial oadministrativa, requiriéndose a la Dirección de Sistemas que produzca un informe circunstanciado de los antecedentes existentes en el servidor vinculados al objeto de la auditoría.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "39461b326a2a43fdc04c11b2d013d7a412ba2cd3c352433d26c2ed032e81ae2c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-11",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 12° (PORTAL DEL SAE). El “Portal del SAE” es una aplicación web para la realización de trámites judiciales y para la interacción digital de los usuarios en el proceso judicial. \n\nSe encontrará disponible en la página de Internet: https://www.justucuman.gov.ar, propiedad delPoder Judicial de Tucumán o a través de aplicaciones diseñadas para ser instaladas en equipamientos informáticos de usuarios. \n\nContendrá, entre otros, los siguientes servicios: consulta de expedientes, recepción de notificaciones digitales, realización de presentaciones digitales, envío de consultas a unidades judiciales, demandas digitales, solicitudes de audiencias en OGA (Capital, Concepción y Monteros), pago de tasas y bonos judiciales, etc.Cada usuario del Portal del SAE dispondrá de una única casilla digital.Para su ingreso es necesario poseer clave informática simple (art. 3). Para solicitar el alta declave informática simple en el “Portal del SAE” se deberá seguir el procedimiento publicado enla página web del Poder Judicial.\n\nTÍTULO II: EXPEDIENTE JUDICIAL DIGITAL\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b32471601c329b69e1fd812ac08b1b1e1aafd3f84a333aad803df7170ccf3bbb",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-12",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 13° (EXPEDIENTE JUDICIAL DIGITAL). El expediente judicial digital se conformará en la órbita del sistema informático “SAE”. Quedan comprendidos en la presente reglamentación los expedientes, resoluciones y demás actos procesales; y presentaciones de partes y auxiliares de justicia tramitados y/o efectuados en procesos enmarcados en las siguientes disposiciones adjetivas vigentes: Ley N° 9.531 y modificatorias: “Código Procesal Civil y Comercial”; Ley N° 6.204 y modificatorias: “Código Procesal Laboral”; Ley N° 6.944 y modificatorias: “CódigoProcesal Constitucional”; Ley N° 6.205 y modificatorias: “Código Procesal Administrativo”; Ley 9.581 y modificatorias: “Código Procesal de Familia”; y Ley N° 6.203 y modificatorias: “Código Procesal Penal”; como así también toda otra normativa en vigencia, o a sancionarse en el futuro que rijan los procesos que se tramitan en el Poder Judicial de Tucumán y los modos detramitación.El expediente judicial digital estará disponible para las partes y para la ciudadanía a través del“Portal del SAE”.\n\nArtículo 14° (ACCESIBILIDAD EN CASOS DE ACCESO RESTRINGIDO). En los casos de procesos con restricciones, únicamente las partes, patrocinantes o apoderados, integrantes delMinisterio Público de la Defensa y del Ministerio Público Fiscal podrán obtener la habilitaciónen cada proceso en particular, a través del permiso otorgado en la unidad correspondiente.\n\nCuando el usuario habilitado no pueda acceder a un expediente por errores en la habilitación oen la vinculación con el expediente, deberá poner en urgente conocimiento a la unidad a través de la consulta web o del mail oficial de la unidad que se encontrará publicado en la página web del Poder Judicial.\n\nArtículo 15° (CONFORMACIÓN DEL EXPEDIENTE DIGITAL). Los expedientes íntegramente digitales se conformarán con los registros digitales en orden sucesivo y cronológico.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3ed6dda1a06257ebff4bac2844dee67197e511e57900f76ac900581bada07ec4",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-13",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 16° (RESPONSABILIDAD EN LA REGISTRACIÓN EN EL EXPEDIENTE DIGITAL). En función de lo establecido por el art. 159 del CPCCT, y siendo de trascendental importancia la correcta registración de los datos y movimientos en el expediente digital, las/os agentes del Poder Judicial deberán cumplimentar las disposiciones e instructivos que emanaren de lasCirculares de Expediente Digital dictadas por las Oficinas de Coordinación Estratégica, la Dirección de Sistemas y la Oficina de Gestión Judicial. El incumplimiento de esta disposición será considerada falta grave.\n\nArtículo 17° (EXPEDIENTES EN SOPORTE PAPEL NO DIGITALIZADOS). Serán digitalizados los expedientes en soporte papel en trámite que de acuerdo a su importancia, se incluyeren en el cronograma de digitalización establecido por la CSJT. Los que no fueren incluidos en dichocronograma, podrán ser digitalizados a pedido de parte, y lo resuelto por el Tribunal será irrecurrible.\n\nArtículo 18° (RECONSTRUCCIÓN DE EXPEDIENTES DIGITALES). Comprobada la pérdida de un expediente digital, el Tribunal ordenará su reconstrucción, la que se efectuará en la siguiente forma: \n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "0c96d8f68610d9f6bc48ba0d5ac2d2faf2f00fc9c70ed32f856fde872c0cce1b",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-14",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "El nuevo expediente se iniciará con la providencia que disponga la reconstrucción. El Tribunal requerirá a la Dirección de Sistemas copias de los backups obrantes, de ellas se dará traslado a las partes por el plazo de cinco (5) días, a fin de que se expidan acerca de su autenticidad. Asimismo, se les solicitará que presenten aquellas copias de los documentos que controvertieren o alegasen que no se encuentren incorporados al expediente de reconstrucción. De ello, se dará traslado a las otras partes por el término de cinco (5) días. El/la Secretaria/o incorporará al expediente digital copia digitalizada de todas las resoluciones correspondientes al expediente extraviado que obren en los libros del Tribunal y recabará copia de los actos y diligencias que pudieran obtenerse de las oficinas o archivos públicos.Las copias que se presentaran u obtuvieran serán agregadas al expediente digital por ordencronológico.El Tribunal podrá ordenar, sin sustanciación ni recurso alguno, las medidas que considere necesarias. Cumplidos los trámites enunciados, dictará resolución teniendo por reconstruido el expediente.En caso de expediente en soporte papel no digitalizado, se realizará de conformidad con lo dispuesto por el art. 164 del CPCCT.\n\nArtículo 19° (PARALIZACIÓN DE EXPEDIENTES SIN MOVIMIENTO). Transcurridos los plazos estipulados por el art. 165 del CPCCT, el Tribunal podrá ordenar los actos necesarios para la continuación del trámite o su paralización, lo que no causará estado. Los expedientes digitalesse identificarán como “paralizados” en el sistema informático. En aquellos procesos que también estuvieren integrados con un expediente en soporte papel, este deberá ser separado físicamente en un casillero dispuesto a tal fin hasta su archivo, digitalización o destrucción.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3cf28925de2c7cacfffea9265bc43029b88d3fa3898b8bba36f07d3f1f82430b",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-15",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 20° (ARCHIVO DE PROCESOS TERMINADOS). Terminado un proceso por cualquiera de los medios que los códigos de forma prevén, se dispondrá el archivo del expediente. Los expedientes digitales se identificarán como “archivados” en el sistema informático. Aquellosprocesos que estuvieren integrados con un expediente en soporte papel, deberán ser previamente clasificados de acuerdo a la regulación específica de la CSJT, entre aquellos que pueden destruirse sin más trámites de los que requieren ser digitalizados. Los listados que surjan de la clasificación, serán enviados a la Oficina de Archivo para que inicie el proceso de destrucción o digitalización según corresponda.Los expedientes digitales almacenados como “archivados” deberán ser conservados por un plazo de 15 años desde dicha registración, pasado el cual podrán ser eliminados, a excepción de aquellos procesos que la normativa disponga que deben conservarse por tiempo indefinido, previo cumplimiento del procedimiento establecido en la regulación de la materia.\n\nTÍTULO III: ACTOS PROCESALES DIGITALES\n\nArtículo 21° (ACTOS PROCESALES CON FIRMA DIGITAL). Los actos procesales serán suscriptos por medio de firma digital, con las excepciones previstas en la presente reglamentación. Serán válidos y producirán los mismos efectos que si se hubieren llevado a cabo en soporte papel, de conformidad con lo establecido en el art. 148 inciso 1° del CPCCT.\n\nArtículo 22° (OBLIGACIÓN DE CONTAR CON FIRMA DIGITAL VIGENTE). Las/os magistradas/os y funcionarias/os del Poder Judicial, las/os abogados, procuradores y demás auxiliares de justicia tendrán la obligación de contar con firma digital vigente emitida por autoridad competente. Será de su exclusiva responsabilidad tomar las previsiones suficientes para su renovación antes de la fecha de caducidad de su vigencia, con el fin de no entorpecer la debida prestación del servicio de justicia.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "7bfbeb417eb6102dddfdf603462745183304b3cb00a90c8ae2d619b70d504323",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-16",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 23° (HORARIO HÁBIL. GUARDIAS JUDICIALES. TURNOS). En virtud de lo señalado por el art. 148 inc. 4 del CPCCT, establécese como horario hábil para la realización de los actos procesales el comprendido entre las 7 y las 20 hs. Los horarios de trabajo y de atención en las unidades jurisdiccionales comprenderá entre las 7 y 13 hs. para el turno matutino y, entre las13 y 19 hs. para las unidades que tienen habilitado el turno vespertino. tal como se detalla en elsiguiente cuadro:\n\nCentro JudicialFueroJuzgadosCámaras Familiamatutino y vespertinomatutino ContenciosomatutinoCapitalDocumentos y Locacionesmatutino y vespertinomatutino Trabajomatutino yvespertinomatutino Civil y Comercialmatutino y vespertinomatutino Apremiosmatutino yvespertinomatutino Mediación matutino y vespertino EsteFamiliamatutino y vespertinoMediaciónmatutino FamiliamatutinomatutinoConcepciónDocumentos yLocacionesmatutinomatutino Trabajomatutinomatutino Civil y ComercialmatutinomatutinoApremiosmatutinomatutino Mediaciónmatutino Familiamatutinomatutino Documentos yLocacionesmatutinomatutinoMonterosTrabajomatutinomatutino Civil yComercialmatutinomatutino Mediaciónmatutino\n\nSin perjuicio de ello las unidades judiciales mantendrán “Guardias Judiciales” y “Turnos” endeterminados supuestos particulares que hubiere reglamentado la Corte Suprema de Justiciade Tucumán a tal fin.\n\nTÍTULO IV: PRESENTACIÓN DE LAS PARTES\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "75298746dabc35f42d52a164843c514a58b5fcc8236340941389bd79dd7c7bd4",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-17",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 24° (PRESENTACIONES. OBLIGATORIEDAD DE FIRMA DIGITAL). Las presentaciones de las partes y auxiliares de justicia se realizarán a través del módulo “Presentaciones“ del “Portal del SAE”, y se les otorgará una codificación única. Podrán hacerse únicamente en aquellas causas que tuvieren número de expediente o código asignado. En ningún caso será necesario adjuntar copias para traslado.Las presentaciones se realizarán con el usuario y la clave informática simple del presentante,salvo que se autorizare a otro usuario a su presentación, lo que deberá constar expresamente.Todas las presentaciones de las partes y auxiliares de justicia deberán contar con firma digitalvigente, emitida por la autoridad competente, y gozarán de los atributos establecidos por LeyNacional N° 25.506.En el supuesto de que se detectare cualquier inconveniente con la firma digital del profesional,el juez deberá citarlo a fin de su ratificación en un término no mayor a 3 (tres) días.\n\nArtículo 25° (PRESENTACIONES DIGITALES. EXCEPCIÓN). Excepcionalmente, siempre que exista un factor tecnológico externo al profesional que le impida el uso de la firma digital, loque deberá invocar y acreditar ante la autoridad en la que efectúa la presentación, este podrá efectuar su presentación con firma ológrafa. En tales casos, el/la profesional deberá ingresar alsistema la imagen digitalizada de la presentación, asumiendo el carácter de depositario judicial del documento que ingresare bajo la modalidad señalada, con cargo de presentar el original que hubiere digitalizado cuando se lo requiriese el Tribunal competente. Además, en la primera presentación con firma digital posterior, deberá ratificar la presentación realizada bajo la modalidad señalada precedentemente.\n\nArtículo 26° (REQUISITOS DE LAS PRESENTACIONES). Las presentaciones individualizarán la causa en que se presenten y se indicará el nombre del presentante o el de quien lo haga en su representación\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "35b2938dbf29cb36dfdab839c788f9edf3fb14520703073b4f1fb94d2b472b88",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-18",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "El incumplimiento de estos requisitos autorizará a tenerla por no presentada sin más trámitey sin recurso alguno.\n\nArtículo 27° (PRESENTACIONES ESCRITAS, DE AUDIO O AUDIOVISUALES). En caso de presentaciones escritas, se realizarán en procesador de texto con fondo blanco y caracteres negros, en letra Arial o similar, tamaño 11 o 12, espaciado hasta 1,5. Se presentarán en la plataforma en formato PDF.En caso de presentaciones de audio o audiovisuales, deberán firmarse digitalmente para serincorporadas en el expediente digital. Cuando fueren documentación adjunta a una presentación, no será necesaria su firma digital, siempre que la presentación se encuentre firmada digitalmente.\n\nArtículo 28° (TAMAÑO DE ARCHIVOS DIGITALES. EXTENSIONES ADMITIDAS). Cadapresentación podrá tener un máximo de hasta 30 mb, y se podrán adjuntar en una misma presentación hasta cuatro (4) archivos de un tamaño de 7,5 mb cada uno. Para realizar presentaciones que superen los límites establecidos, las/los abogadas/os y demás auxiliares de justicia podrán optar entre efectuar tantas presentaciones digitales como fueren necesarias o presentarse en la secretaría del Tribunal con el dispositivo que contenga los archivos. No obstante lo dispuesto en el artículo 178 del CPCCT.El Portal del SAE aceptará la presentación de las extensiones de archivos enumeradas en elinstructivo de expediente digital correspondiente.En caso de extensiones no admitidas por el Portal del SAE las partes deberán presentarse antelas Oficinas de Atención al Ciudadano a fin de posibilitar su incorporación al expediente digital.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "1d2948d22d7f5b721d6fc3a83217dd03f97e33042ed3d099ac64f56419350fc1",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-19",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 29° (PRESENTACIONES DE LAS PARTES CON APODERADA/O). El/la apoderado/a confeccionará el documento, lo firmará digitalmente y lo presentará en el expediente correspondiente en el módulo “Presentaciones” del “Portal del SAE”. Para acreditar su representación, deberá adjuntar el poder digitalizado.En caso de que la representación en juicio se acredite mediante declaración jurada (art. 9 inc. 6del CPCCT), la misma se prestará ante la Oficina de Atención al Ciudadano, mediante la impresión del formulario de “Declaración Jurada (art. 9 inc. 6 del CPCCT)” que podrá ser descargado de la página web del Poder Judicial, y deberá ser suscripto por el/los poderdante/s y el/los apoderado/s en presencia de funcionarios judiciales de la Oficina mencionada.\n\nArtículo 30° (PRESENTACIONES DE LAS PARTES CON PATROCINANTE). Si la partepatrocinada contare con firma digital, el/la patrocinante confeccionará el documento, losuscribirá digitalmente en forma conjunta con la parte patrocinada y lo presentará en elmódulo “Presentaciones digitales” del “Portal del SAE”.Si la presentación fuere escrita, y la parte patrocinada no contare con firma digital, el/lapatrocinante confeccionará el documento, lo imprimirá y lo hará firmar por el patrocinado.\n\nLuego, lo escaneará, firmará digitalmente, e ingresará al sistema. El/la profesional asume elcarácter de depositario judicial de los documentos que ingresen bajo la modalidad señaladaprecedentemente, con cargo de presentar los originales que hubiere digitalizado cuando se lorequiriese el Tribunal competente. En caso de que la presentación fuere de archivos de audio o audiovisuales, deberá constar la presencia del patrocinado en su producción y la presentación se realizará con firma digital del patrocinante.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "024bbedce8cbf0932df8ede407ab4642d90d741e57d5421539d0015d13c79262",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-20",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 31° (CARGO ELECTRÓNICO Y CÓMPUTO). Las presentaciones de las partes y auxiliares de justicia podrán ser ingresadas en cualquier día y hora. El sistema informático emitirá un cargo electrónico que tendrá plena validez y quedará registrado en el expediente digital. Losplazos procesales se contarán a partir del cargo de las presentaciones o del envío de los expedientes, y su aceptación en el sistema informático no incidirá en dicho cómputo.Si la presentación se realiza en día y/u hora inhábil, a los fines del cómputo de los plazos, se laconsiderará ingresada al sistema desde la primera hora del día hábil siguiente.El “Portal del SAE” emitirá el cargo electrónico en forma automática. El sistema indicará en ellistado de presentaciones efectuadas que la presentación fue realizada. Una vez incorporadasal expediente correspondiente, las/os presentantes podrán visualizar desde la consulta web del expediente, el día y hora de las presentaciones efectuadas, con sus archivos digitales adjuntos en caso de corresponder.\n\nArtículo 32° (CARGO EXTRAORDINARIO). Cuando se produjeren inconvenientes técnicos que pudieren afectar el horario de presentaciones con cargo extraordinario (art. 172 del CPCCT), la Excma. Corte Suprema de Justicia podrá prorrogar dicho horario con el fin de no vulnerar losderechos de las partes, lo que se comunicará a los Colegios de Abogados de Capital y del Sur, yse publicará en la página web del Poder Judicial.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "460b8f46e08fa1687d7ed4e10d70083afd8dad10423545691954d001b9ceff67",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-21",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 33° (PRESENTACIÓN INICIAL). Para el inicio de nuevas causas las/os profesionalesdeberán solicitar, a través del módulo “Demandas Digitales” del servicio “Presentaciones Digitales” del Portal del SAE, el alta del expediente digital respectivo en el sistema informático,para lo cual completarán los datos del formulario de inicio que se encontrará allí disponible eingresarán la demanda o presentación.a.- Registración, asignación y compensación de causas: La registración de las nuevas causasserá por fuero y por objetos procesales de litigio, los que informáticamente serán discriminados por rubros para mantener la equivalencia en la asignación de causas. La compensación por fuero se hará por rubro y comprenderá los casos de conexidad, fuero de atracción, principio de prevención, excusación, recusación y todo otro criterio que específicamente disponga la Corte Suprema de Justicia.b.- Requisitos: Todo escrito de presentación inicial deberá contener la indicación del fuero alcual se dirige el petitorio, y el objeto procesal inserto deberá coincidir con el del formulario de ingreso de causas. Asimismo, deberá poseer la correcta individualización de las partes peticionantes: las personas humanas con el DNI, CUIT o CUIL y las jurídicas con el CUIT, comocondición necesaria y excluyente para ser proveídas las peticiones que contengan. En los casos en los que no exista una verificación prevista por el sistema informático, las/os abogada/os y de las/os justiciables en general estarán obligados a aportar los datos correspondientes a su parte con el debido respaldo (fotocopia del DNI, y constancia de CUIT), en caso contrario, no será necesario, salvo a criterio de la Unidad Judicial, y a los efectos de asegurar la exactitud de los datos personales en la base correspondiente.c.- Cargo electrónico, numeración y sorteo: El Portal del SAE generará el cargo electrónico. El SAE asignará número de expediente y sorteará el Juzgado interviniente, salvo que se denuncieconexidad,",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a7678e1373039b1684ed7c2283e0a2c9b62c5c68b11ceab2b8ddd9cfc894fb86",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-22",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "principio de prevención o que corresponda asignación por guardia judicial; lo quese notificará al presentante.d.- Traslado: Para el traslado de la presentación, el Tribunal confeccionará la cédula que se diligenciará con el Código QR que permita su lectura, o con las copias que correspondieren. Losbonos de movilidad correspondientes deberán ser aportados e informados por la parte. Diligenciada la cédula será digitalizada e incorporada al expediente digital. La cédula en soporte papel diligenciada no podrá ser destruida hasta la destrucción del expediente. Salvo que se tratare de entidades públicas y privadas que de acuerdo a lo regulado por el artículo 200 del CPCCT, estuvieren obligadas a recibir sus demandas en su casillero digital; o que así lo hubieren convenido expresamente.e- Recusación o Excusación: En los casos de recusación o excusación de un/a Juez/a, resueltoello, la causa se radicará en Mesa de Entrada para sorteo de nuevo/a Juez/a.f- Recaratulaciones: Las recaratulaciones se realizarán por el Juzgado correspondiente en elsistema informático. Cuando implique un cambio de rubro, intervendrá Mesa de Entradas eimpactará en el sistema de asignación de causas para su compensación.g- Presentaciones que ingresen en Guardias Judiciales: las presentaciones digitales para lasguardias judiciales que se establezcan, fuera de horario laboral, ingresarán a los Juzgados oSalas conforme al criterio de distribución que disponga la Excma. Corte Suprema de Justiciapara cada Fuero con guardia. El presentante tendrá la carga, a fin de su inmediata identificación y tramitación, de seleccionar el tipo procesal correspondiente a los procesos de Guardia.\n\nArtículo 34° (CONTESTACIÓN). En la primera presentación de la demandada o citada de conformidad con el artículo precedente, las/os profesionales deberán ingresar digitalmente por el módulo “Presentaciones“ del Portal del SAE la contestación y la documentación digitalizada si la hubiere.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ab4cc9b36c80673ac98fae6ee93974988e1e7ccfaadfb7d9e98068eac69f40cf",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-23",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 35° (PRESENTACIONES CON SOFTWARE DAÑINO O MALICIOSO). En caso de que el sistema informático o las unidades judiciales detecten presentaciones que contengan unsoftware dañino o malicioso, se tomará el cargo electrónico al momento de la presentación, siempre y cuando, el presentante luego de notificado sobre el inconveniente, adjunte en el plazo de 24 hs. el documento en condiciones de ser leído o ejecutado.\n\nArtículo 36° (CONTROL DE INGRESOS). Las/os Secretarias/os tienen la obligación de controlar diariamente el ingreso de presentaciones de las partes y auxiliares de la justicia en el expediente digital, procurando su despacho en término, especialmente cuando requiriese de lahabilitación de día y hora.\n\nArtículo 37° (PRESENTACIONES EN FERIA JUDICIAL). Durante las ferias judiciales laspresentaciones digitales se realizarán exclusivamente en la Unidad de feria correspondiente.A tal fin, se inhabilitará la presentación de escritos en Unidades que no se encontraren en feria desde la finalización del horario de trabajo (art. 23) del último día hábil anterior al comienzo de la feria, según fuero, instancia y Centro Judicial, los que se encontrarán publicados en la página del Poder Judicial.Los Magistrados/as y funcionarios/as deberán verificar que no quedaren pendientes presentaciones en los que se requiera habilitación de feria, o que revistiesen el carácter de urgente, sin haberse decretado lo pertinente.\n\nArtículo 38° (PROVIDENCIA DE PRESENTACIONES DE LAS PARTES O DE AUXILIARES DE JUSTICIA). Las providencias deberán individualizar claramente la presentación de la parte o del auxiliar de justicia que se provee.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "e745370ff5ef5d322c65685ac645142b58329a34bfe997e6e11540bbcf2b1784",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-24",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 39° (REUBICACIONES Y DESGLOSES). Las presentaciones de las partes o auxiliares de justicia que hayan sido presentados erróneamente en un expediente, se reubicarán en el quecorresponda, siempre que el expediente trámite en la misma unidad jurisdiccional. En tal caso, el Secretario lo resolverá informáticamente mediante una constancia que se registrará en el sistema.Para el caso de presentaciones erróneas en expedientes que tramitan en unidades diferentes, la unidad receptora deberá confeccionar un oficio digital dirigido a la unidad en la que el expediente se encuentra radicado, al que adjuntará la presentación para su agregado.Por su parte, cuando el Tribunal disponga el desglose de actuaciones judiciales que hayan sidopublicadas para la consulta web de expedientes, o de presentaciones de las partes o auxiliaresde justicia, se realizará por Secretaría la reserva de la presentación en el sistema informáticouna vez firme el decreto que ordene el desglose.\n\nArtículo 40° (RECURSO DE QUEJA). Para la presentación de los recursos de queja por casación denegada, se deberán adjuntar los registros informáticos que correspondan.\n\nTÍTULO V: ACTUACIONES JUDICIALES\n\nArtículo 41° (SOPORTE DE LAS ACTUACIONES JUDICIALES. EQUIVALENCIA FUNCIONAL). Las actuaciones judiciales podrán registrarse en documento escrito, visual, de audio o audiovisual, y serán válidos y producirán los mismos efectos que si se hubieren realizado en soporte papel, de conformidad con lo establecido en el art. 148 inciso 1 del CPCCT. \n\nTeniendo en cuenta lo estipulado por el art. 156 inc. 1, las actuaciones judiciales se almacenarán en servidores informáticos radicados en la provincia de Tucumán.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "48c58b5e17327319598e03f4a3444c768ab9b5b137d1080fd7dcc8abd42868b9",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-25",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 42° (OBLIGATORIEDAD DE FIRMA DIGITAL EN LAS ACTUACIONES JUDICIALES). Las actuaciones judiciales serán suscriptas por medio de firma digital, con las excepciones previstas en el CPCCT como también, cuando por inconvenientes técnicos o por la naturaleza del acto no fuere posible firmar actuaciones judiciales digitalmente, las actuaciones sefirmarán de manera ológrafa y serán digitalizadas y certificadas con firma digital de un fedatario del juzgado.\n\nArtículo 43° (OBLIGACIÓN DE CONTAR CON FIRMA DIGITAL VIGENTE). Las/os magistradas/os y funcionarias/os del Poder Judicial tendrán la obligación de contar con firma digital vigente emitida por autoridad competente. Será de su exclusiva responsabilidad tomar las previsiones suficientes para su renovación antes de la fecha de caducidad de su vigencia, con el fin de no entorpecer la debida prestación del servicio de justicia.\n\nArtículo 44° (LIBROS DEL JUZGADO). Las/os secretarias/os asegurarán el asiento completo yoportuno de los datos que correspondan para conformar en soporte digital los libros de secretaría que establecieren leyes y reglamentaciones de la CSJT.\n\nArtículo 45° (FIRMA DE ACTUACIONES JUDICIALES). Las actuaciones judiciales podrán ser firmadas digital en cualquier día y hora, aunque fuere inhábil, y surtirán efectos para laspartes sólo desde el día hábil siguiente a su notificación.\n\nArtículo 46° (INCIDENTES DIGITALES). Para la formación de incidentes digitales no será necesario adjuntar copias de las piezas procesales que lo integrarán, dicho requisito será suplido con la individualización de los actos procesales obrantes en el sistema informático SAE. Mediante informe actuarial se detallarán tales constancias, indicando N° de actuación y fecha de las piezas procesales correspondientes al expediente principal.\n\nTÍTULO VI: DOCUMENTACIÓN JUDICIAL\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "733f39bde400814a54d3804f7d86c9db82d5fd92c4eed59a8f37712cb0fd2cb7",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-26",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 47° (DEVOLUCIÓN Y DESTRUCCIÓN DE DOCUMENTACIÓN). El Tribunal no podrá conservar documentación vinculada a causas que se encontraren en condiciones de serdestruidas de acuerdo a la regulación de la Corte sobre la materia, salvo situaciones excepcionales debidamente justificadas. Deberá devolverla al presentante, en carácter de depositario judicial o de manera definitiva, conforme corresponda, de acuerdo a las pautas de clasificación y procedimientos fijados por la Corte.Una vez que la sentencia definitiva adquiera firmeza, se deberá notificar al apoderado/a, patrocinante o a la parte a retirarla del Tribunal en el plazo de veinticuatro horas, bajo apercibimiento de aplicar lo dispuesto en el art.138 del CPCCT y de proceder a su destrucción conforme a los procedimientos normados.\n\nTÍTULO VII: COMUNICACIONES\n\nArtículo 48° (DOMICILIO DIGITAL. USUARIO PORTAL DEL SAE). El domicilio digital estará constituido por casillas digitales otorgadas por el Poder Judicial, que se obtendrán en forma asociada a la condición de usuario del Portal del SAE. Las mismas se encontrarán albergadasen los servidores de la institución.Las casillas digitales estarán incluidas dentro de los servicios del Portal del SAE, en el módulo“notificaciones digitales”.\n\nArtículo 49° (CASILLAS DIGITALES DE PERSONAS HUMANAS, JURÍDICAS Y UNIDADES JUDICIALES.). Cualquier persona humana o jurídica podrá solicitar una casilla digital asociada a su usuario del Portal del SAE, previo cumplimiento de los requisitos establecidos para su alta. \n\nEn el caso de las unidades judiciales, las casillas digitales estarán constituídas por correoselectrónicos oficiales.El Poder Judicial otorgará casillas digitales a las autoridades públicas provinciales y aquellasotras entidades que, por el art. 197 del CPCCT, deban contar con una casilla digital a fin derecibir sus notificaciones u oficios judiciales.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "fbea95b7731273f2ac1ef7dc8f78c7a7fa6ba67212a9943c5199cc5332c62740",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-27",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 50° (LISTADO DE TITULARES DE CASILLAS DIGITALES). El listado de los titulares de casillas digitales activas, asociadas a usuarios del Portal del SAE, se publicarán y podrán ser consultados en la página web del Poder Judicial en la sección “Servicios”, módulo “ Titularesde Domicilios Digitales”.\n\nArtículo 51° (VISTAS Y TRASLADOS). A los fines del art. 187 y 188 del CPCCT, y a fin de facilitar la lectura de las actuaciones, se podrá adjuntar, un código informático (link o código qr) que permita su visualización. En los casos de expedientes que no fueren íntegramente digitales, alos Ministerios Público Fiscal y Pupilar y de la Defensa, los plazos del art. 193 del CPCCT secontarán desde la recepción del expediente en soporte papel existente.\n\nArtículo 52° (OFICIOS A MAGISTRADAS/OS O AUTORIDADES DE LA PROVINCIA). El sistema informático registrará la fecha y hora en que el oficio fue depositado. En los casos de oficios a otras/os magistradas/os provinciales, se remitirán a través del sistema informático.En caso de que la autoridad provincial no contaré con una casilla digital, se remitirá el oficioen soporte físico, y luego de ser diligenciado se digitalizará, se incorporará al expediente digitalcon firma digital y se destruirá el soporte papel. El Tribunal pondrá en conocimiento de la CSJT, a través de la Oficina de Servicios Judiciales de la inexistencia de casilla digital de determinada autoridad provincial a los fines de su correspondiente otorgamiento.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "9f7f5da5d13db1406eb5bfa4c7defd9976610eae67d0a8e295d38295a8e4881c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-28",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 53° (OFICIOS DIGITALES A OTRAS ENTIDADES). El sistema informático registrará la fecha y hora en que el oficio fue depositado.Si la entidad no contase con casilla digital, el oficio se diligenciará en soporte papel, luego sedigitalizará, se incorporará en el expediente digital con firma digital y se destruirá el soportepapel. El Tribunal pondrá en conocimiento de la CSJT, a través de la Oficina de ServiciosJudiciales, de la inexistencia de casilla digital de las entidades que se encuentran obligadas(art. 194 CPCCT), a los fines de su correspondiente otorgamiento.\n\nArtículo 54° (OFICIOS O MANDAMIENTOS JUDICIALES A DOMICILIO REAL). En aquellos casos que excepcionalmente los oficios o mandamientos deban enviarse a domicilio real, lasunidades judiciales deberán remitirlos digitalmente a las casillas digitales de Oficiales de Justicia, Oficiales Notificadores o Juzgados de Paz, según correspondiere, quienes tramitarán las mandas una vez satisfechos los bonos de movilidad pertinentes, salvo que se encuentren libres de derecho.\n\nArtículo 55° (COMUNICACIONES URGENTES). Cuando las comunicaciones se refiriesen ahechos o informes que deban practicarse de urgencia (en el mismo día de su suscripción o enplazos menores a veinticuatro horas) podrán efectuarse las peticiones o intimaciones telefónicamente o por cualquier otro medio fehaciente. El secretario labrará el acta respectiva, la firmará digitalmente y registrará en el expediente digital correspondiente.\n\nArtículo 56° (OFICIOS LEY 22.172 - EXHORTOS). El diligenciamiento de oficios se realizará en formato PDF con firma digital a la dirección de correo electrónico del Poder Judicial quecorresponda, requiriendo los datos de la Unidad Judicial donde tramitare la medida. Las direcciones de correo electrónico habilitadas por los distintos Poderes Judiciales estarán publicadas en la página web del Poder Judicial, en la sección “Servicios”, módulo “Titulares de Domicilios Digitales”.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ef80e3f32f14e0de1d5013453630d4cc36f269815cacdf3fa49abfba8b6ba5f0",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-29",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 57° (OFICIOS LEY 22.172 - EXHORTOS A JUSTICIA FEDERAL). Para el diligenciamiento de oficios a la Justicia Federal será realizado mediante el Sistema de Diligenciamiento Electrónico de Oficios a Organismos Externos (DEOX), por medio de la Secretaría de Superintendencia. Para ello, se deberá enviar el oficio en formato PDF con firma digital por Secretaria de Superintendencia: oficiofederal@justucuman.gov.ar con el asunto “CONTESTACION OFICIO – JUSTICIA FEDERAL”.\n\nArtículo 58° (DOMICILIO CONSTITUIDO. SUBSISTENCIA). Las partes, en su primera presentación, deberán constituir el domicilio digital estipulado en el art. 197 CPCCT para todoslos efectos del juicio, y denunciar su domicilio real. El domicilio digital podrá ser la casilla digital de la parte, de su letrada/o patrocinante, o del apoderada/o.Se entenderá que el domicilio constituido se mantiene, aunque el patrocinio cambie, mientrasno se constituya otro. En cambio, su efecto no subsistirá cuando se tratare de activar el trámite de expedientes archivados después de transcurridos dos (2) años, en cuyo caso los interesados deberán ser notificados en sus domicilios reales, estando obligados a constituir un nuevo domicilio digital o ratificar el anterior.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b2efb90f98abc086d578fe587a10973fe242bfa819d948df37fd4306e2d74d6e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-30",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 59° (FALTA DE CONSTITUCIÓN DE DOMICILIO. ESTRADOS DIGITALES. FUEROS DE FAMILIA Y PENAL). Ante la falta de cumplimiento de la obligación de constituir domicilio digital se lo tendrá por constituido en los estrados digitales por el solo ministerio de la ley, sin necesidad de petición de parte o declaración judicial.En los supuestos de notificaciones en los estrados digitales de procesos que demanden reserva por la materia, fuero Penal y de Familia, sólo se publicará una leyenda que dé cuenta a su destinataria/o que posee una notificación. En la misma, se detallará la carátula y el número de expediente y, en su caso, los archivos adjuntos que contenga. A los fines de acceder a la notificación y a sus respectivos archivos, el/la destinatario/a deberá apersonarse ante el juzgado donde tramite el expediente.\n\nArtículo 60° (NOTIFICACIONES DIGITALES). Las notificaciones digitales se realizarán mediante la remisión al domicilio digital del destinatario, de la resolución judicial, con la documentación digital anexa en caso de corresponder. El sistema informático emitirá una constancia digital de la fecha de ingreso de la notificación a la casilla digital, que constará en el expediente digital.Las sentencias de fondo y las interlocutorias serán resaltadas para facilitar su visualización por parte de sus destinatarios.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8ea46e388a33ae6cc2f6093949adc80e19567ac9a8eec993e889769f4bab00cf",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-31",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 61° (NOTIFICACIÓN A ENTIDADES OBLIGADAS A CONTAR CON DOMICILIO DIGITAL). En el caso de notificaciones a dependencias del Poder Ejecutivo, Poder Legislativo, Ministerio Público Fiscal, Ministerio Público de la Defensa, organismos o entidades públicas provincial, municipal y/o comunal; entidades financieras incluidas en la Ley N° 21.526, entidades aseguradoras incluidas en la Ley N° 20.091, obras sociales incluidas en la Ley N° 23.660 –o las leyes que las reemplazaren- que operaren en la provincia de Tucumán; se practicarán en formato digital, aún para los supuestos en los que la normativa regula que debe practicarse a domicilio real. Excepcionalmente podrán efectuarse en el domicilio real, en caso urgencia o cuando el magistrado así lo disponga.Las entidades que no se encontraren incluidas en las disposiciones del párrafo precedente, podrán asimismo recibir notificaciones digitales, en sustitución de las que se remiten a domicilio real, con iguales alcances, previa suscripción del “Acta de conformidad de notificaciones digitales” ante la Oficina de Servicios Judiciales.\n\nArtículo 62° (NOTIFICACIÓN DE URGENCIA). En caso de urgencia, podrán efectuarse notificaciones telefónicamente o por cualquier otro medio fehaciente, labrando el secretario el acta respectiva, firmándola digitalmente y adjuntándola al expediente digital correspondiente. En el supuesto que la notificación se realizare vía mensajería WhatsApp, se enviará un mensaje con el contenido de la misma y se solicitará a su destinatario la confirmación de su recepción.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "342c36dbb6505154bba1b116e6cd9fc83d158af8341d7b416e6b0a9c3a2a2140",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-32",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 63° (NOTIFICACIÓN POR EDICTOS - BOLETÍN OFICIAL JUDICIAL). Las publicaciones de edictos previstas en el art. 204 del CPCCT, las Leyes N° 26.994 (Código Civil y Comercial de la Nación), N° 19.550 (Ley de Sociedades), N° 24.522 (Ley de Concursos y Quiebras) se realizarán en el Boletín Oficial Judicial que se encontrará en la página web del Poder Judicial. Se realizarán a través del sistema informático “SAE” desde la unidad que hubiere dispuesto su publicación, debiendo señalarse la cantidad de días hábiles por lo que debe efectuarse la publicación. La actuación deberá estar firmada digitalmente por el/la funcionario/a de la unidad, registrándose en el sistema el tipo de edicto correspondiente (categoría de edicto).La publicación no tendrá costo alguno para las partes. La Oficina de Gestión Judicial tendrá asu cargo el “Boletín Oficial Judicial”. Las publicaciones en el Boletín Oficial Judicial no sesuspenderán cuando por motivos extraordinarios se declare feriado o inhábil debiendopublicarse el primer día hábil subsiguiente.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a7966e35d0978b6d22134cadbed869764166574a4139bebce2ea0fc0ffc73395",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-33",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 64° (LEY N° 24.522 - NOTIFICACIONES POR MINISTERIO DE LA LEY). Lasnotificaciones por ministerio de la ley, ordenadas por el art. 26 de la Ley N° 24.522, se realizarán mediante la publicación de las sentencias y/o providencias en la página web del Poder Judicial, a las que se podrá acceder a través de la consulta web del expediente digital respectivo. De esta forma, el deudor o la deudora, Sindicatura, demás personas interesadas y/o sus representantes, quedarán notificados, en virtud de lo establecido en el párrafo anterior. De modo que, los plazos pertinentes, empezarán a correr a partir del día hábil siguiente al de la publicación de la resolución respectiva en la página web del Poder Judicial.Excepcionalmente, el Magistrado/a, en virtud de las facultades conferidas por el ordenamientoconcursal (art. 274, ley 24.522), y en consonancia con lo dispuesto por los arts. 200 inc. 2º, 206,207 y concordantes del CPCCT (t.o. ley 9531); podrá ordenar que la notificación se realice de lamanera que estime conveniente en cada caso particular.\n\nArtículo 65° (DIFUSIÓN DE LA CITACIÓN POR REDES SOCIALES). En los casos en los que resulte procedente la notificación por edictos, la difusión de la citación podrá realizarse através de redes sociales. Cuando fuere posible, se enviará por mensaje privado la imagen deledicto publicado junto a un mensaje explicativo. Esta difusión carece de efecto jurídico, por loque el mensaje enviado es meramente de cortesía y podrá ser enviado a quien/espresuntamente se presumiere/n destinatario/s de la notificación.\n\nTÍTULO VIII: AUDIENCIAS\n\nArtículo 66° (REGISTRO DE LA VIDEOGRABACIÓN DE AUDIENCIAS). Las audiencias celebradas y videograbadas deberán ser incorporadas al expediente digital, sin necesidad de confeccionar un acta de transcripción. Sin perjuicio de ello, se deberá realizar un registro de lavideograbación, siguiendo en lo posible el siguiente modelo:\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "71262fa828c4069c2dbc5298c7274126dc590dbe0c4527c0381ee2001ca52e83",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-34",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "“Juicio………………………………….Expte………………………… (Lugar/Fecha). En el día de la fecha se realizó la Audiencia ……………. de modo presencial/ semipresencial/remoto y participaron: el/la juez/a Dr/a ………………………………………., el actor……………………, su Apoderado……………….., el demandado………, su apoderado……….. el perito ……………………………., las/os testigos…………………………………y los/asfuncionarios/as …………………………….. Siendo hrs. ……... termina el acto. La audiencia fuevideograbada, adjuntándose al expediente digital, como así también el presente registro,suscripto digitalmente para constancia. (Firma digital de actuario/a)”.\n\nArtículo 67° (REGISTRO DE AUDIENCIA NO VIDEOGRABADA). Cuando por motivos de fuerza mayor no pudiere videograbarse o no se haya videograbado la audiencia, se labrará acta de la audiencia, que conservará en lo posible el lenguaje de los intervinientes; bajo la supervisióndel/la Juez/a y del/la Secretario/a. El acta será digitalizada y firmada digitalmente por el/juez yel/la Secretario/a.\n\nArtículo 68° (PROGRAMACIÓN DE AUDIENCIAS). Al momento de establecer la fecha de una audiencia, los funcionarios de cada unidad deberán consultar en el sistema informático que los letrados de las partes citadas no se encontraren con alguna licencia prevista en la Ley N°5.233. Asimismo, el/la abogado/a que hubiese sido notificado de la fecha de una audiencia, ycon posteridad requiriese alguna licencia prevista por la Ley N° 5.233, deberá informar almomento de la solicitud al Juzgado a los fines pertinentes.\n\nArtículo 69° (AGENDAMIENTO DE AUDIENCIAS). Una vez fijada la audiencia, deberáagendarse en el Sistema de Agendamiento Unificado (salas virtuales, salas de audiencia) cargando todos los datos de la causa: carátula, N° de expediente, Juzgado interviniente y link de audiencia remota si lo hubiere.En los casos de audiencias remotas en donde se estime conveniente facilitar medios tecnológicos en las salas de audiencias de Juzgados de Paz, se deberá además agendar la reserva de dichas salas.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "beb2ea2d3f996c04704923f30031d248dba9f319b77eb40cc8b50ede9b23686f",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-35",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "ARTÍCULO 70° (RESPONSABILIDAD DEL REGISTRO DE AUDIENCIAS). La Unidad Judicial que disponga la realización de la audiencia será responsable de su videograbación y de suincorporación, mediante archivo multimedia, al sistema informático SAE, a través de los agentes que estas designen. De tal modo, la pérdida, extravío, o la falta del registro, será responsabilidad de la Unidad Judicial interviniente.\n\nTÍTULO IX: SUBASTAS ELECTRÓNICAS\n\nArtículo 71° (PRINCIPIO GENERAL). Las subastas a realizarse por medios electrónicos seefectuarán de acuerdo a las disposiciones contenidas en el presente reglamento.\n\nArtículo 72° (MÓDULO SUBASTAS ELECTRÓNICAS). Las subastas electrónicas seránpublicadas dentro de la página web del Poder Judicial de Tucumán en la sección “Servicios”,módulo “Subastas Electrónicas”.Dicho módulo, ofrecerá información de acceso público para la totalidad de los ciudadanos delos bienes a subastar, permitiéndoles el seguimiento, en directo por Internet, de la celebraciónde las subastas de forma anónima. En el caso de los usuarios registrados -inscriptos paraparticipar de una subasta en la forma prevista en el presente- quedarán habilitados para pujara través de la modalidad electrónica que aquí se regula.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "1b1c00d30cc31b381796acd2ba872261a42341e69cd563f8aa21c248f205aec3",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-36",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 73° (INFORMACIÓN PUBLICADA). A los fines de una adecuada publicidad en el sitio web referido, se plasmará idéntica información que la publicada en los edictos, adicionandofotografías del bien a rematar - siempre que el carácter del mismo lo permita-; fecha y hora delinicio y cierre de las acreditaciones de los postores, tramos de pujas fijados y sus importes, datos profesionales y de contacto del martillero designado; y en caso de corresponder, precio de reserva, fecha y horario de visitas; y todo otro dato que pueda resultar de interés establecido por el Juez interviniente de acuerdo a la naturaleza de los bienes a subastar. El juez interviniente en la ejecución forzada podrá dispensar por resolución, la adjunción de imágenes del bien a subastar cuando lo considere procedente.\n\nArtículo 74° (PLAZO DE PUBLICACIÓN DE LA SUBASTA). La publicación virtual del bien a subastar deberá realizarse con una antelación no menor a diez (10) días hábiles al comienzodel lapso de celebración de la subasta judicial.\n\nArtículo 75° (REGISTRO DE POSTORES DE SUBASTAS ELECTRÓNICAS). A los fines previstos por el art. 649 del CPCCT, créase el Registro de Postores de Subastas Electrónicas, en el ámbito de la CSJT, a cargo de la Oficina de Servicios Judiciales, la que tendrá su sede en el Centro Judicial Capital.\n\nCAPÍTULO I: DE LA INSCRIPCIÓN AL REGISTRO DE POSTORES DE SUBASTAS ELECTRÓNICAS \n\nArtículo 76° (INSCRIPCIÓN. PERSONAS HABILITADAS). Cualquier persona humana o jurídica podrá inscribirse como postor en el Registro de Postores de Subastas Electrónicas para participar en las subastas dispuestas por todas las unidades jurisdiccionales correspondientes a los fueros civil y comercial, documentos y locaciones, cobros y apremios, de familia y sucesiones, contencioso administrativo, laboral y a la Justicia de Paz de la Provincia de Tucumán.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "ba0866b22d6225ef34f11c20be8b9478d8ff9b737ada479c743f97eaf8f932e1",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-37",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 77° (PLAZO DE LA INSCRIPCIÓN). La inscripción al Registro de Postores de Subastas Electrónicas estará abierta durante todo el año, a excepción de los períodos de feria judicial, las suspensiones de términos procesales, asuetos y feriados. La inscripción tendrá una vigenciade un año, contado a partir de la admisión del postulante en dicho Registro, transcurrido el cual se producirá automáticamente la caducidad de la inscripción. Los interesados podrán reinscribirse, debiendo cumplimentar nuevamente el procedimiento de admisión establecido en el presente Reglamento, encontrándose habilitados para efectuarlo con una antelación de 15 (quince) días hábiles al vencimiento de su inscripción anterior.\n\nArtículo 78° (FORMULARIO). Las solicitudes de inscripción se formalizarán en formulariosdisponibles en el módulo de Subastas Electrónicas.El formulario de solicitud de inscripción deberá ser completado por la persona que pretenda inscribirse en el Registro de Postores de Subastas Electrónicas. Cumplido ello, el sistema le enviará un link que contendrá dicho formulario con los datos que éste hubiere ingresado a la dirección de correo electrónico que denunciará, permitiendo su impresión en soporte papel para su presentación en los puntos de recepción que correspondan con la documentación requerida en el artículo 80.Las inscripciones al Registro de Postores se efectuarán en la Oficina de Servicios Judiciales y en los puntos de recepción designados por este reglamento, observando el procedimiento que se detalla en este Capítulo.\n\nArtículo 79° (DATOS DEL FORMULARIO). Todos los datos requeridos en el formulario deinscripción, revestirán carácter de declaración jurada y son los siguientes:\n\nPersona humana:a) Nombre y apellido completo.b) Nacionalidad.c) Tipo y número de documento (DNI, LE, LC). En caso de extranjeros, pasaporte vigente.\n\ne) Domicilio real actualizado.f) Dirección de correo electrónico.g) Teléfono celular y fijo.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "a8911eaf0dfa7f411f78d337e4c8a662e6f0585d2ffc3fcea475d1a187ba0f68",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-38",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Persona jurídica:a) Denominación social.b) Código Único de Identificación Tributaria (C.U.I.T.).c) Domicilio real actualizado.d) Dirección de correo electrónico.e) Teléfono fijo y, en su caso, teléfono móvil.f) Nombre y apellido completo del representante legal.g) Tipo y número de documento (DNI, LE, LC) del representante legal.h) Dirección de correo electrónico del representante legal.i) Teléfono celular del representante legal.\n\nAquellos que se presenten en carácter de apoderados deberán denunciar los datos que anteceden respecto de sus poderdantes, como así también de su persona.\n\nArtículo 80° (DOCUMENTACIÓN). Además del formulario del artículo anterior, el postulantedeberá presentar ante la Oficina de Servicios Judiciales o ante los puntos de recepción a los que se refiere el último párrafo del presente artículo, la siguiente documentación: \n\na) original y fotocopia del documento de identidad o, en su caso, pasaporte vigente para su certificación por el funcionario responsable de la Oficina. \n\nb) En el supuesto que la persona se hiciere representar por medio de un apoderado, éste deberá presentar el instrumento legal que lo acredite como tal y acompañar copia certificada del mismo. c) En caso de personas jurídicas, acompañar copia certificada del Contrato constitutivo, y sus modificaciones, debidamente inscriptos ante la autoridad competente. \n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "d29c9544ff6b159b0b0068bb00f4aca1b85a0a1ca305a003898fbc88bac754bd",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-39",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "d) Asimismo, y según el tipo societario deberá adjuntar copia certificada de la documentación fehaciente y en legal forma que acredite la última designación de autoridades y la vigencia de la representación legal de la entidad. Dichos instrumentos deberán estar debidamente inscriptos ante la autoridad competente. En su reemplazo, se podrá presentar certificado expedido por dicha autoridad en el que conste la identidad del representante legal en ejercicio -vigente- y domicilio social actualizado del ente societario.El funcionario responsable del Registro de Postores de Subastas Electrónicas deberá corroborar la correspondencia entre los datos denunciados en el formulario y la documentación que exhibe; y entre los originales que se presente y las copias para su certificación.A fin de tener una cobertura en todo el territorio de la provincia, se establecen como puntos derecepción de documentación vinculada a la inscripción en el Registro de Postores de SubastasElectrónicas, a los Juzgados de Paz de la provincia de Tucumán, y a las Oficinas de Atención alCiudadano del Centro Judicial Monteros y Concepción, quienes la remitirán a la Oficina de Servicios Judiciales. Los puntos de recepción de documentación designados remitirán la documentación dentro del término de setenta y dos (72) hs hábiles.\n\nArtículo 81° (INFORMACIÓN). Quienes aspiren a inscribirse en el Registro estarán obligados afacilitar información veraz, exacta y completa sobre su identidad, y en su caso, de la persona jurídica a la que representen, su poderdante y comitente. Asimismo, estarán obligados a mantenerla actualizada.\n\nArtículo 82° (ADMISIÓN O RECHAZO DE LA INSCRIPCIÓN). La admisión o el rechazo de las solicitudes de inscripción o reinscripción, será resuelta por el funcionario responsable de laOficina de Servicios Judiciales.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8a86bc1a4cca1682c3f3ae93a2ceeebbafefd49248631d2d13d13741bc752feb",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-40",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 83° (ALTA EN EL REGISTRO. CONSTANCIA). Cumplidos los requisitos de los artículos 78 y 80 corresponderá admitir la inscripción del postulante al Registro de Postores deSubastas Electrónicas y generar el correspondiente alta. Efectuado ello, se generará una constancia de admisión al Registro de Postores de Subastas Electrónicas en la que se consignará: fecha de alta, apellido y nombre o razón social del solicitante, y la documentación acompañada.\n\nArtículo 84° (CUSTODIA DE LA DOCUMENTACIÓN). La documentación que respalde lasinscripciones quedará bajo la custodia de la Oficina de Servicios Judiciales. Dicha documentación deberá destruirse transcurridos dos años contados a partir de la fecha de admisión de la inscripción.\n\nArtículo 85° (USUARIO Y CONTRASEÑA). Dado de alta el sujeto inscripto en el Registro, elsistema generará y remitirá automáticamente a su correo electrónico un nombre de usuario ycontraseña, el que deberá ser personalizado por el usuario en su primer ingreso al módulo deSubastas Electrónicas. El usuario registrado podrá acceder a los servicios personalizados del citado módulo.\n\nArtículo 86° (DENEGATORIA). No se dará curso a las solicitudes que al momento de su presentación no reúnan la totalidad de los requisitos exigidos en los artículos 78, 79 y 80. La denegatoria de la inscripción se formalizará por escrito con expresa indicación del incumplimiento verificado que la motiva, suscripta por el funcionario responsable de la mencionada dependencia, y notificada en el correo denunciado en el formulario de inscripción. Dicha resolución será impugnable en los términos de la Ley 4.537.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "8cb4b6cdd9e0d935ae4a76422c5287d3041c493c381b2d23163f24c8cc4b91b1",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-41",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 87° (CONDICIONES DE USO). El usuario registrado se compromete a mantener sucontraseña en secreto. De igual modo, se compromete a cerrar su código de usuario al final decada sesión y a notificar al Registro de Postores de Subastas Electrónicas, cualquier pérdida oacceso no autorizado por parte de terceros a la misma. Es de exclusiva responsabilidad del usuario mantener la confidencialidad de su contraseña y cuenta de usuario, asumiendo personalmente las actividades que se realicen o tengan lugar mediante su utilización. La cuenta de usuario del Registro de Postores de Subastas Electrónicas es de uso estrictamente personal e intransferible, quedando terminantemente prohibido su acceso por parte de un tercero distinto a su titular, y su transmisión o cesión por cualquier causa.\n\nEl usuario no utilizará la conexión con el módulo de Subastas Electrónicas de cualquier formaque pueda afectar, dañar, sobrecargar, o incidir en su funcionamiento.\n\nArtículo 88° (INCUMPLIMIENTO). El incumplimiento de las obligaciones establecidas y compromisos asumidos por los usuarios facultará al Registro de Postores de Subastas Electrónicas a revocar las autorizaciones de acceso a los servicios del módulo, a través de las actuaciones correspondientes, debiendo en dicho caso proceder inmediatamente a su cumplimiento efectivo.\n\nCAPÍTULO II: DE LA REGISTRACIÓN A LAS SUBASTAS.\n\nArtículo 89° (INSCRIPCIÓN SUBASTA). Los usuarios inscriptos en el Registro de Postores deSubastas Electrónicas, podrán acceder a la registración individual en todas las subastas judiciales electrónicas en las que pretendan presentarse como postor. El pedido de acreditación para participar en una subasta como postor, será realizado a través del formulario electrónico obrante en la página web a tal efecto.Para poder pujar en una subasta particular el postor deberá encontrarse inscripto en aquella con una antelación mínima de tres (3) días hábiles al comienzo de su celebración.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "b555f8d7a546d217d2259d505ae20e4a73677041cc13c5406212724122f0e59e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-42",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 90° (RESERVA DE POSTURA. COMPRA EN COMISIÓN). Al momento de completar el formulario electrónico del artículo anterior se requerirá que el postulante efectúe la opción de reserva de postura.En idéntica oportunidad, deberá el usuario indicar si se presenta a una compra en comisión, debiendo denunciar el nombre de su comitente y encontrarse ambos (comisionista y comitente) previamente inscriptos en el Registro de Postores de Subastas Electrónicas a los fines de la admisibilidad de su inscripción en la subasta.\n\nArtículo 91° (GARANTÍA). En el caso de subastas de bienes registrables será obligatoria laconstitución de un depósito de garantía de hasta el 5% del valor de la base, o una suma razonable fijada por el juez cuando no tenga base. Igualmente, se podrá exigir por resolución fundada el depósito en garantía de bienes no registrables, cuando la naturaleza o significación económica del bien a subastar lo ameriten.\n\nArtículo 92° (CONSTITUCIÓN DEL DEPÓSITO EN GARANTÍA). Cuando sea exigible comocondición para ofertar válidamente el depósito en garantía, el postulante deberá proceder a suintegración como presupuesto de aceptación de su calidad de postor en la subasta en la que pretenda inscribirse.La inscripción a la subasta quedará perfeccionada con la presentación del comprobante de pago del depósito, oportunidad en la cual se lo registrará como postor y el sistema remitirá a su correo electrónico su Código de Postor para esa subasta, el que será único y secreto. Los datos de la cuenta judicial se encontrarán publicados en el módulo “subastas judiciales” conjuntamente con los datos y demás detalles del bien a rematar. Dicho depósito deberá encontrarse acreditado en la cuenta con una antelación mínima de tres (3) días hábiles a la fecha de inicio del acto de subasta.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "3d1576f0817aa5b3650a6f7fbb632b6119140f5b25174008969821147bb36ca5",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-43",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 93° (SUBASTAS SIN DEPÓSITO DE GARANTÍA). En los supuestos en que no se prevea depósito en garantía, la inscripción quedará perfeccionada con la remisión del formulario de inscripción completo del artículo 78. Cumplido ello, se habilitará la adjudicación del código de postor pertinente, que será enviado a la dirección de correo electrónico denunciado por elusuario.Lo dispuesto en el párrafo anterior, no resulta óbice del cumplimiento de aquellos requisitosrequeridos jurisdiccionalmente, en cada caso particular, que adicionare el Juez o Tribunalinterviniente.\n\nArtículo 94° (EDICTOS). La fecha de inicio y fin de la subasta se anunciará por edictos, como así también los datos del juzgado y secretaría; número de expediente y caratulación; y en caso decorresponder, base por la cual se ha de realizar, ubicación, extensión y características del inmueble, gravámenes que pesen sobre el mismo y si se encuentra o no ocupado.En el caso de bienes muebles, los edictos se publicarán por dos (2) días en el Boletín Oficial Judicial de la página web del Poder Judicial y, a criterio del Juez, en un diario de gran circulación u otros medios digitales.Para el caso de inmuebles, los edictos se publicarán por el término de tres (3) días en el BoletínOficial Judicial de la página web del Poder Judicial y en un diario de gran circulación u otros medios digitales. Fuera de ella, las partes podrán realizar cualquier otro tipo de publicidad adicional, la que será a cargo del ejecutante en lo que excediese del cincuenta por ciento (50%) del costo de la propaganda oficial.\n\nCAPÍTULO III: DE LA DIRECCIÓN DE LA SUBASTA\n\nArtículo 95° (MARTILLERO). La Oficina de Servicios Judiciales brindará al martillero designado, en su calidad de auxiliar de justicia, el acceso al módulo de subastas judiciales que le permita el cumplimiento de su cometido.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "25de80f8122e3cd6b76f4e2b57954a24808c87c400e0ded676564ea3467d73b8",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-44",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 96° (INFORMACIÓN A SUMINISTRAR POR EL MARTILLERO). Fijado el lapso decelebración de la subasta judicial, el martillero, en su carácter de colaborador del juez, proveerá a la Oficina de Servicios Judiciales los datos indicados en el artículo 73 de este Reglamento, debiendo en aquel acto acreditar por medio legal fehaciente su designación para la intervención en la ejecución forzada del bien que se trate y el cumplimiento de la publicación de edictos.El martillero deberá efectivizar lo ordenado en el párrafo anterior con una antelación mínimade diez (10) días hábiles al plazo dispuesto en el artículo 73 del presente. Cumplido ello, la Oficina de Servicios Judiciales publicará la información correspondiente a la subasta en el módulo de Subastas Electrónicas, de conformidad con los artículos 73 y 74 de este Reglamento, para conocimiento de todos los interesados.\n\nArtículo 97° (INICIO DE LA SUBASTA). El martillero, como delegado del juez en la dirección de la subasta judicial, dará comienzo a su celebración abriendo la participación de los postoresinscriptos quienes comenzarán su intervención pulsando un enlace habilitado al efecto.\n\nCAPÍTULO IV: DE LA CELEBRACIÓN DE LA SUBASTA\n\nArtículo 98° (PLAZO SUBASTA). La celebración de la subasta tendrá una duración de 10 díashábiles, pudiendo realizarse posturas durante las veinticuatro (24) horas del día.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "d4f055cc245bbeffd76cc37e183a7a242579bf0c416f34117e8dbb1b6afaf2a6",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-45",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 99° (MODO DE CONTABILIZAR LOS PLAZOS). En el caso de una subasta cuyo inicio esté previsto en un día inhábil, su comienzo se producirá el primer día hábil subsiguiente. En el supuesto que durante el lapso de celebración de una subasta haya un día inhábil, el plazoquedará interrumpido hasta el primer día hábil subsiguiente, retomándose automáticamente, una vez transcurrido inhábil.La Oficina de Servicios Judiciales es la encargada de tomar las medidas necesarias para dar cumplimiento a lo establecido en este artículo. Quedan exceptuados de las previsiones que anteceden en este artículo, las suspensiones de términos procesales que se decreten con carácter retroactivo, en cuyo caso no se interrumpirá el cómputo del plazo de celebración de la subasta.\n\nArtículo 100° (DIA Y HORA DE SUBASTA). La subasta se iniciará en el día y hora señalada. Una vez iniciada, se realizará a través de la puja continua y permanente de los oferentes en la sala virtual. Es un procedimiento público y abierto, que permite observar en tiempo real la evolución de las ofertas efectuadas. En el período de celebración de la subasta; las ofertas realizadas se publicarán en el sitio web indicando el Código de Postor, monto, día y hora de su efectivización. De igual modo, las ofertas serán comunicadas -a través de los medios tecnológicos disponibles- a los postores participantes de manera continua e instantánea para posibilitar su actuación informada.\n\nArtículo 101° (MONTO DEL BIEN A SUBASTAR). Las sumas dentro de las cuales pueden ofrecer los postores estarán determinadas por un cuadro de tramos de pujas numerado correlativamente, correspondiendo a cada uno de ellos un monto concreto.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "e2ab484638c3f44dd1c912199d92f7bcf867fc362f7da9914a720aab32011374",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-46",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 102° (INCREMENTO DEL MONTO DEL BIEN A SUBASTAR). En caso de existir valor base o de haberse determinado precio de reserva para la subasta judicial, el importe asignado al primer tramo se corresponderá con dichos montos. Los tramos subsiguientes se incrementarán en un cinco por ciento (5%) cada uno de ellos calculados sobre la suma indicada en el tramo inicial. En los restantes casos, los tramos se instrumentarán aplicando los aumentos y porcentajes determinados en párrafo precedente, correspondiendo el monto del tramo inicial a la suma que se realice como primera oferta en la subasta, debiendo el sistema una vez efectuada dicha postura calcular automáticamente los sucesivos tramos.\n\nArtículo 103° (IMPORTE DE LOS TRAMOS). Los postores deberán realizar sus pujas ajustándose al importe de los tramos previamente establecidos de acuerdo a lo dispuesto en los artículos anteriores, de modo que para ofertar solo tienen que indicar el número de tramo al que corresponde la oferta.\n\nCAPITULO V: DE LA POSTURA MÁXIMA SECRETA\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "452f9b9f1af16f3d4d4f641c8236db83a7830fef81032cf3323ad5fef706161c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-47",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 104° (POSTURA MÁXIMA SECRETA). Los postores, podrán adoptar la modalidad depostura máxima secreta. Ésta consiste en que el postor, al iniciarse la subasta judicial electrónica, ingresa en el sistema el precio máximo hasta el cual está dispuesto a ofrecer, el que deberá coincidir numéricamente con uno de los tramos predeterminados. Una vez marcado el tramo correspondiente a ese precio, y estén o no conectados a la aplicación, el sistema automáticamente pujará en su nombre al tramo siguiente al marcado por el postor anterior, y así sucesivamente hasta llegar al precio máximo marcado, que sólo el propio postor conoce. La oferta automática, permanecerá funcionando siempre y cuando el oferente -que hubiese adoptado esta modalidad- no ingrese posturas de manera manual, si lo hace la postura automática se anula, y éste deberá seguir pujando de manera manual. Una vez superado el tramo correspondiente a su postura máxima secreta, el postor podrá realizar una nueva postura máxima secreta o continuar pujando de manera manual. Las posturas máximas secretas tienen prioridad por fecha y hora de programación en el evento que exista una igualdad entre posturas máximas secretas.\n\nCAPÍTULO VI: DE LOS ACTOS POSTERIORES AL CIERRE DE LA SUBASTA.\n\nArtículo 105° (CIERRE DE LA SUBASTA). El cierre de la subasta se producirá en el día y horaseñaladas, de manera automática a través del sistema informático que aquí se implementa, salvo en el supuesto previsto en el artículo 112, o la ocurrencia de alguno de los eventos establecidos en los artículos 99 y/o 114 de este Reglamento. Concluida la misma y determinado el ganador, el adjudicatario será notificado a la dirección de correo electrónico que hubiere denunciado al momento de su inscripción a la subasta judicial. Asimismo, comunicará a todos los postores el monto de la venta.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "fc88fee39347db5ba906d45d2d018a4606fe78c54d51fc86210d8184f0f1d835",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-48",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 106° (ACTA DE MARTILLERO). Finalizada la subasta el martillero deberá elaborar un acta, en la que indicará el resultado del remate, los datos del vencedor (código de postor ymonto de adjudicación), y detalle de los restantes postores con la mayor oferta realizada por cada uno de ellos. El acta será confeccionada a través del formulario que obrará en el módulo a tales efectos. Dicho instrumento suscripto con firma digital por el martillero, deberá ser presentado a través del Portal del SAE en el expediente judicial, en el plazo de tres (3) días hábiles de finalizado el acto de la subasta.\n\nArtículo 107° (LISTADO DE POSTORES). La Oficina de Servicios Judiciales, luego de recepcionados los pedidos de inscripción a una subasta, deberá confeccionar y remitir al Juzgado o Tribunal el listado en el que consten los datos personales de los Postores acreditados para licitar en la misma, los códigos secretos asignados a cada uno de ellos, y en caso de corresponder, los comprobantes de pago de los depósitos en garantía a los que se refiere el artículo 90 del presente Reglamento e indicar que postores han efectuado reserva de postura.El listado, suscripto con firma digital del funcionario habilitado a tales fines por la Oficina deServicios Judiciales, será presentado a través del sistema informático en el Juzgado o Tribunalcorrespondiente, a los tres (3) días hábiles de finalizada la subasta, ello a los fines de la devolución de los depósitos en garantía y demás circunstancias legales.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "e06e958e217f5875d048a904df86c07ef7dba16c6fc76cd7343a2dd8e604650c",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-49",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 108° (ADJUDICATARIO DEL BIEN MUEBLE REGISTRABLE O INMUEBLE). Si se tratare de bienes muebles registrables o inmuebles, el martillero y el adjudicatario deberán hacerse presentes en la sede del Juzgado o Tribunal, a fin de proceder al labrado del acta pertinente; la que se firmará en audiencia ante el Secretario, en la fecha designada por la unidadjurisdiccional, la que estará determinada con la antelación suficiente a la publicación edictal yvirtual para el adecuado y efectivo conocimiento de los interesados. El adjudicatario debe presentarse a dicha audiencia munido del formulario de inscripción a la subasta de que se trate, comprobante de pago del depósito en garantía -si correspondiere-, constancia de código de postor, y demás instrumentos que permitan su individualización fehaciente como comprador en la subasta electrónica. En el mismo acto, constituirá domicilio legal a los efectos legales pertinentes. Asimismo, podrán intervenir en el acta mencionada en los párrafos antecedentes, el ejecutado y el acreedor ejecutante. En el caso de bienes muebles no registrables, el martillero entregará la posesión de los bienes una vez que fuere autorizado por el Juez interviniente otorgando simple recibo que presentará oportunamente en el expediente judicial.\n\nArtículo 109° (DEVOLUCIÓN DE DEPÓSITO EN GARANTÍA). Cuando el ofertante no resultara ganador y no hubiere ejercido reserva de postura, las sumas depositadas en garantía le serán devueltas, disponiendo la unidad jurisdiccional la transferencia electrónica de los montoscorrespondientes a la cuenta bancaria cuyos datos aportará el usuario al momento de admitir su participación en dicha subasta particular. En el caso de oferente no ganador con reserva de postura realizada, las sumas depositadas en garantía le serán restituidas, a su pedido en el expediente judicial por los medios y en las condiciones indicadas en el párrafo anterior.\n\nCAPÍTULO VII: DE LA RESERVA DE POSTURA.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "75b7be05f2cab88a260e8206ab657e1de51b437f0fd4c7327bbc31663892bf95",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-50",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 110° (INDICACIÓN DE RESERVA DE POSTURA). Al momento de la registración como postor en una subasta determinada, el postulante deberá indicar si efectúa la reserva depostura. Dicha reserva permite a quienes hayan participado en la subasta y no fueran el mejorpostor, ser adjudicatarios del bien subastado, en el supuesto de que el mejor postor de la subasta no concretara la compra. Para ello, además de la reserva de postura, el monto máximo ofertado por el postor deberá ser de hasta un 5% menos del precio de venta determinado en la subasta.\n\nCAPÍTULO VIII: DEL HORARIO DE LA SUBASTA.\n\nArtículo 111° (HORARIO SUBASTA). El tiempo oficial de la sesión de subasta, es el períodotemporal publicado en la convocatoria edictal y virtual, el mismo se corresponde con el que opera el sistema, y será coincidente con la hora oficial de la Provincia de Tucumán.\n\nCAPITULO IX: DEL TIEMPO DE EXTENSIÓN.\n\nArtículo 112° (EXTENSIÓN DE LA SUBASTA). Se admite el tiempo de extensión, entendidocomo el lapso de tiempo dentro de la subasta, en el cual se valida si existe una oferta, y el remate se extiende automáticamente. En este sentido, si en los últimos tres (3) minutos previos al cierre de la subasta algún postor oferta un precio más alto, el tiempo para el cierre de ésta se ampliará automáticamente diez (10) minutos más, siendo esta situación receptada, efectivizada, publicada y notificada directamente por el sistema a todos los postores. El tiempo de la subasta se extenderá por idéntico período de tiempo con cada nueva oferta más alta que la anterior que se presente, renovándose dicho tiempo de extensión hasta tanto no se realicen ofertas por diez (10) minutos seguidos.\n\nCAPITULO X: DE LA SUSPENSIÓN, APLAZAMIENTO, ANULACIÓN O CANCELACIÓN DE LA SUBASTA.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "865e4cfda4188935e76d346fd75744738948f30cb01de931791c0849e6b5c69e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-51",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 113° (SUSPENSIÓN, APLAZAMIENTO, ANULACIÓN O CANCELACIÓN DE LASUBASTA). En el supuesto que concurra alguna circunstancia que amerite la suspensión, aplazamiento, anulación o cancelación de la subasta ordenada, dispuesto ello por la unidad jurisdiccional, ésta deberá notificar a las partes, al martillero, y comunicar tal situación a la casilla digital de la Oficina de Servicios Judiciales. La Oficina procederá a la publicación inmediata de dicha incidencia, y en caso de corresponder, a la difusión de la nueva fecha prevista. La publicación de las ocurrencias antes mencionadas en el sitio web, será aviso suficiente para los postores admitidos en la subasta.\n\nCAPITULO XI: DEL MÓDULO DE SUBASTAS ELECTRÓNICAS.\n\nArtículo 114° (MÓDULO DE SUBASTAS ELECTRÓNICAS). La Oficina de Servicios Judiciales y la Dirección de Sistemas, efectuarán todas las tareas necesarias para garantizar la disponibilidad y accesibilidad al módulo de Subastas Electrónicas las veinticuatro horas durante todos los días del año.\n",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "318b2fa3bf47185af8616301899e6c221c2dc929e966fdddc9d25939368478a0",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    },
+    {
+      "id": "ACORD-1-52",
+      "normId": "ACORD",
+      "article": "S1",
+      "title": "Nro: 1562 Año: 2022",
+      "text": "Artículo 115° (INHABILITACIÓN DEL SERVICIO). En caso de inhabilitación del servicio, laOficina de Servicios Judiciales y la Dirección de Sistemas arbitrarán las medidas necesarias para solucionar el problema. Ante este acontecimiento, respecto de las subastas en curso, quedará interrumpido el plazo de diez días previsto por el artículo 650 del CPCCT por el término que dure la indisponibilidad del servicio, retomándose automáticamente superada dicha circunstancia. Ello será puesto en conocimiento de los postores y del martillero a través del módulo de Subastas Electrónicas y la remisión de un correo electrónico, lo que será notificación suficiente. En el caso de las subastas cuyo inicio estuviera programado dentro del tiempo que perdure el impedimento, el acto comenzará automáticamente superada dicha circunstancia, lo que será puesto en conocimiento de los postores y del martillero a través del módulo de Subastas Electrónicas y la remisión de un correo electrónico, lo que será notificación suficiente.Los inconvenientes que se produzcan en el módulo de Subastas Electrónicas será publicado, adicionalmente, en la bitácora del artículo 7 del presente reglamento ubicada en la página del Poder Judicial de Tucumán.\n\nArtículo 116° (INTERRUPCIONES DEL SISTEMA). La CSJT no será responsable de las interrupciones, suspensiones o el mal funcionamiento que se produjera en el acceso, funcionamiento u operatividad del módulo de Subastas Electrónicas, cuando tuvieren origen por hechos fortuitos, de fuerza mayor, de urgencia extrema o provocadas por terceros contratistas.\n\nFirmado en fecha: 28/10/2022",
+      "jurisdiction": "tucuman",
+      "sourceUrl": "importante/Acordadas  1562 - 22.txt",
+      "sourceDate": "2026-09-16",
+      "textHash": "7be035e87d1dc2caae5338240b4036084a91aa3db1c2094efe1e09b1810d910e",
+      "verificationMethod": "scripted",
+      "curatedBy": "orchestrator",
+      "curatedAt": "2026-09-16",
+      "tags": [
+        "acordadas",
+        "procesal",
+        "tucuman"
+      ],
+      "verified": true
+    }
+  ],
+  "hash": "75fec410613532e7380f4a589f1056df65745c4a1cf6d18ff7f511824716930c"
+}

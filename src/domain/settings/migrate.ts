@@ -31,7 +31,7 @@ const THEMES: readonly ThemeMode[] = ['light', 'dark', 'system'];
 const SEARCH_MODES: readonly SearchMode[] = ['auto', 'brave', 'tavily', 'duckduckgo', 'exa'];
 const FRESHNESS: readonly Freshness[] = ['any', 'day', 'week', 'month', 'year'];
 
-const LEGAL_JURISDICTIONS: readonly LegalJurisdiction[] = ['national', 'caba', 'pba', 'cordoba'];
+const LEGAL_JURISDICTIONS: readonly LegalJurisdiction[] = ['national', 'caba', 'pba', 'cordoba', 'tucuman'];
 const LEGAL_MATTERS: readonly LegalMatter[] = ['civil', 'commercial', 'civil-commercial'];
 const LEGAL_ANONYMIZATION: readonly LegalSettings['anonymization'][] = ['required', 'optional'];
 const ADVERSARIAL_PERSPECTIVES: readonly AdversarialPerspective[] = ['defense', 'attack', 'judge', 'risk'];

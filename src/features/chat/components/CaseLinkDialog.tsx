@@ -22,7 +22,7 @@ export interface CaseLinkDialogProps {
   onClose: () => void;
 }
 
-const JURISDICTIONS: readonly LegalJurisdiction[] = ['national', 'caba', 'pba', 'cordoba'];
+const JURISDICTIONS: readonly LegalJurisdiction[] = ['national', 'caba', 'pba', 'cordoba', 'tucuman'];
 
 /**
  * Acceso opcional al caseStore (T22): sin provider montado arriba, el diálogo
@@ -141,6 +141,8 @@ export function CaseLinkDialog({
         return t('modes.jurisdictionPba');
       case 'cordoba':
         return t('modes.jurisdictionCordoba');
+      case 'tucuman':
+        return t('modes.jurisdictionTucuman');
     }
   };
 

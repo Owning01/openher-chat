@@ -26,8 +26,20 @@ const GOLDEN_SET_URL = new URL(
   '../../../scripts/legal/__fixtures__/golden-set.json',
   MODULE_URL,
 );
-const MAX_CORPUS_BYTES = 500 * 1024;
-const EXPECTED_PACK_IDS = ['ar-ccyc-core', 'ar-cpccn-core', 'ar-ldc-core', 'ar-cn-core', 'ar-amparo-core'];
+const MAX_CORPUS_BYTES = 6 * 1024 * 1024;
+const EXPECTED_PACK_IDS = [
+  'ar-ccyc-core',
+  'ar-cpccn-core',
+  'ar-ldc-core',
+  'ar-cn-core',
+  'ar-amparo-core',
+  'ar-ccyc-full',
+  'ar-tucuman-cpcct',
+  'ar-tucuman-familia',
+  'ar-tucuman-laboral',
+  'ar-tucuman-constitucion',
+  'ar-tucuman-acordadas',
+];
 
 interface PackManifestEntry {
   id: string;

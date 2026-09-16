@@ -302,6 +302,86 @@
         "normId": "L16986",
         "article": "14"
       }
+    },
+    {
+      "id": "gs-41",
+      "query": "abuso del derecho ejercicio regular",
+      "expect": {
+        "normId": "CCyC",
+        "article": "10"
+      }
+    },
+    {
+      "id": "gs-42",
+      "query": "libertad de negociación tratativas preliminares",
+      "expect": {
+        "normId": "CCyC",
+        "article": "990"
+      }
+    },
+    {
+      "id": "gs-43",
+      "query": "derechos reales sobre muebles de situación permanente",
+      "expect": {
+        "normId": "CCyC",
+        "article": "2669"
+      }
+    },
+    {
+      "id": "gs-44",
+      "query": "actos jurídicos prescripción",
+      "expect": {
+        "normId": "CCyC",
+        "article": "2560"
+      }
+    },
+    {
+      "id": "gs-45",
+      "query": "competencia del juez del domicilio del demandado",
+      "expect": {
+        "normId": "CCyC",
+        "article": "2658"
+      }
+    },
+    {
+      "id": "gs-46",
+      "query": "acceso a tutela judicial efectiva proceso de duración razonable",
+      "expect": {
+        "normId": "CPCCT",
+        "article": "1"
+      }
+    },
+    {
+      "id": "gs-47",
+      "query": "fines del proceso de familia aplicación de las normas procesales",
+      "expect": {
+        "normId": "CPFT",
+        "article": "1"
+      }
+    },
+    {
+      "id": "gs-48",
+      "query": "magistratura del trabajo composición",
+      "expect": {
+        "normId": "CPLT",
+        "article": "1"
+      }
+    },
+    {
+      "id": "gs-49",
+      "query": "autonomía provincia parte integrante de la nación",
+      "expect": {
+        "normId": "CPT",
+        "article": "1"
+      }
+    },
+    {
+      "id": "gs-50",
+      "query": "acción de amparo contra acto de autoridad pública",
+      "expect": {
+        "normId": "L16986",
+        "article": "1"
+      }
     }
   ]
 }

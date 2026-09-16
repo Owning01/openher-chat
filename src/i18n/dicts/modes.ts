@@ -35,6 +35,7 @@ export const modes = defineDict({
     jurisdictionCaba: 'CABA',
     jurisdictionPba: 'Buenos Aires (PBA)',
     jurisdictionCordoba: 'Córdoba',
+    jurisdictionTucuman: 'Tucumán',
   },
   en: {
     buttonLabel: 'Chat modes',
@@ -70,6 +71,7 @@ export const modes = defineDict({
     jurisdictionCaba: 'CABA',
     jurisdictionPba: 'Buenos Aires (PBA)',
     jurisdictionCordoba: 'Córdoba',
+    jurisdictionTucuman: 'Tucumán',
   },
 });
 

@@ -37,6 +37,7 @@ const LEGAL_JURISDICTIONS: readonly LegalJurisdiction[] = [
   'caba',
   'pba',
   'cordoba',
+  'tucuman',
 ];
 
 /** Vista mínima del corpus que necesitan las tools (sin acoplar `LegalCorpus`). */
@@ -95,7 +96,7 @@ function createLegalSearchTool(deps: LegalToolDeps, now: () => number): ToolDefi
         },
         jurisdiction: {
           type: 'string',
-          enum: ['national', 'caba', 'pba', 'cordoba'],
+          enum: ['national', 'caba', 'pba', 'cordoba', 'tucuman'],
           description: 'Filter passages by jurisdiction. Omit to search all jurisdictions.',
         },
       },
@@ -254,7 +255,7 @@ function readJurisdictionArg(args: Record<string, unknown>): LegalJurisdiction |
   }
   throw new ToolExecutionError(
     'invalid_args',
-    'The "jurisdiction" argument must be one of: national, caba, pba, cordoba.',
+    'The "jurisdiction" argument must be one of: national, caba, pba, cordoba, tucuman.',
   );
 }
 

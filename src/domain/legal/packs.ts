@@ -24,7 +24,7 @@ type LegalPackLicense = LegalPack['license'];
 type LegalSource = LegalPack['sources'][number];
 type LegalVerificationMethod = LegalProvision['verificationMethod'];
 
-const JURISDICTIONS: readonly string[] = ['national', 'caba', 'pba', 'cordoba'];
+const JURISDICTIONS: readonly string[] = ['national', 'caba', 'pba', 'cordoba', 'tucuman'];
 const MATTERS: readonly string[] = ['civil', 'commercial', 'civil-commercial'];
 const VERIFICATION_METHODS: readonly string[] = ['manual', 'scripted', 'user-provided'];
 

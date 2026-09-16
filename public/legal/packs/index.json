@@ -2,12 +2,36 @@
   "schema": "openher.legal.packs/1",
   "packs": [
     {
+      "id": "ar-amparo-core",
+      "version": "1.0.0",
+      "hash": "89a5da9374011bc1c6e942bab98b8071d4426abe58ebcda0b4bf85a7fd8182ae",
+      "url": "legal/packs/ar-amparo-core.json",
+      "available": true,
+      "bytes": 28946
+    },
+    {
       "id": "ar-ccyc-core",
       "version": "1.0.0",
       "hash": "536f158febfd1be22ef9b04c33a1a8d1e4fa3026c19d15244196adc05b4a0fb1",
       "url": "legal/packs/ar-ccyc-core.json",
       "available": true,
       "bytes": 5251
+    },
+    {
+      "id": "ar-ccyc-full",
+      "version": "1.0.0",
+      "hash": "f3abe45934c2130c69ec5fb21ad9f4c732926dcac3a97c1483dda41ee707a7b9",
+      "url": "legal/packs/ar-ccyc-full.json",
+      "available": true,
+      "bytes": 2918204
+    },
+    {
+      "id": "ar-cn-core",
+      "version": "1.0.0",
+      "hash": "bc396a4c064fd42f31a9391e574b2caf9e471445a2b856cde4fb4786468335cf",
+      "url": "legal/packs/ar-cn-core.json",
+      "available": true,
+      "bytes": 16905
     },
     {
       "id": "ar-cpccn-core",
@@ -26,20 +50,44 @@
       "bytes": 3077
     },
     {
-      "id": "ar-cn-core",
+      "id": "ar-tucuman-acordadas",
       "version": "1.0.0",
-      "hash": "bc396a4c064fd42f31a9391e574b2caf9e471445a2b856cde4fb4786468335cf",
-      "url": "legal/packs/ar-cn-core.json",
+      "hash": "75fec410613532e7380f4a589f1056df65745c4a1cf6d18ff7f511824716930c",
+      "url": "legal/packs/ar-tucuman-acordadas.json",
       "available": true,
-      "bytes": 16905
+      "bytes": 118818
     },
     {
-      "id": "ar-amparo-core",
+      "id": "ar-tucuman-constitucion",
       "version": "1.0.0",
-      "hash": "89a5da9374011bc1c6e942bab98b8071d4426abe58ebcda0b4bf85a7fd8182ae",
-      "url": "legal/packs/ar-amparo-core.json",
+      "hash": "6ab36ce78c98bf4d026b5a04fe363e46819d83dd35607f97d2b2d89a511af044",
+      "url": "legal/packs/ar-tucuman-constitucion.json",
       "available": true,
-      "bytes": 28946
+      "bytes": 226848
+    },
+    {
+      "id": "ar-tucuman-cpcct",
+      "version": "1.0.0",
+      "hash": "41dc38d688c96d5ce184d44f62081e9ad801a1d7adcdec797be670b4fa021daa",
+      "url": "legal/packs/ar-tucuman-cpcct.json",
+      "available": true,
+      "bytes": 864368
+    },
+    {
+      "id": "ar-tucuman-familia",
+      "version": "1.0.0",
+      "hash": "7a02b37095089069f87b140bf9bca6c842b1d1ca3bb0ec1c5f56918c96732035",
+      "url": "legal/packs/ar-tucuman-familia.json",
+      "available": true,
+      "bytes": 414715
+    },
+    {
+      "id": "ar-tucuman-laboral",
+      "version": "1.0.0",
+      "hash": "53433d2e57e7616f5135e45adbaa482d8783f9c5a515e6aebc8ebf34dc49e9e7",
+      "url": "legal/packs/ar-tucuman-laboral.json",
+      "available": true,
+      "bytes": 175631
     }
   ]
 }

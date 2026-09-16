@@ -4,8 +4,8 @@ import type { ChatMessage } from './chat';
 // Vocabulario base: jurisdicción, materia, rol de parte y certeza de hecho.
 // ---------------------------------------------------------------------------
 
-/** Jurisdicción aplicable; el MVP cubre nacional y CABA, con provinciales declaradas. */
-export type LegalJurisdiction = 'national' | 'caba' | 'pba' | 'cordoba';
+/** Jurisdicción aplicable; nacional, CABA y provinciales declaradas (Tucumán activa). */
+export type LegalJurisdiction = 'national' | 'caba' | 'pba' | 'cordoba' | 'tucuman';
 
 /** Materia del expediente (civil, comercial o su fuero unificado). */
 export type LegalMatter = 'civil' | 'commercial' | 'civil-commercial';
