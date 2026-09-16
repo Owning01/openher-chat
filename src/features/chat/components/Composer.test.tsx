@@ -253,4 +253,17 @@ describe('Composer — adjuntos', () => {
     expect(status).toHaveTextContent('.docx');
     expect(screen.queryByText('informe.doc')).not.toBeInTheDocument();
   });
+
+  it('ignora el segundo gesto mientras lee el anterior (un chip, sin aviso fantasma)', async () => {
+    render(<Composer status="idle" onSend={vi.fn()} onStop={vi.fn()} />);
+
+    const file = new File(['contenido'], 'nota.txt', { type: 'text/plain' });
+    const input = fileInput();
+    fireEvent.change(input, { target: { files: [file] } });
+    fireEvent.change(input, { target: { files: [file] } });
+
+    expect(await screen.findByText('nota.txt')).toBeInTheDocument();
+    expect(screen.queryAllByText('nota.txt')).toHaveLength(1);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
 });

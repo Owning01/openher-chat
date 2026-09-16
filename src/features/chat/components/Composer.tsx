@@ -142,6 +142,10 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
   const [images, setImages] = useState<ImageDraft[]>([]);
   const [attachNotice, setAttachNotice] = useState<string | null>(null);
   const [reading, setReading] = useState(false);
+  // Guardia anti-carrera: dos gestos pegados (doble click en el clip, soltar
+  // dos veces) disparan `addFiles` en paralelo y mezclan chips con avisos
+  // viejos. El segundo se ignora; el estado sólo lo escribe una invocación.
+  const readingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const busy = status !== 'idle';
   // Gate de confidencialidad (modo legal con redacción activa): bloquea el primer
@@ -208,7 +212,8 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
    */
   const addFiles = useCallback(
     async (files: readonly File[]): Promise<void> => {
-      if (files.length === 0 || busy) return;
+      if (files.length === 0 || busy || readingRef.current) return;
+      readingRef.current = true;
       setReading(true);
       setAttachNotice(null);
       try {
@@ -275,6 +280,7 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
         }
         if (notice !== null) setAttachNotice(notice);
       } finally {
+        readingRef.current = false;
         setReading(false);
       }
     },

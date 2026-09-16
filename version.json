@@ -1,8 +1,8 @@
 {
-  "version": "1.4.0",
-  "versionCode": 6,
+  "version": "1.4.1",
+  "versionCode": 7,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "3B0EBD090275F2286693BD168D2937DD2054F9E9321FF6C76DF6C801B7368E13",
-  "notes": "Circuito legal 4 roles + adjuntos Word/PDF/fotos + descarga Word/MD + nube por cuenta + diseno y marca propia + titulo duplicado corregido.",
+  "sha256": "PENDING_APK_BUILD",
+  "notes": "Fix adjuntos: fallback a texto crudo si el Word raro falla + sin avisos fantasma ante doble gesto.",
   "publishedAt": "2026-09-16"
 }

@@ -64,4 +64,26 @@ describe('extractDocxMarkdown', () => {
     }));
     await expect(extractDocxMarkdown(new ArrayBuffer(8), emptyHtml)).resolves.toBe('texto crudo');
   });
+
+  it('cae al texto crudo si la conversión HTML lanza (documento raro)', async () => {
+    const load = vi.fn(async () => ({
+      extractRawText: vi.fn(async () => ({ value: 'texto crudo' })),
+      convertToHtml: vi.fn(async () => {
+        throw new Error('html roto');
+      }),
+    }));
+    await expect(extractDocxMarkdown(new ArrayBuffer(8), load)).resolves.toBe('texto crudo');
+  });
+
+  it('lanza sólo si ambas vías fallan', async () => {
+    const load = vi.fn(async () => ({
+      extractRawText: vi.fn(async () => {
+        throw new Error('raw roto');
+      }),
+      convertToHtml: vi.fn(async () => {
+        throw new Error('html roto');
+      }),
+    }));
+    await expect(extractDocxMarkdown(new ArrayBuffer(8), load)).rejects.toThrow('raw roto');
+  });
 });

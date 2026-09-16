@@ -87,17 +87,23 @@ export async function extractDocxText(
 
 /**
  * Markdown estructural del `.docx` (títulos, listas, tablas) para la IA:
- * misma información que el texto crudo con menos ambigüedad. Si mammoth no
- * ofrece HTML o el resultado viene vacío, cae al texto crudo.
+ * misma información que el texto crudo con menos ambigüedad. Si el HTML
+ * falla (documento raro que mammoth no convierte) o viene vacío, cae al
+ * texto crudo; sólo lanza si ambas vías fallan.
  */
 export async function extractDocxMarkdown(
   data: ArrayBuffer,
   load: MammothLoader = defaultMammothLoader,
 ): Promise<string> {
   const api = await load();
-  if (api.convertToHtml === undefined) return callBothVariants(api, 'extractRawText', data);
-  const html = await callBothVariants(api, 'convertToHtml', data);
-  const markdown = htmlToMarkdown(html);
-  if (markdown !== '') return markdown;
+  if (api.convertToHtml !== undefined) {
+    try {
+      const html = await callBothVariants(api, 'convertToHtml', data);
+      const markdown = htmlToMarkdown(html);
+      if (markdown !== '') return markdown;
+    } catch {
+      // El HTML falló: se intenta el texto crudo antes de rendirse.
+    }
+  }
   return callBothVariants(api, 'extractRawText', data);
 }
