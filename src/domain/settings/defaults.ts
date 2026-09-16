@@ -61,6 +61,7 @@ export const DEFAULT_SEARCH_SETTINGS: SearchSettings = {
 export const DEFAULT_PROXY_SETTINGS: ProxySettings = {
   mode: 'direct',
   baseUrl: null,
+  openCodeProxyUrl: null,
 };
 
 export const DEFAULT_UI_SETTINGS: UiSettings = {

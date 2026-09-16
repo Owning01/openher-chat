@@ -120,7 +120,13 @@ export function createServices(
     legalCorpus,
     async createAdapter(config: ProviderConfig): Promise<ProviderAdapter> {
       const apiKey = config.keyRef === null ? undefined : ((await keys.get(config.keyRef)) ?? undefined);
-      return createProviderAdapter(config, { transport, http, now: Date.now, apiKey });
+      let openCodeProxyUrl: string | undefined;
+      try {
+        openCodeProxyUrl = (await settings.load()).proxy.openCodeProxyUrl ?? undefined;
+      } catch {
+        openCodeProxyUrl = undefined;
+      }
+      return createProviderAdapter(config, { transport, http, now: Date.now, apiKey, openCodeProxyUrl });
     },
     createTools: (settings, context) => {
       const web = createToolRegistry(settings, { http, keys, now: Date.now });

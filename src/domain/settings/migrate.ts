@@ -142,6 +142,7 @@ function migrateProxy(value: unknown, fallback: ProxySettings): ProxySettings {
   return {
     mode: readEnum(source, 'mode', ['direct', 'custom'] as const, fallback.mode),
     baseUrl: readNullableId(source['baseUrl']),
+    openCodeProxyUrl: readNullableId(source['openCodeProxyUrl']),
   };
 }
 

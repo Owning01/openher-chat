@@ -71,7 +71,7 @@ describe('migrateSettings', () => {
     expect(migrated.history).toEqual(DEFAULT_HISTORY_BUDGET);
     expect(migrated.agent).toEqual(DEFAULT_AGENT_BUDGET);
     expect(migrated.search).toEqual(DEFAULT_SEARCH_SETTINGS);
-    expect(migrated.proxy).toEqual({ mode: 'direct', baseUrl: null });
+    expect(migrated.proxy).toEqual({ mode: 'direct', baseUrl: null, openCodeProxyUrl: null });
     expect(migrated.ui).toEqual(DEFAULT_UI_SETTINGS);
     expect(migrated.lastModelByProvider).toEqual({});
   });

@@ -40,6 +40,12 @@ export interface SearchSettings {
 export interface ProxySettings {
   mode: 'direct' | 'custom';
   baseUrl: string | null;
+  /**
+   * Proxy propio para el gateway de OpenCode en web (p. ej. un VPS con
+   * `proxy/main.go`): `null` = directo o `/zen` same-origin según plataforma.
+   * No viaja en los paquetes compartidos (es infraestructura de cada uno).
+   */
+  openCodeProxyUrl: string | null;
 }
 
 export interface UiSettings {

@@ -1,0 +1,6 @@
+# Proxy OpenCode para OpenHer Chat.
+# Crear antes el registro DNS: <subdominio> en A hacia la IP del VPS.
+# Caddy obtiene el certificado solo; el Go solo escucha en loopback.
+{$PROXY_DOMAIN} {
+	reverse_proxy 127.0.0.1:8080
+}

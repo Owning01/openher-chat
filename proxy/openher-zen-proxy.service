@@ -1,0 +1,16 @@
+[Unit]
+Description=Proxy OpenCode para OpenHer Chat
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+ExecStart=/usr/local/bin/openher-zen-proxy -addr 127.0.0.1:8080 -upstream https://opencode.ai
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

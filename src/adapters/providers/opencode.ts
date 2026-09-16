@@ -74,13 +74,28 @@ export function openCodeVariantFromBaseUrl(baseUrl: string): OpenCodeVariant {
 
 /**
  * OpenCode no emite cabeceras CORS, así que fuera de Android nativo
- * (`CapacitorHttp` esquiva CORS) se usa el proxy same-origin `/zen`:
- * en dev lo sirve Vite y en producción la función `zen` de Firebase.
+ * (`CapacitorHttp` esquiva CORS) se usa un proxy same-origin: en dev lo
+ * sirve Vite (`/zen`), en producción la función `zen` de Firebase o un proxy
+ * propio (VPS) si el usuario configuró `proxyBaseUrl`.
  */
-export function resolveOpenCodeBaseUrl(baseUrl: string, useSameOriginProxy: boolean): string {
+export function resolveOpenCodeBaseUrl(
+  baseUrl: string,
+  useSameOriginProxy: boolean,
+  proxyBaseUrl: string | null = null,
+): string {
   const normalized = baseUrl.replace(/\/+$/, '');
+  const proxy = normalizeProxyBaseUrl(proxyBaseUrl);
+  if (proxy !== null) return normalized.replace(/^https?:\/\/opencode\.ai(?=\/|$)/, proxy);
   if (!useSameOriginProxy) return normalized;
   return normalized.replace(/^https?:\/\/opencode\.ai(?=\/|$)/, '');
+}
+
+/** Base del proxy propio o `null` si no es una URL http(s) utilizable. */
+function normalizeProxyBaseUrl(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim().replace(/\/+$/, '');
+  if (!/^https?:\/\//i.test(trimmed)) return null;
+  return trimmed;
 }
 
 import { Capacitor } from '@capacitor/core';
@@ -99,7 +114,7 @@ export function createOpenCodeAdapter(
   deps: AdapterDeps,
   delegates: OpenCodeDelegates,
 ): ProviderAdapter {
-  const baseUrl = resolveOpenCodeBaseUrl(config.baseUrl, USE_SAME_ORIGIN_PROXY);
+  const baseUrl = resolveOpenCodeBaseUrl(config.baseUrl, USE_SAME_ORIGIN_PROXY, deps.openCodeProxyUrl);
   const variant = openCodeVariantFromBaseUrl(config.baseUrl);
   // El adapter hoja arma las URLs desde `config.baseUrl`; si hubo rewrite (dev),
   // le pasamos una copia con la ruta proxada para que el chat también la use.

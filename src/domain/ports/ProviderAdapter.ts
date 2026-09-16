@@ -64,6 +64,8 @@ export interface AdapterDeps {
   transport: StreamTransport;
   http: HttpClient;
   now: () => number;
-  /** API key ya resuelta por el llamador (KeyVault); nunca se persiste en `ProviderConfig`. */
+    /** API key ya resuelta por el llamador (KeyVault); nunca se persiste en `ProviderConfig`. */
   apiKey?: string;
+  /** Proxy propio para OpenCode (VPS); ausente = directo o `/zen` según plataforma. */
+  openCodeProxyUrl?: string;
 }

@@ -95,7 +95,7 @@ describe('defaults de settings', () => {
       theme: 'system',
       activeProviderId: null,
       onboardingCompleted: false,
-      proxy: { mode: 'direct', baseUrl: null },
+      proxy: { mode: 'direct', baseUrl: null, openCodeProxyUrl: null },
     });
     expect(first.chat).not.toBe(second.chat);
     expect(first.history).not.toBe(second.history);

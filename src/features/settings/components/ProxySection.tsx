@@ -7,7 +7,7 @@ import { Badge, Button, Input, Select } from '@/shared/ui';
 import type { SelectOption } from '@/shared/ui';
 
 import { useSettingsStore } from '../state/settingsStore';
-import { probeProxy } from '../state/proxyProbe';
+import { probeProxy, probeOpenCodeProxy } from '../state/proxyProbe';
 import type { ProxyProbeResult } from '../state/proxyProbe';
 import { isHttpUrl } from '../state/validation';
 
@@ -20,12 +20,19 @@ export function ProxySection() {
   const patch = useSettingsStore((state) => state.patch);
   const modeId = useId();
   const urlId = useId();
+  const openCodeId = useId();
   const [url, setUrl] = useState(proxy.baseUrl ?? '');
   const [probe, setProbe] = useState<ProbeState>({ status: 'idle' });
+  const [openCodeUrl, setOpenCodeUrl] = useState(proxy.openCodeProxyUrl ?? '');
+  const [openCodeProbe, setOpenCodeProbe] = useState<ProbeState>({ status: 'idle' });
 
   useEffect(() => {
     setUrl(proxy.baseUrl ?? '');
   }, [proxy.baseUrl]);
+
+  useEffect(() => {
+    setOpenCodeUrl(proxy.openCodeProxyUrl ?? '');
+  }, [proxy.openCodeProxyUrl]);
 
   const modeOptions: SelectOption[] = [
     { value: 'direct', label: t('settings.proxyModeDirect') },
@@ -46,6 +53,22 @@ export function ProxySection() {
     setProbe({ status: 'testing' });
     const result = await probeProxy(http, url);
     setProbe(result.ok ? { status: 'ok' } : { status: 'error', result });
+  };
+
+  const commitOpenCodeUrl = (): void => {
+    const trimmed = openCodeUrl.trim().replace(/\/+$/, '');
+    if (trimmed === (proxy.openCodeProxyUrl ?? '')) return;
+    if (trimmed === '' || !isHttpUrl(trimmed)) {
+      if (trimmed === '') void patch({ proxy: { openCodeProxyUrl: null } });
+      return;
+    }
+    void patch({ proxy: { openCodeProxyUrl: trimmed } });
+  };
+
+  const runOpenCodeProbe = async (): Promise<void> => {
+    setOpenCodeProbe({ status: 'testing' });
+    const result = await probeOpenCodeProxy(http, openCodeUrl);
+    setOpenCodeProbe(result.ok ? { status: 'ok' } : { status: 'error', result });
   };
 
   return (
@@ -101,6 +124,38 @@ export function ProxySection() {
       </div>
 
       <p className="text-sm text-muted">{t('settings.proxyHint')}</p>
+
+      <div className="space-y-1.5 border-t border-border-subtle pt-3">
+        <label htmlFor={openCodeId} className="block text-sm font-medium text-text">
+          {t('settings.proxyOpenCodeUrl')}
+        </label>
+        <Input
+          id={openCodeId}
+          value={openCodeUrl}
+          placeholder={t('settings.proxyOpenCodeUrlPlaceholder')}
+          spellCheck={false}
+          onChange={(event) => setOpenCodeUrl(event.target.value)}
+          onBlur={commitOpenCodeUrl}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            loading={openCodeProbe.status === 'testing'}
+            disabled={!isHttpUrl(openCodeUrl)}
+            onClick={() => void runOpenCodeProbe()}
+          >
+            {t('common.test')}
+          </Button>
+          {openCodeProbe.status === 'ok' ? <Badge variant="success">{t('common.connected')}</Badge> : null}
+          {openCodeProbe.status === 'error' ? (
+            <p role="status" className="text-xs text-danger">
+              {probeMessage(t, openCodeProbe.result)}
+            </p>
+          ) : null}
+        </div>
+        <p className="text-sm text-muted">{t('settings.proxyOpenCodeHint')}</p>
+      </div>
     </div>
   );
 }

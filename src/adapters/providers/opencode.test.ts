@@ -317,6 +317,23 @@ describe('resolveOpenCodeBaseUrl (proxy dev de Vite)', () => {
   it('no confunde prefijos parecidos (opencode.ai.evil.com)', () => {
     expect(resolveOpenCodeBaseUrl('https://opencode.ai.evil.com/zen/v1', true)).toBe('https://opencode.ai.evil.com/zen/v1');
   });
+
+  it('el proxy propio (VPS) gana sobre /zen y recorta slashes', () => {
+    expect(resolveOpenCodeBaseUrl('https://opencode.ai/zen/go/v1', true, 'https://zen.mi-vps.com')).toBe(
+      'https://zen.mi-vps.com/zen/go/v1',
+    );
+    expect(resolveOpenCodeBaseUrl('https://opencode.ai/zen/go/v1', false, 'https://zen.mi-vps.com/')).toBe(
+      'https://zen.mi-vps.com/zen/go/v1',
+    );
+  });
+
+  it('ignora proxy inválido o de otro host y no toca nada', () => {
+    expect(resolveOpenCodeBaseUrl('https://opencode.ai/zen/go/v1', true, 'no-es-url')).toBe('/zen/go/v1');
+    expect(resolveOpenCodeBaseUrl('https://opencode.ai/zen/go/v1', true, '')).toBe('/zen/go/v1');
+    expect(resolveOpenCodeBaseUrl('https://proxy.example.com/zen/go/v1', false, 'https://zen.mi-vps.com')).toBe(
+      'https://proxy.example.com/zen/go/v1',
+    );
+  });
 });
 
 describe('OpenCode Go (variante)', () => {
