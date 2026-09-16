@@ -30,91 +30,108 @@ function renderMenu(overrides: Partial<ModesMenuProps> = {}): ModesMenuProps {
   return props;
 }
 
-function openMenu(): void {
-  fireEvent.click(screen.getByTestId('modes-menu-button'));
-}
-
 describe('ModesMenu', () => {
-  it('expone el botón con aria-haspopup y aria-expanded en la cabecera', () => {
+  it('muestra los dos toggles rotulados siempre visibles, sin abrir nada', () => {
     renderMenu();
-    const button = screen.getByTestId('modes-menu-button');
-    expect(button).toHaveAttribute('aria-haspopup', 'menu');
-    expect(button).toHaveAttribute('aria-expanded', 'false');
-    openMenu();
-    expect(button).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByTestId('modes-menu')).toHaveAttribute('role', 'menu');
+    expect(screen.getByTestId('modes-menu')).toBeInTheDocument();
+    // Compatibilidad: ChatPage.test.tsx abre los modos clickeando este testid.
+    expect(screen.getByTestId('modes-menu-button')).toBeInTheDocument();
+
+    const research = screen.getByTestId('modes-menu-research');
+    const legal = screen.getByTestId('modes-menu-legal');
+    expect(research).toHaveAttribute('role', 'switch');
+    expect(research).toHaveAttribute('aria-checked', 'false');
+    expect(legal).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByText('Buscar en internet')).toBeInTheDocument();
+    expect(screen.getByText('Modo abogado')).toBeInTheDocument();
+    expect(screen.getByText('Buscar')).toBeInTheDocument();
+    expect(screen.getByText('Abogado')).toBeInTheDocument();
   });
 
-  it('muestra el estado general con ambos toggles apagados', () => {
+  it('expone nombre accesible y área táctil de al menos 32px por toggle', () => {
     renderMenu();
-    openMenu();
-    expect(screen.getByTestId('modes-menu-research')).toHaveAttribute('aria-checked', 'false');
-    expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'false');
+    const research = screen.getByRole('switch', { name: 'Buscar en internet' });
+    const legal = screen.getByRole('switch', { name: 'Modo abogado' });
+    expect(research).toBe(screen.getByTestId('modes-menu-research'));
+    expect(legal).toBe(screen.getByTestId('modes-menu-legal'));
+    expect(research.className).toContain('h-9');
+    expect(research.className).toContain('hit-expand');
+    expect(research.className).toContain('text-sm');
+    expect(legal.className).toContain('h-9');
+  });
+
+  it('marca el modo activo con fondo primary suave y tilde', () => {
+    renderMenu({ researchMode: true });
+    const research = screen.getByTestId('modes-menu-research');
+    expect(research.className).toContain('bg-primary-soft');
+    expect(research.querySelector('svg')).not.toBeNull();
+    expect(screen.getByTestId('modes-menu-legal').className).not.toContain('bg-primary-soft');
+  });
+
+  it('muestra el estado general en lenguaje llano', () => {
+    renderMenu();
     expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent(
-      'Modo general: sin investigación ni expediente.',
+      'Modo general (normal): sin investigación ni expediente.',
     );
   });
 
   it('muestra el estado de sólo investigación', () => {
     renderMenu({ researchMode: true });
-    openMenu();
     expect(screen.getByTestId('modes-menu-research')).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent(
-      'Investigación activada; sin expediente vinculado.',
+      'Busca en internet: sin expediente vinculado.',
     );
   });
 
-  it('muestra el estado de sólo legal con el título del expediente', () => {
+  it('muestra el estado de sólo abogado con el título del expediente', () => {
     renderMenu({ legalCaseId: 'case-1', legalCaseTitle: 'Pérez c/ Gómez' });
-    openMenu();
     expect(screen.getByTestId('modes-menu-research')).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent(
-      'Expediente vinculado: Pérez c/ Gómez.',
+      'Modo abogado — Expediente vinculado: Pérez c/ Gómez.',
     );
   });
 
-  it('muestra el estado combinado investigación + legal', () => {
+  it('muestra el estado combinado internet + abogado', () => {
     renderMenu({ researchMode: true, legalCaseId: 'case-1', legalCaseTitle: 'Pérez c/ Gómez' });
-    openMenu();
     expect(screen.getByTestId('modes-menu-research')).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByTestId('modes-menu-legal')).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent(
-      'Investigación y expediente activos: Pérez c/ Gómez.',
+      'Internet + abogado — Investigación y expediente activos: Pérez c/ Gómez.',
     );
   });
 
   it('el toggle de investigación llama con el valor negado', () => {
     const props = renderMenu({ researchMode: false });
-    openMenu();
     fireEvent.click(screen.getByTestId('modes-menu-research'));
     expect(props.onToggleResearch).toHaveBeenCalledTimes(1);
     expect(props.onToggleResearch).toHaveBeenCalledWith(true);
+    expect(props.onToggleLegal).not.toHaveBeenCalled();
+
+    cleanup();
+    const activeProps = renderMenu({ researchMode: true });
+    fireEvent.click(screen.getByTestId('modes-menu-research'));
+    expect(activeProps.onToggleResearch).toHaveBeenCalledWith(false);
   });
 
-  it('apagar el modo legal desvincula sin abrir el diálogo', () => {
+  it('apagar el modo abogado desvincula sin abrir el diálogo', () => {
     const props = renderMenu({ legalCaseId: 'case-1', legalCaseTitle: 'Caso A' });
-    openMenu();
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
     expect(props.onToggleLegal).toHaveBeenCalledTimes(1);
     expect(props.onToggleLegal).toHaveBeenCalledWith(false);
     expect(props.onOpenCaseDialog).not.toHaveBeenCalled();
   });
 
-  it('encender el modo legal sin caso abre el diálogo de vínculo', () => {
+  it('encender el modo abogado sin caso abre el diálogo de vínculo', () => {
     const props = renderMenu({ legalCaseId: null });
-    openMenu();
     fireEvent.click(screen.getByTestId('modes-menu-legal'));
     expect(props.onOpenCaseDialog).toHaveBeenCalledTimes(1);
     expect(props.onToggleLegal).not.toHaveBeenCalled();
-    // El diálogo toma el foco: el menú se cierra al delegar.
-    expect(screen.queryByTestId('modes-menu')).not.toBeInTheDocument();
   });
 
-  it('encender investigación no altera el estado legal y viceversa', () => {
+  it('los modos son ortogonales: uno no altera al otro', () => {
     const props = renderMenu({ researchMode: false, legalCaseId: 'case-1' });
-    openMenu();
     fireEvent.click(screen.getByTestId('modes-menu-research'));
     expect(props.onToggleResearch).toHaveBeenCalledWith(true);
     expect(props.onToggleLegal).not.toHaveBeenCalled();
@@ -125,68 +142,37 @@ describe('ModesMenu', () => {
     expect(props.onToggleResearch).toHaveBeenCalledTimes(1);
   });
 
-  it('cierra con Escape', () => {
-    renderMenu();
-    openMenu();
-    expect(screen.getByTestId('modes-menu')).toBeInTheDocument();
-    fireEvent.keyDown(document, { key: 'Escape' });
-    expect(screen.queryByTestId('modes-menu')).not.toBeInTheDocument();
-  });
-
-  it('cierra con click afuera pero no con click adentro', () => {
-    renderMenu();
-    openMenu();
-    fireEvent.mouseDown(screen.getByTestId('modes-menu-research'));
-    expect(screen.getByTestId('modes-menu')).toBeInTheDocument();
-    fireEvent.mouseDown(document.body);
-    expect(screen.queryByTestId('modes-menu')).not.toBeInTheDocument();
-  });
-
-  it('mueve el foco al primer ítem al abrir', () => {
-    renderMenu();
-    openMenu();
-    expect(screen.getByTestId('modes-menu-research')).toHaveFocus();
-  });
-
-  it('muestra "Abrir expediente" sólo con caso vinculado', () => {
+  it('muestra "Abrir expediente" sólo con caso vinculado y lo dispara', () => {
     const props = renderMenu({ legalCaseId: 'case-1', onOpenCase: vi.fn() });
-    openMenu();
-    const openCase = screen.getByTestId('modes-menu-open-case');
-    fireEvent.click(openCase);
+    fireEvent.click(screen.getByTestId('modes-menu-open-case'));
     expect(props.onOpenCase).toHaveBeenCalledTimes(1);
 
     cleanup();
-    renderMenu({ legalCaseId: null });
-    openMenu();
+    renderMenu({ legalCaseId: null, onOpenCase: vi.fn() });
     expect(screen.queryByTestId('modes-menu-open-case')).not.toBeInTheDocument();
   });
 
   it('ofrece "Configurar modo legal" sólo si el workspace no está configurado', () => {
     const props = renderMenu({ legalConfigured: false });
-    openMenu();
     fireEvent.click(screen.getByTestId('modes-menu-configure'));
     expect(props.onConfigureLegal).toHaveBeenCalledTimes(1);
 
     cleanup();
     renderMenu({ legalConfigured: true });
-    openMenu();
     expect(screen.queryByTestId('modes-menu-configure')).not.toBeInTheDocument();
-  });
-
-  it('el menú no desborda el viewport móvil (anclado a la derecha con tope de ancho)', () => {
-    renderMenu();
-    openMenu();
-    const menu = screen.getByTestId('modes-menu');
-    expect(menu.className).toContain('right-0');
-    expect(menu.className).toContain('max-w-[calc(100vw-2rem)]');
-    expect(menu.className).toContain('max-h-64');
-    expect(menu.className).toContain('overflow-y-auto');
   });
 
   it('deshabilita el toggle de investigación cuando la fuente lo exige', () => {
     renderMenu({ researchDisabled: true });
-    openMenu();
     expect(screen.getByTestId('modes-menu-research')).toBeDisabled();
     expect(screen.getByTestId('modes-menu-legal')).toBeEnabled();
+  });
+
+  it('traduce rótulos y estado al inglés', () => {
+    setLocale('en');
+    renderMenu();
+    expect(screen.getByRole('switch', { name: 'Search the web' })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Lawyer mode' })).toBeInTheDocument();
+    expect(screen.getByTestId('modes-menu-summary')).toHaveTextContent('General mode (normal)');
   });
 });

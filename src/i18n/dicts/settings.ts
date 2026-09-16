@@ -2,6 +2,11 @@ import { defineDict } from '../index';
 
 export const settings = defineDict({
   es: {
+    title: 'Ajustes',
+    plainHint: 'Lo que tocás acá se guarda solo.',
+    basicTitle: 'Lo básico',
+    advancedTitle: 'Avanzado',
+    advancedHint: 'Compartir, chat, agente, búsqueda y modo de trabajo.',
     description: 'Configura proveedores, modelos y preferencias de la aplicación.',
     autoSaveHint: 'Los cambios se guardan automáticamente.',
     errorTitle: 'No se pudieron guardar los cambios',
@@ -216,6 +221,11 @@ export const settings = defineDict({
     cloudSyncError: 'No se pudo sincronizar con la nube; seguís con lo de este dispositivo.',
   },
   en: {
+    title: 'Settings',
+    plainHint: 'What you touch here saves on its own.',
+    basicTitle: 'The basics',
+    advancedTitle: 'Advanced',
+    advancedHint: 'Sharing, chat, agent, search and work mode.',
     description: 'Configure providers, models and application preferences.',
     autoSaveHint: 'Changes are saved automatically.',
     errorTitle: 'Changes could not be saved',

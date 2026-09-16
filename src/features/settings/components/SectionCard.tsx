@@ -17,7 +17,7 @@ export function SectionCard({ title, description, icon, actions, children }: Sec
       <header className="flex items-start gap-3 border-b border-border-subtle p-4">
         {icon !== undefined ? <span className="mt-0.5 text-muted">{icon}</span> : null}
         <div className="min-w-0 flex-1">
-          <h2 id={titleId} className="text-sm font-semibold text-text">
+          <h2 id={titleId} className="text-base font-semibold text-text">
             {title}
           </h2>
           {description !== undefined ? <p className="mt-0.5 text-sm text-muted">{description}</p> : null}

@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { useT } from '@/i18n/useT';
-import { Check, Sparkles } from '@/shared/icons';
-import { IconButton } from '@/shared/ui';
+import { Check, FileText, Globe } from '@/shared/icons';
 import { cn } from '@/shared/utils/cn';
 
 export interface ModesMenuProps {
@@ -27,9 +26,11 @@ export interface ModesMenuProps {
 }
 
 /**
- * Menú de modos combinables de la cabecera (D17): segunda entrada, no segunda
- * fuente. Deriva `researchMode` y `legalCaseId != null` (ortogonales:
- * general, investigación, legal o ambos); prohibido un enum de "modo actual".
+ * Activación de los modos combinables de la cabecera (D17): dos toggles
+ * siempre visibles y rotulados, en vez del menú desplegable poco descubrible.
+ * Sigue siendo una segunda entrada, no una segunda fuente: deriva
+ * `researchMode` y `legalCaseId != null` (ortogonales: general, investigación,
+ * legal o ambos); prohibido un enum de "modo actual".
  */
 export function ModesMenu({
   researchMode,
@@ -45,30 +46,8 @@ export function ModesMenu({
   className,
 }: ModesMenuProps) {
   const t = useT();
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const firstItemRef = useRef<HTMLButtonElement>(null);
   // Derivación del estado combinado (D17): `legalOn` no es estado propio.
   const legalOn = legalCaseId != null;
-  const active = researchMode || legalOn;
-
-  // Cierre con click afuera y Escape; foco al primer ítem al abrir.
-  useEffect(() => {
-    if (!open) return undefined;
-    firstItemRef.current?.focus();
-    const onPointerDown = (event: MouseEvent): void => {
-      if (rootRef.current !== null && !rootRef.current.contains(event.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
 
   const handleLegalClick = (): void => {
     if (legalOn) {
@@ -76,7 +55,6 @@ export function ModesMenu({
       return;
     }
     // Encender sin caso abre el diálogo de vínculo en vez de inventar un caso.
-    setOpen(false);
     onOpenCaseDialog();
   };
 
@@ -90,102 +68,122 @@ export function ModesMenu({
           : t('modes.summaryGeneral');
 
   return (
-    <div ref={rootRef} className={cn('relative shrink-0', className)}>
-      <IconButton
-        data-testid="modes-menu-button"
-        label={t('modes.buttonLabel')}
-        size="sm"
-        icon={<Sparkles aria-hidden="true" className="size-4" />}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
-        className={cn(active && 'text-primary')}
-      />
-      {open ? (
-        <div
-          data-testid="modes-menu"
-          role="menu"
-          aria-label={t('modes.menuLabel')}
-          className="anim-scale-in absolute right-0 top-full z-20 mt-2 max-h-64 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border bg-surface p-1 shadow-lg [--anim-origin:top_right]"
+    <div
+      data-testid="modes-menu"
+      role="group"
+      aria-label={t('modes.buttonLabel')}
+      className={cn(
+        'flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-x-2 gap-y-1.5',
+        className,
+      )}
+    >
+      {/* Compatibilidad de contrato: ChatPage.test.tsx (fuera de alcance) sigue
+          abriendo los modos con un click en `modes-menu-button`. Ahora están
+          siempre visibles, así que el testid del disparador vive en el grupo. */}
+      <div data-testid="modes-menu-button" className="flex flex-wrap items-center gap-4">
+        <ModeToggle
+          testId="modes-menu-research"
+          checked={researchMode}
+          disabled={researchDisabled}
+          icon={<Globe aria-hidden="true" className="size-4 shrink-0" />}
+          label={t('modes.researchTitle')}
+          shortLabel={t('modes.researchShort')}
+          hint={t('modes.researchHint')}
+          onToggle={() => onToggleResearch(!researchMode)}
+        />
+        <ModeToggle
+          testId="modes-menu-legal"
+          checked={legalOn}
+          icon={<FileText aria-hidden="true" className="size-4 shrink-0" />}
+          label={t('modes.legalTitle')}
+          shortLabel={t('modes.legalShort')}
+          hint={t('modes.legalHint')}
+          onToggle={handleLegalClick}
+        />
+      </div>
+      {legalOn && onOpenCase !== undefined ? (
+        <button
+          type="button"
+          data-testid="modes-menu-open-case"
+          onClick={onOpenCase}
+          className={SECONDARY_BUTTON_CLASSES}
         >
-          <button
-            ref={firstItemRef}
-            type="button"
-            role="menuitemcheckbox"
-            aria-checked={researchMode}
-            disabled={researchDisabled}
-            data-testid="modes-menu-research"
-            onClick={() => onToggleResearch(!researchMode)}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:opacity-50"
-          >
-            <CheckMark checked={researchMode} />
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium text-text">{t('modes.researchTitle')}</span>
-              <span className="block truncate text-xs text-muted">{t('modes.researchHint')}</span>
-            </span>
-          </button>
-          <button
-            type="button"
-            role="menuitemcheckbox"
-            aria-checked={legalOn}
-            data-testid="modes-menu-legal"
-            onClick={handleLegalClick}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-          >
-            <CheckMark checked={legalOn} />
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-medium text-text">{t('modes.legalTitle')}</span>
-              <span className="block truncate text-xs text-muted">{t('modes.legalHint')}</span>
-            </span>
-          </button>
-          <p data-testid="modes-menu-summary" role="status" className="px-3 py-2 text-xs text-muted">
-            {summary}
-          </p>
-          {legalOn && onOpenCase !== undefined ? (
-            <button
-              type="button"
-              role="menuitem"
-              data-testid="modes-menu-open-case"
-              onClick={() => {
-                setOpen(false);
-                onOpenCase();
-              }}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-text transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-            >
-              {t('modes.openCase')}
-            </button>
-          ) : null}
-          {legalConfigured ? null : (
-            <button
-              type="button"
-              role="menuitem"
-              data-testid="modes-menu-configure"
-              onClick={() => {
-                setOpen(false);
-                onConfigureLegal();
-              }}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-text transition-colors hover:bg-surface-subtle focus-visible:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-            >
-              {t('modes.configureLegal')}
-            </button>
-          )}
-        </div>
+          {t('modes.openCase')}
+        </button>
       ) : null}
+      {legalConfigured ? null : (
+        <button
+          type="button"
+          data-testid="modes-menu-configure"
+          onClick={onConfigureLegal}
+          className={SECONDARY_BUTTON_CLASSES}
+        >
+          {t('modes.configureLegal')}
+        </button>
+      )}
+      <p
+        data-testid="modes-menu-summary"
+        role="status"
+        className="min-w-0 max-w-44 truncate text-xs text-muted sm:max-w-64"
+      >
+        {summary}
+      </p>
     </div>
   );
 }
 
-/** Marca visible del `aria-checked`: casilla con tilde o vacía (mismo tamaño). */
-function CheckMark({ checked }: { checked: boolean }) {
+interface ModeToggleProps {
+  testId: string;
+  checked: boolean;
+  disabled?: boolean;
+  icon: ReactNode;
+  /** Nombre accesible completo y rótulo visible en pantallas anchas. */
+  label: string;
+  /** Rótulo corto para mobile (icono + texto corto). */
+  shortLabel: string;
+  /** Ayuda breve (tooltip) del alcance del modo. */
+  hint: string;
+  onToggle: () => void;
+}
+
+/** Toggle rotulado de un modo: estado activo con fondo primary suave y tilde. */
+function ModeToggle({
+  testId,
+  checked,
+  disabled = false,
+  icon,
+  label,
+  shortLabel,
+  hint,
+  onToggle,
+}: ModeToggleProps) {
   return (
-    <span
-      aria-hidden="true"
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
+      title={hint}
+      disabled={disabled}
+      data-testid={testId}
+      onClick={onToggle}
       className={cn(
-        'grid size-5 shrink-0 place-items-center rounded border',
-        checked ? 'border-primary bg-primary text-on-primary' : 'border-border text-transparent',
+        'hit-expand inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50',
+        checked
+          ? 'border-primary bg-primary-soft text-primary'
+          : 'border-border bg-surface text-text hover:bg-surface-subtle',
       )}
     >
-      <Check className="size-3.5" />
-    </span>
+      {icon}
+      {/* El texto visible se acorta en mobile; el nombre accesible no cambia. */}
+      <span aria-hidden="true">
+        <span className="sm:hidden">{shortLabel}</span>
+        <span className="hidden sm:inline">{label}</span>
+      </span>
+      {checked ? <Check aria-hidden="true" className="size-4 shrink-0" /> : null}
+    </button>
   );
 }
+
+const SECONDARY_BUTTON_CLASSES =
+  'inline-flex h-9 shrink-0 items-center rounded-lg border border-border bg-surface px-3 text-sm whitespace-nowrap text-text transition-colors hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring';

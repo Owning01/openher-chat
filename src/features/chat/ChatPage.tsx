@@ -334,10 +334,11 @@ function ChatPageContent() {
       data-conversation-id={conversationId ?? ''}
       className="flex min-h-0 flex-1 flex-col"
     >
-      <header className="flex h-11 shrink-0 items-center gap-3 border-b border-border px-4">
-        <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-text">
+      <header className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-border px-4 py-1.5">
+        <h2 className="hidden min-w-0 flex-1 truncate text-sm font-medium text-text sm:block">
           {resolveTitle(conversation?.title, conversationId, t)}
         </h2>
+        <div className="min-w-0 flex-1 sm:hidden" />
         <ModesMenu
           researchMode={researchMode}
           legalCaseId={legalCaseId}
@@ -356,6 +357,7 @@ function ChatPageContent() {
           onOpenCase={
             legalCaseId === null ? undefined : () => navigate(`#/legal/${legalCaseId}`)
           }
+          className="min-w-0 flex-1 sm:flex-none"
         />
         {researchMode && !researchPanelVisible ? (
           <IconButton
