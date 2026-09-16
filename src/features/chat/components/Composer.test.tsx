@@ -1,9 +1,11 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { createRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setLocale } from '@/i18n';
 
 import type { ChatRunStatus } from '../state/chatStore';
+import type { ComposerHandle } from './Composer';
 import { Composer, STOP_GUARD_MS } from './Composer';
 
 beforeEach(() => setLocale('es'));
@@ -265,5 +267,53 @@ describe('Composer — adjuntos', () => {
     expect(await screen.findByText('nota.txt')).toBeInTheDocument();
     expect(screen.queryAllByText('nota.txt')).toHaveLength(1);
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+});
+
+describe('Composer — handle imperativo (archivos soltados fuera del formulario)', () => {
+  it('adjunta vía ref.addFiles y el archivo viaja delimitado al enviar', async () => {
+    const onSend = vi.fn();
+    const ref = createRef<ComposerHandle>();
+    render(<Composer ref={ref} status="idle" onSend={onSend} onStop={vi.fn()} />);
+
+    const file = new File(['contenido del anexo'], 'anexo.txt', { type: 'text/plain' });
+    await act(async () => {
+      await ref.current?.addFiles([file]);
+    });
+
+    expect(await screen.findByText('anexo.txt')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Escribe un mensaje…' }), {
+      target: { value: 'va adjunto' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar' }));
+
+    expect(onSend).toHaveBeenCalledTimes(1);
+    const sent = String(onSend.mock.calls[0]?.[0] ?? '');
+    expect(sent).toContain('va adjunto');
+    expect(sent).toContain('## Archivo adjunto: anexo.txt');
+  });
+
+  it('reusa los avisos de rechazo del composer', async () => {
+    const ref = createRef<ComposerHandle>();
+    render(<Composer ref={ref} status="idle" onSend={vi.fn()} onStop={vi.fn()} />);
+
+    await act(async () => {
+      await ref.current?.addFiles([new File(['binario'], 'viejo.doc', { type: 'application/msword' })]);
+    });
+
+    expect(await screen.findByRole('status')).toHaveTextContent('.docx');
+    expect(screen.queryByText('viejo.doc')).not.toBeInTheDocument();
+  });
+
+  it('ignora el arrastre mientras corre un turno', async () => {
+    const ref = createRef<ComposerHandle>();
+    render(<Composer ref={ref} status="running" onSend={vi.fn()} onStop={vi.fn()} />);
+
+    await act(async () => {
+      await ref.current?.addFiles([new File(['x'], 'nota.txt', { type: 'text/plain' })]);
+    });
+
+    expect(screen.queryByText('nota.txt')).not.toBeInTheDocument();
   });
 });

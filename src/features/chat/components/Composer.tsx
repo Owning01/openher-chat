@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import { useT } from '@/i18n/useT';
@@ -112,6 +112,15 @@ export interface ComposerProps {
   legal?: ComposerLegal;
 }
 
+/**
+ * Handle imperativo del composer: permite adjuntar archivos soltados sobre
+ * zonas de la página que quedan fuera de su formulario (overlay de arrastre).
+ */
+export interface ComposerHandle {
+  /** Reusa el mismo camino que el clip y el drop interno (límites y avisos incluidos). */
+  addFiles(files: readonly File[]): Promise<void>;
+}
+
 /** Categorías de redacción en orden estable para el preview (mismo orden que `redaction.ts`). */
 const REDACTION_KINDS: readonly RedactionKind[] = ['person', 'doc', 'cuit', 'email', 'phone', 'cbu', 'address'];
 
@@ -135,7 +144,10 @@ function redactionLabel(t: Translate, kind: RedactionKind): string {
   }
 }
 
-export function Composer({ status, onSend, onStop, research, legal }: ComposerProps) {
+export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Composer(
+  { status, onSend, onStop, research, legal },
+  ref,
+) {
   const t = useT();
   const [text, setText] = useState('');
   const [attachments, setAttachments] = useState<AttachmentDraft[]>([]);
@@ -286,6 +298,9 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
     },
     [attachments.length, busy, images.length, t],
   );
+
+  // Superficie imperativa para los adjuntos soltados fuera del formulario.
+  useImperativeHandle(ref, () => ({ addFiles }), [addFiles]);
 
   const handleConsentChange = (accepted: boolean): void => {
     setSessionConsent(accepted);
@@ -586,4 +601,4 @@ export function Composer({ status, onSend, onStop, research, legal }: ComposerPr
       ) : null}
     </form>
   );
-}
+});

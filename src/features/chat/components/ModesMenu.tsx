@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 
 import { useT } from '@/i18n/useT';
-import { Check, FileText, Globe } from '@/shared/icons';
+import { Check, Globe } from '@/shared/icons';
+import { Switch } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 
 export interface ModesMenuProps {
@@ -26,9 +27,10 @@ export interface ModesMenuProps {
 }
 
 /**
- * Activación de los modos combinables de la cabecera (D17): dos toggles
- * siempre visibles y rotulados, en vez del menú desplegable poco descubrible.
- * Sigue siendo una segunda entrada, no una segunda fuente: deriva
+ * Activación de los modos combinables de la cabecera (D17): siempre visibles
+ * y rotulados, en vez del menú desplegable poco descubrible. El modo abogado
+ * es un `Switch` rotulado (encender sin caso abre el diálogo de vínculo; apagar
+ * desvincula). Sigue siendo una segunda entrada, no una segunda fuente: deriva
  * `researchMode` y `legalCaseId != null` (ortogonales: general, investigación,
  * legal o ambos); prohibido un enum de "modo actual".
  */
@@ -48,15 +50,6 @@ export function ModesMenu({
   const t = useT();
   // Derivación del estado combinado (D17): `legalOn` no es estado propio.
   const legalOn = legalCaseId != null;
-
-  const handleLegalClick = (): void => {
-    if (legalOn) {
-      onToggleLegal(false);
-      return;
-    }
-    // Encender sin caso abre el diálogo de vínculo en vez de inventar un caso.
-    onOpenCaseDialog();
-  };
 
   const summary =
     legalOn && researchMode
@@ -91,15 +84,28 @@ export function ModesMenu({
           hint={t('modes.researchHint')}
           onToggle={() => onToggleResearch(!researchMode)}
         />
-        <ModeToggle
-          testId="modes-menu-legal"
-          checked={legalOn}
-          icon={<FileText aria-hidden="true" className="size-4 shrink-0" />}
-          label={t('modes.legalTitle')}
-          shortLabel={t('modes.legalShort')}
-          hint={t('modes.legalHint')}
-          onToggle={handleLegalClick}
-        />
+        <div data-testid="legal-switch" className="flex min-w-0 items-center gap-2">
+          <Switch
+            data-testid="modes-menu-legal"
+            checked={legalOn}
+            label={t('modes.legalTitle')}
+            title={t('modes.legalHint')}
+            className="hit-expand"
+            onCheckedChange={(enabled) => {
+              if (enabled) {
+                // Encender sin caso abre el diálogo de vínculo en vez de inventar un caso.
+                onOpenCaseDialog();
+                return;
+              }
+              onToggleLegal(false);
+            }}
+          />
+          <span className="min-w-0 text-sm font-medium whitespace-nowrap text-text">
+            {/* Igual que el toggle de investigación: rótulo corto en mobile. */}
+            <span className="sm:hidden">{t('modes.legalShort')}</span>
+            <span className="hidden sm:inline">{t('modes.legalTitle')}</span>
+          </span>
+        </div>
       </div>
       {legalOn && onOpenCase !== undefined ? (
         <button

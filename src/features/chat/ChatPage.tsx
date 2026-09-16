@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { DragEvent } from 'react';
 
 import { chatHref, navigate, SETTINGS_HREF, useRoute } from '@/app/routing';
 import { useServices } from '@/app/services';
@@ -23,7 +24,7 @@ import { CircuitDialog, ROLE_LABEL_KEYS } from './components/CircuitDialog';
 import type { CircuitStage } from './components/CircuitDialog';
 import { Composer } from './components/Composer';
 import { messageText } from './components/MessageList';
-import type { LegalRedactionCounts } from './components/Composer';
+import type { ComposerHandle, LegalRedactionCounts } from './components/Composer';
 import { EmptyChat } from './components/EmptyChat';
 import { ErrorBanner } from './components/ErrorBanner';
 import { MessageList } from './components/MessageList';
@@ -119,6 +120,39 @@ function ChatPageContent() {
   const { settings: appSettings, keyPresence, browser, setResearchPanelVisible } = useResearchSettings(services);
   // Selección optimista del selector de modelo: se limpia al cambiar de conversación.
   const [pendingTarget, setPendingTarget] = useState<ModelTarget | null>(null);
+
+  // Overlay de arrastre de archivos sobre mensajes + footer: sólo reacciona a
+  // drags que traen archivos (`Files`); el drop lo procesa el Composer vía ref.
+  const [dragActive, setDragActive] = useState(false);
+  const composerRef = useRef<ComposerHandle | null>(null);
+
+  const handleDragEnter = (event: DragEvent<HTMLDivElement>): void => {
+    if (!hasDraggedFiles(event)) return;
+    event.preventDefault();
+    setDragActive(true);
+  };
+  const handleDragOver = (event: DragEvent<HTMLDivElement>): void => {
+    // Sin preventDefault el navegador no permite soltar.
+    if (!hasDraggedFiles(event)) return;
+    event.preventDefault();
+  };
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>): void => {
+    // Al entrar en un hijo el navegador dispara dragleave en el contenedor:
+    // si el destino sigue adentro, el overlay permanece.
+    const related = event.relatedTarget;
+    if (related instanceof Node && event.currentTarget.contains(related)) return;
+    setDragActive(false);
+  };
+  const handleDrop = (event: DragEvent<HTMLDivElement>): void => {
+    if (!hasDraggedFiles(event)) return;
+    event.preventDefault();
+    setDragActive(false);
+    // Un drop dentro del formulario lo procesa el propio Composer.
+    const target = event.target;
+    if (target instanceof Element && target.closest('[data-testid="chat-composer"]') !== null) return;
+    const files = Array.from(event.dataTransfer.files);
+    if (files.length > 0) void composerRef.current?.addFiles(files);
+  };
 
   const warning =
     appSettings === null
@@ -409,85 +443,103 @@ function ChatPageContent() {
         <ConversationUsage messages={controller.messages} />
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <div className="relative min-h-0 flex-1">
-          <div ref={scrollRef} onScroll={onScroll} className="h-full overflow-y-auto px-4 py-6">
-            <div className="mx-auto w-full max-w-3xl space-y-4">
-              {controller.messages.length === 0 ? (
-                <EmptyChat onSuggestion={(text) => void controller.send(text)} />
-              ) : (
-                <MessageList
-                  messages={controller.messages}
-                  runStatus={controller.runStatus}
-                  legalMode={legalActive}
-                  onRegenerate={handleRegenerate}
-                  onContinue={handleContinue}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
-              )}
-              {busy ? <StreamingIndicator /> : null}
+      <div
+        className="relative flex min-h-0 flex-1 flex-col"
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+          <div className="relative min-h-0 flex-1">
+            <div ref={scrollRef} onScroll={onScroll} className="h-full overflow-y-auto px-4 py-6">
+              <div className="mx-auto w-full max-w-3xl space-y-4">
+                {controller.messages.length === 0 ? (
+                  <EmptyChat onSuggestion={(text) => void controller.send(text)} />
+                ) : (
+                  <MessageList
+                    messages={controller.messages}
+                    runStatus={controller.runStatus}
+                    legalMode={legalActive}
+                    onRegenerate={handleRegenerate}
+                    onContinue={handleContinue}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                )}
+                {busy ? <StreamingIndicator /> : null}
+              </div>
             </div>
+            {isAtBottom ? null : (
+              <button
+                type="button"
+                data-testid="chat-scroll-to-bottom"
+                aria-label={t('chat.scrollToBottom')}
+                title={t('chat.scrollToBottom')}
+                onClick={() => scrollToBottom('smooth')}
+                className="hit-expand absolute bottom-4 left-1/2 grid size-9 -translate-x-1/2 place-items-center rounded-full border border-border bg-surface text-text shadow-sm transition-all duration-150 hover:bg-surface-subtle active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+              >
+                <ChevronDown aria-hidden="true" className="size-4" />
+              </button>
+            )}
           </div>
-          {isAtBottom ? null : (
-            <button
-              type="button"
-              data-testid="chat-scroll-to-bottom"
-              aria-label={t('chat.scrollToBottom')}
-              title={t('chat.scrollToBottom')}
-              onClick={() => scrollToBottom('smooth')}
-              className="hit-expand absolute bottom-4 left-1/2 grid size-9 -translate-x-1/2 place-items-center rounded-full border border-border bg-surface text-text shadow-sm transition-all duration-150 hover:bg-surface-subtle active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-            >
-              <ChevronDown aria-hidden="true" className="size-4" />
-            </button>
-          )}
+          {researchMode && researchPanelVisible ? (
+            <ResearchPanel
+              steps={controller.liveSteps}
+              messages={controller.messages}
+              settings={appSettings}
+              keyPresence={keyPresence}
+              browser={browser}
+              onHide={() => setResearchPanelVisible(false)}
+              className="h-[42dvh] max-h-96 min-h-80 shrink-0 border-t border-border lg:h-auto lg:max-h-none lg:w-80 lg:border-l lg:border-t-0"
+            />
+          ) : null}
         </div>
-        {researchMode && researchPanelVisible ? (
-          <ResearchPanel
-            steps={controller.liveSteps}
-            messages={controller.messages}
-            settings={appSettings}
-            keyPresence={keyPresence}
-            browser={browser}
-            onHide={() => setResearchPanelVisible(false)}
-            className="h-[42dvh] max-h-96 min-h-80 shrink-0 border-t border-border lg:h-auto lg:max-h-none lg:w-80 lg:border-l lg:border-t-0"
-          />
+
+        <footer className="shrink-0 border-t border-border px-3 py-3">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-2">
+            {controller.lastError !== null ? (
+              <ErrorBanner error={controller.lastError} onRetry={() => void controller.retryLast()} />
+            ) : null}
+            <Composer
+              ref={composerRef}
+              status={controller.runStatus}
+              onSend={(text, images) => void controller.send(text, images)}
+              onStop={controller.stop}
+              research={{
+                enabled: researchMode,
+                disabled: researchDisabled,
+                hint: researchMode ? researchHint : null,
+                onToggle: (enabled) => {
+                  void setResearchMode(enabled);
+                },
+              }}
+              legal={
+                legalCaseId === null
+                  ? undefined
+                  : {
+                      // Expediente vinculado: preview de privacidad + gate de
+                      // consentimiento. Los conteos salen del mapping de
+                      // redacción en memoria (vacío hasta el primer turno).
+                      redactionActive: true,
+                      redactedCounts,
+                      consentAccepted,
+                      onConsentChange: handleConsentChange,
+                    }
+              }
+            />
+          </div>
+        </footer>
+        {dragActive ? (
+          <div
+            data-testid="chat-drop-overlay"
+            role="status"
+            className="pointer-events-none absolute inset-2 z-10 grid place-items-center rounded-2xl border-2 border-dashed border-primary bg-primary-soft/80 px-4 text-center"
+          >
+            <p className="text-sm font-medium text-primary">{t('chat.dropOverlay')}</p>
+          </div>
         ) : null}
       </div>
-
-      <footer className="shrink-0 border-t border-border px-3 py-3">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-2">
-          {controller.lastError !== null ? (
-            <ErrorBanner error={controller.lastError} onRetry={() => void controller.retryLast()} />
-          ) : null}
-          <Composer
-            status={controller.runStatus}
-            onSend={(text, images) => void controller.send(text, images)}
-            onStop={controller.stop}
-            research={{
-              enabled: researchMode,
-              disabled: researchDisabled,
-              hint: researchMode ? researchHint : null,
-              onToggle: (enabled) => {
-                void setResearchMode(enabled);
-              },
-            }}
-            legal={
-              legalCaseId === null
-                ? undefined
-                : {
-                    // Expediente vinculado: preview de privacidad + gate de
-                    // consentimiento. Los conteos salen del mapping de
-                    // redacción en memoria (vacío hasta el primer turno).
-                    redactionActive: true,
-                    redactedCounts,
-                    consentAccepted,
-                    onConsentChange: handleConsentChange,
-                  }
-            }
-          />
-        </div>
-      </footer>
       {controller.pendingApproval !== null ? (
         <ToolApprovalDialog
           request={controller.pendingApproval}
@@ -532,6 +584,11 @@ function ChatPageContent() {
   // índice el guard es neutro y el render queda idéntico al modo general.
   if (legalIndex === null) return page;
   return <CitationGuardProvider index={legalIndex}>{page}</CitationGuardProvider>;
+}
+
+/** Detecta si un arrastre trae archivos (los de texto/HTML se ignoran). */
+function hasDraggedFiles(event: DragEvent<Element>): boolean {
+  return Array.from(event.dataTransfer?.types ?? []).includes('Files');
 }
 
 function resolveTitle(title: string | undefined, conversationId: string | null, t: Translate): string {

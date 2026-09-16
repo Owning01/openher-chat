@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setLocale } from '@/i18n';
@@ -31,7 +31,7 @@ function renderMenu(overrides: Partial<ModesMenuProps> = {}): ModesMenuProps {
 }
 
 describe('ModesMenu', () => {
-  it('muestra los dos toggles rotulados siempre visibles, sin abrir nada', () => {
+  it('muestra los dos modos rotulados siempre visibles, sin abrir nada', () => {
     renderMenu();
     expect(screen.getByTestId('modes-menu')).toBeInTheDocument();
     // Compatibilidad: ChatPage.test.tsx abre los modos clickeando este testid.
@@ -41,14 +41,19 @@ describe('ModesMenu', () => {
     const legal = screen.getByTestId('modes-menu-legal');
     expect(research).toHaveAttribute('role', 'switch');
     expect(research).toHaveAttribute('aria-checked', 'false');
+    expect(legal).toHaveAttribute('role', 'switch');
     expect(legal).toHaveAttribute('aria-checked', 'false');
+    // El modo abogado es un Switch rotulado dentro de su contenedor propio.
+    const legalSwitch = screen.getByTestId('legal-switch');
+    expect(legalSwitch).toContainElement(legal);
+    expect(within(legalSwitch).getByText('Modo abogado')).toBeInTheDocument();
     expect(screen.getByText('Buscar en internet')).toBeInTheDocument();
     expect(screen.getByText('Modo abogado')).toBeInTheDocument();
     expect(screen.getByText('Buscar')).toBeInTheDocument();
     expect(screen.getByText('Abogado')).toBeInTheDocument();
   });
 
-  it('expone nombre accesible y área táctil de al menos 32px por toggle', () => {
+  it('expone nombre accesible y área táctil por control', () => {
     renderMenu();
     const research = screen.getByRole('switch', { name: 'Buscar en internet' });
     const legal = screen.getByRole('switch', { name: 'Modo abogado' });
@@ -57,15 +62,24 @@ describe('ModesMenu', () => {
     expect(research.className).toContain('h-9');
     expect(research.className).toContain('hit-expand');
     expect(research.className).toContain('text-sm');
-    expect(legal.className).toContain('h-9');
+    // El Switch legal conserva hitbox expandido (44px táctiles) pese a su tamaño visual.
+    expect(legal.className).toContain('hit-expand');
+    expect(legal.className).toContain('w-11');
+    expect(screen.getByTestId('legal-switch')).toContainElement(legal);
   });
 
-  it('marca el modo activo con fondo primary suave y tilde', () => {
+  it('marca el modo activo con el color primary', () => {
     renderMenu({ researchMode: true });
     const research = screen.getByTestId('modes-menu-research');
     expect(research.className).toContain('bg-primary-soft');
     expect(research.querySelector('svg')).not.toBeNull();
-    expect(screen.getByTestId('modes-menu-legal').className).not.toContain('bg-primary-soft');
+    expect(screen.getByTestId('modes-menu-legal').className).not.toContain('bg-primary');
+
+    cleanup();
+    renderMenu({ legalCaseId: 'case-1' });
+    // El Switch encendido se pinta con primary; el toggle de investigación sigue apagado.
+    expect(screen.getByTestId('modes-menu-legal').className).toContain('bg-primary');
+    expect(screen.getByTestId('modes-menu-research').className).not.toContain('bg-primary-soft');
   });
 
   it('muestra el estado general en lenguaje llano', () => {

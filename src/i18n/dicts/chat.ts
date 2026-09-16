@@ -60,6 +60,7 @@ export const chat = defineDict({
     attachUnsupported: 'Formatos: texto, .docx, .pdf e imágenes (.png, .jpg, .webp).',
     attachUnreadable: 'No se pudo leer el archivo.',
     attachTruncated: 'recortado',
+    dropOverlay: 'Soltá el archivo para adjuntarlo',
     download: 'Descargar como archivo',
     downloadWord: 'Descargar Word (.docx)',
 
@@ -157,6 +158,7 @@ export const chat = defineDict({
     attachUnsupported: 'Formats: text, .docx, .pdf and images (.png, .jpg, .webp).',
     attachUnreadable: 'Could not read the file.',
     attachTruncated: 'trimmed',
+    dropOverlay: 'Drop the file to attach it',
     download: 'Download as file',
     downloadWord: 'Download Word (.docx)',
 

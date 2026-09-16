@@ -1,0 +1,16 @@
+[Unit]
+Description=Proxy X (Twitter) para OpenHer Chat
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/openher-x-proxy -addr 127.0.0.1:8081 -twitter-binary /root/.local/bin/twitter
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
