@@ -5,6 +5,7 @@ import type { KeyVault } from '@/domain/ports/KeyVault';
 import type { CreateLegalCaseInput, LegalCaseRepository } from '@/domain/ports/LegalCaseRepository';
 import type { LegalPackStore } from '@/domain/ports/LegalPackStore';
 import type { SettingsRepository } from '@/domain/ports/SettingsRepository';
+import type { SkillRepository } from '@/domain/ports/SkillRepository';
 import { createDefaultSettings } from '@/domain/settings/defaults';
 import type { ChatMessage } from '@/domain/types/chat';
 import type { Conversation } from '@/domain/types/conversation';
@@ -18,6 +19,7 @@ import type {
   LegalPack,
 } from '@/domain/types/legal';
 import type { AppSettings } from '@/domain/types/settings';
+import type { Skill, SkillDraft } from '@/domain/types/skill';
 import { newId as defaultNewId } from '@/shared/utils/ids';
 
 export interface MemoryConversationRepositoryDeps {
@@ -417,4 +419,51 @@ function compareLegalByAt(a: { at: number; id: string }, b: { at: number; id: st
 /** Clonado profundo defensivo de las entidades legales (evita aliasar el store). */
 function cloneLegal<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
+}
+
+export interface MemorySkillRepositoryDeps {
+  newId?: () => string;
+  now?: () => number;
+}
+
+/** Doble en memoria de `SkillRepository` con la misma semántica que `IndexedDbSkills` (upsert, orden por nombre). */
+export class MemorySkillRepository implements SkillRepository {
+  private readonly stored = new Map<string, Skill>();
+  private readonly newId: () => string;
+  private readonly now: () => number;
+
+  constructor(deps: MemorySkillRepositoryDeps = {}) {
+    this.newId = deps.newId ?? (() => defaultNewId('skill'));
+    this.now = deps.now ?? (() => Date.now());
+  }
+
+  async list(): Promise<Skill[]> {
+    return [...this.stored.values()]
+      .map((skill) => ({ ...skill }))
+      .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+  }
+
+  async save(draft: SkillDraft): Promise<Skill> {
+    const existing = draft.id === undefined ? undefined : this.stored.get(draft.id);
+    const now = this.now();
+    const skill: Skill = {
+      id: draft.id ?? this.newId(),
+      name: draft.name.trim(),
+      description: draft.description.trim(),
+      body: draft.body,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    };
+    this.stored.set(skill.id, skill);
+    return { ...skill };
+  }
+
+  async remove(id: string): Promise<void> {
+    this.stored.delete(id);
+  }
+
+  /** Vacía las skills para aislar tests del arnés. */
+  clear(): void {
+    this.stored.clear();
+  }
 }

@@ -42,4 +42,20 @@ describe('buildSystemPrompt', () => {
       buildSystemPrompt({ researchMode: false, now: endOfDay, locale: 'en' }),
     );
   });
+
+  it('agrega el bloque de skills sólo cuando hay y no toca el prompt sin ellas', () => {
+    const base = buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es' });
+    const skills = [
+      { name: 'informe-laboral', description: 'Redacta informes laborales' },
+      { name: 'resumen-prensa', description: 'Resume noticias del día' },
+    ];
+    const withSkills = buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es', skills });
+
+    expect(withSkills).toContain('load_skill');
+    expect(withSkills).toContain('- informe-laboral: Redacta informes laborales');
+    expect(withSkills).toContain('- resumen-prensa: Resume noticias del día');
+    expect(withSkills).toContain('Never invent a skill');
+    expect(base).not.toContain('load_skill');
+    expect(buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es', skills: [] })).toBe(base);
+  });
 });

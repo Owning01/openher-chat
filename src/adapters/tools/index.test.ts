@@ -49,6 +49,22 @@ describe('createToolRegistry — definiciones', () => {
 
     expect(registry.get('nope')).toBeUndefined();
   });
+
+  it('expone load_skill sólo cuando el turno tiene skills guardadas', () => {
+    const deps = { http: fakeHttp(() => jsonResponse({})), keys: keyVaultWith({}) };
+    const without = createToolRegistry(makeSettings(), deps);
+    expect(without.get('load_skill')).toBeUndefined();
+
+    const skills = [
+      { id: 's1', name: 'informe-laboral', description: 'Informes', body: '# Pasos', createdAt: 1, updatedAt: 1 },
+    ];
+    const withSkills = createToolRegistry(makeSettings(), { ...deps, skills });
+    expect(withSkills.list().map((tool) => tool.name)).toEqual(['web_search', 'open_url', 'load_skill']);
+
+    const tool = mustGet(withSkills, 'load_skill');
+    expect(tool.parameters.required).toEqual(['name']);
+    expect(tool.maxResultChars).toBe(16_000);
+  });
 });
 
 describe('createToolRegistry — ejecución', () => {

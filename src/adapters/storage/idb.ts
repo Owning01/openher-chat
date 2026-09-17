@@ -16,6 +16,7 @@ import type {
   LegalDocument,
   LegalPack,
 } from '@/domain/types/legal';
+import type { Skill } from '@/domain/types/skill';
 
 // ---------------------------------------------------------------------------
 // Nombres canónicos de base, stores e índices. Los repositorios y los tests
@@ -23,8 +24,8 @@ import type {
 // ---------------------------------------------------------------------------
 
 export const DB_NAME = 'openher-chat';
-/** Versión 2: agrega los stores del modo legal sin tocar los datos de v1. */
-export const DB_VERSION = 2;
+/** Versión 2: agrega los stores del modo legal sin tocar los datos de v1. Versión 3: skills. */
+export const DB_VERSION = 3;
 export const CONVERSATIONS_STORE = 'conversations';
 export const MESSAGES_STORE = 'messages';
 export const LEGAL_CASES_STORE = 'legalCases';
@@ -33,6 +34,7 @@ export const LEGAL_ANALYSES_STORE = 'legalAnalyses';
 export const LEGAL_PACKS_STORE = 'legalPacks';
 export const ACKNOWLEDGMENTS_STORE = 'acknowledgments';
 export const GAPS_STORE = 'gaps';
+export const SKILLS_STORE = 'skills';
 
 export const UPDATED_AT_INDEX = 'updatedAt';
 export const BY_CONVERSATION_INDEX = 'byConversation';
@@ -101,6 +103,11 @@ export interface OpenHerDbSchema extends DBSchema {
     key: string;
     value: GapReportEntry;
     indexes: { caseId: string; at: number };
+  };
+  skills: {
+    key: string;
+    value: Skill;
+    indexes: { updatedAt: number };
   };
 }
 
@@ -277,6 +284,12 @@ export function upgradeOpenHerDb(
   }
   if (!gaps.indexNames.contains(AT_INDEX)) {
     gaps.createIndex(AT_INDEX, 'at');
+  }
+
+  ensureStore(database, SKILLS_STORE, { keyPath: 'id' });
+  const skills = transaction.objectStore(SKILLS_STORE);
+  if (!skills.indexNames.contains(UPDATED_AT_INDEX)) {
+    skills.createIndex(UPDATED_AT_INDEX, 'updatedAt');
   }
 }
 

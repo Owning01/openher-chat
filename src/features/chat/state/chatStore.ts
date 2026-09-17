@@ -27,6 +27,7 @@ import type { ChatMessage, MessageContent, MessageError, MessageErrorCode } from
 import type { Conversation } from '@/domain/types/conversation';
 import type { ModelInfo, ProviderConfig } from '@/domain/types/provider';
 import type { AppSettings } from '@/domain/types/settings';
+import type { Skill } from '@/domain/types/skill';
 import type { ToolRegistry } from '@/domain/types/tools';
 import { applyAgentEvent, closeRunningSteps } from '@/features/research/selectors';
 import { LocalProviderConfigRepository } from '@/features/settings/state/providerStorage';
@@ -563,12 +564,13 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       settings: AppSettings,
       conversationId: string,
       legalCaseId: string | null,
+      skills: readonly Skill[],
     ): ToolRegistry {
       if (deps.tools !== undefined) return deps.tools;
       if (services.createTools !== undefined) {
-        return services.createTools(settings, { conversationId, legalCaseId });
+        return services.createTools(settings, { conversationId, legalCaseId, skills });
       }
-      return createToolRegistry(settings, { http: services.http, keys: services.keys, now: clock });
+      return createToolRegistry(settings, { http: services.http, keys: services.keys, now: clock, skills });
     }
 
     /**
@@ -672,15 +674,23 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       // El modo legal se deriva sólo de `legalCaseId` (independiente del workspace
       // global y de `webSearchEnabled`); ambos modos son ortogonales y combinables.
       const capabilities = resolveCapabilities(target.provider, target.model);
+      const adapterCapabilities = adapter.capabilities();
       const webResearchMode =
         input.conversation.researchMode &&
         settings.tools.webSearchEnabled &&
         capabilities.toolCalling &&
-        adapter.capabilities().toolCalling;
+        adapterCapabilities.toolCalling;
       const legalMode = input.conversation.legalCaseId != null;
-      const enableTools = webResearchMode || legalMode;
+      // Skills: leerlas una vez por turno (nombre+descripción al prompt, cuerpo al
+      // `load_skill`). Sin skills guardadas no cambia nada respecto de antes.
+      const skills = await loadSkills(services);
+      if (!isCurrent(token)) return;
+      const skillsMode = skills.length > 0 && capabilities.toolCalling && adapterCapabilities.toolCalling;
+      const enableTools = webResearchMode || legalMode || skillsMode;
       const legalCaseId = input.conversation.legalCaseId ?? null;
-      const tools = enableTools ? resolveToolRegistry(settings, conversationId, legalCaseId) : EMPTY_TOOL_REGISTRY;
+      const tools = enableTools
+        ? resolveToolRegistry(settings, conversationId, legalCaseId, skillsMode ? skills : [])
+        : EMPTY_TOOL_REGISTRY;
 
       const conversation =
         input.conversation.providerId === target.provider.id && input.conversation.modelId === target.modelId
@@ -720,7 +730,14 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           providerId: target.provider.id,
           modelId: target.modelId,
           conversationId,
-          systemPrompt: composeSystemPrompt(conversation, settings, clock(), webResearchMode, legalMode),
+          systemPrompt: composeSystemPrompt(
+            conversation,
+            settings,
+            clock(),
+            webResearchMode,
+            legalMode,
+            skillsMode ? skills : [],
+          ),
           history: applyCompaction(input.history, conversation),
           userMessage: input.userMessage,
           defaults: {
@@ -1230,16 +1247,36 @@ function resolveProviderTarget(
   return model === undefined ? { provider, modelId: target.modelId } : { provider, modelId: target.modelId, model };
 }
 
+/**
+ * Skills guardadas para este turno. Best-effort: sin repo, sin IndexedDB o con
+ * cualquier fallo la lista queda vacía y el turno sigue como modo general.
+ */
+async function loadSkills(services: AppServices): Promise<Skill[]> {
+  const repo = services.skills;
+  if (repo === undefined) return [];
+  try {
+    return await repo.list();
+  } catch {
+    return [];
+  }
+}
+
 function composeSystemPrompt(
   conversation: Conversation,
   settings: AppSettings,
   now: number,
   webResearchMode: boolean,
   legalMode: boolean,
+  skills: readonly Skill[] = [],
 ): string {
   const override = conversation.systemPromptOverride;
   const persona = (override !== null && override.trim() !== '' ? override : settings.chat.systemPrompt).trim();
-  const scaffold = buildSystemPrompt({ researchMode: webResearchMode, now, locale: settings.locale });
+  const scaffold = buildSystemPrompt({
+    researchMode: webResearchMode,
+    now,
+    locale: settings.locale,
+    skills: skills.map((skill) => ({ name: skill.name, description: skill.description })),
+  });
   const circuitRole = legalMode === false ? null : (conversation.legalRole ?? null);
   if (circuitRole !== null) {
     const circuit = buildLegalCircuitSystemPrompt({

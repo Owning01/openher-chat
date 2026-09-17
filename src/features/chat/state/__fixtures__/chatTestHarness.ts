@@ -6,6 +6,7 @@ import type { ChatMessage, MessageErrorCode } from '@/domain/types/chat';
 import type { Conversation } from '@/domain/types/conversation';
 import type { ModelInfo, ProviderCapabilities, ProviderConfig } from '@/domain/types/provider';
 import type { StreamEvent } from '@/domain/types/stream';
+import type { SkillRepository } from '@/domain/ports/SkillRepository';
 import type { ToolDefinition, ToolRegistry } from '@/domain/types/tools';
 import { MemoryConversationRepository, MemoryKeyVault, MemorySettingsRepository } from '@/test/fakes/MemoryRepos';
 
@@ -101,6 +102,13 @@ export interface ChatHarnessOptions {
   autoTitle?: boolean;
   compaction?: boolean;
   onConversationUpdated?: (conversation: Conversation) => void;
+  /** Skills guardadas del turno (se pasan a `services.skills`). */
+  skills?: SkillRepository;
+  /**
+   * Con `true` el store usa el registry real (`services.createTools`/fallback)
+   * en vez del `FakeToolRegistry`: necesario para ejercitar `load_skill`.
+   */
+  realTools?: boolean;
 }
 
 export function createChatHarness(options: ChatHarnessOptions = {}): ChatHarness {
@@ -123,6 +131,7 @@ export function createChatHarness(options: ChatHarnessOptions = {}): ChatHarness
     conversations: repo,
     settings,
     keys: new MemoryKeyVault(),
+    ...(options.skills === undefined ? {} : { skills: options.skills }),
     http: { request: async () => ({ status: 200, headers: {}, text: '' }) },
     transport: {
       post: async () => {
@@ -138,7 +147,7 @@ export function createChatHarness(options: ChatHarnessOptions = {}): ChatHarness
   const store = createChatStore({
     services,
     conversations: repo,
-    tools,
+    ...(options.realTools === true ? {} : { tools }),
     providers: { load: async () => providerConfigs },
     clock: () => state.now,
     newId: () => nextId('m'),

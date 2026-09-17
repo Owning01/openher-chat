@@ -16,6 +16,7 @@ import { ProxySection } from './components/ProxySection';
 import { SearchSection } from './components/SearchSection';
 import { SectionCard } from './components/SectionCard';
 import { ShareSection } from './components/ShareSection';
+import { SkillsSection } from './components/SkillsSection';
 import { WorkModeSection } from './components/WorkModeSection';
 import { SettingsStoreProvider, createSettingsStore, useSettingsStore } from './state/settingsStore';
 
@@ -140,6 +141,8 @@ function SettingsContent() {
           >
             <AgentBudgetSection />
           </SectionCard>
+
+          <SkillsSection />
 
           <SectionCard
             title={t('settings.sectionSearch')}

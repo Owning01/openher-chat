@@ -9,6 +9,7 @@ import type { HttpClient } from '@/domain/ports/HttpClient';
 import type { KeyVault } from '@/domain/ports/KeyVault';
 import type { SourceRef, ToolResult } from '@/domain/types/chat';
 import type { AppSettings, Freshness } from '@/domain/types/settings';
+import type { Skill } from '@/domain/types/skill';
 import type { ToolDefinition, ToolRegistry } from '@/domain/types/tools';
 import { ToolExecutionError, mapTransportError } from './errors';
 import { OPEN_URL_TIMEOUT_MS, openUrl } from './openUrl';
@@ -17,6 +18,7 @@ import { resolveProxyBaseUrl } from './proxy';
 import type { ProxyResolution } from './proxy';
 import { createSearchService } from './webSearch';
 import type { SearchService } from './webSearch';
+import { createLoadSkillTool } from './loadSkill';
 import { createXSearchTool } from './xSearch';
 
 export const WEB_SEARCH_TOOL_NAME = 'web_search';
@@ -33,6 +35,11 @@ export interface ToolRegistryDeps {
   http: HttpClient;
   keys: KeyVault;
   now?: () => number;
+  /**
+   * Skills guardadas que este turno puede cargar con `load_skill`. Sin skills
+   * (o lista vacía) la tool no se expone y el registry queda como siempre.
+   */
+  skills?: readonly Skill[];
 }
 
 export function createToolRegistry(settings: AppSettings, deps: ToolRegistryDeps): ToolRegistry {
@@ -54,6 +61,10 @@ export function createToolRegistry(settings: AppSettings, deps: ToolRegistryDeps
     } catch {
       // URL inválida: se ignora la tool, el resto del turno sigue igual.
     }
+  }
+  // Skills: sólo si el turno tiene alguna guardada (el prompt las lista).
+  if (deps.skills !== undefined && deps.skills.length > 0) {
+    tools.push(createLoadSkillTool({ skills: deps.skills, now }));
   }
   return {
     list: () => tools,

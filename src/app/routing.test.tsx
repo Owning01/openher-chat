@@ -7,11 +7,17 @@ import {
   createConversationsStore,
 } from '@/features/conversations/state/conversationsStore';
 import { setLocale } from '@/i18n';
-import { MemoryConversationRepository, MemoryKeyVault, MemorySettingsRepository } from '@/test/fakes/MemoryRepos';
+import {
+  MemoryConversationRepository,
+  MemoryKeyVault,
+  MemoryLegalCaseRepository,
+  MemorySettingsRepository,
+} from '@/test/fakes/MemoryRepos';
 
 import { AppShell } from './layout/AppShell';
 import { AppRoutes, chatHref, LazyRoute, lazyWithRetry, legalHref, parseRoute } from './routing';
 import { createServices, ServicesProvider } from './services';
+import type { CreateServicesOverrides } from './services';
 
 afterEach(() => {
   cleanup();
@@ -70,11 +76,12 @@ describe('parseRoute', () => {
 });
 
 /** Las páginas reales (chat/settings/onboarding) requieren `useServices` y el store de conversaciones. */
-function renderWithServices(ui: ReactElement) {
+function renderWithServices(ui: ReactElement, overrides: CreateServicesOverrides = {}) {
   const services = createServices({
     conversations: new MemoryConversationRepository(),
     settings: new MemorySettingsRepository(),
     keys: new MemoryKeyVault(),
+    ...overrides,
   });
   const conversations = createConversationsStore(services.conversations);
 
@@ -117,17 +124,29 @@ describe('AppRoutes', () => {
 
   it('#/legal monta la página de expedientes', async () => {
     window.location.hash = '#/legal';
-    renderWithServices(<AppRoutes />);
+    renderWithServices(<AppRoutes />, { legalCases: new MemoryLegalCaseRepository() });
 
     expect(await screen.findByTestId('legal-page')).toBeInTheDocument();
   });
 
   it('#/legal/:caseId monta la página de expedientes con el detalle', async () => {
-    window.location.hash = '#/legal/case-1';
-    renderWithServices(<AppRoutes />);
+    const legalCases = new MemoryLegalCaseRepository();
+    const created = await legalCases.create({
+      title: 'Caso ruteado',
+      jurisdiction: 'national',
+      court: '',
+      matter: 'civil',
+      clientRole: 'plaintiff',
+    });
+    window.location.hash = `#/legal/${created.id}`;
+    renderWithServices(<AppRoutes />, { legalCases });
 
     expect(await screen.findByTestId('legal-page')).toBeInTheDocument();
-    expect(await screen.findByTestId('legal-detail')).toBeInTheDocument();
+    // `waitFor` re-consulta: el chunk diferido puede montar y volver a
+    // renderizar (el nodo hallado por `findBy` queda desprendido).
+    await waitFor(() => expect(screen.getByTestId('legal-detail')).toBeInTheDocument(), {
+      timeout: 10_000,
+    });
   });
 });
 

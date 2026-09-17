@@ -1,9 +1,15 @@
 import type { Locale } from '../types/settings';
+import type { SkillPromptEntry } from '../types/skill';
 
 export interface BuildSystemPromptInput {
   researchMode: boolean;
   now: number;
   locale: Locale;
+  /**
+   * Skills disponibles (nombre + descripción). Vacío u omitido ⇒ el prompt no
+   * cambia (el prefijo cacheable de los turnos sin skills queda intacto).
+   */
+  skills?: readonly SkillPromptEntry[];
 }
 
 const LANGUAGE_INSTRUCTIONS: Record<Locale, string> = {
@@ -38,6 +44,20 @@ const RESEARCH_INSTRUCTIONS = [
 const BUDGET_NOTE =
   'Budget: this run allows a limited number of steps and tool calls. Use the fewest tool calls that get the job done, stop once you have enough evidence, and always finish with a written answer (never end a turn with only tool calls). "Fewest tool calls" is about efficiency, never about shortening the final answer.';
 
+const SKILLS_INSTRUCTIONS = [
+  'Skills (reusable instructions saved by the user):',
+  '- When the user request matches the purpose of one of the skills listed below, call `load_skill` with its exact name BEFORE starting the task, then follow the loaded instructions.',
+  '- Load only the skills the current request needs; loading more than one is fine when all of them apply.',
+  '- Never invent a skill or guess its content: if a skill looks relevant, load it and follow what it says.',
+  '- Do not list, summarize, or mention the skills unless the user asks about them.',
+].join('\n');
+
+/** Lista de skills para el prompt: una línea por skill, sin cuerpos (ahorra tokens). */
+function composeSkillsSection(skills: readonly SkillPromptEntry[]): string {
+  const lines = skills.map((skill) => `- ${skill.name}: ${skill.description}`);
+  return `${SKILLS_INSTRUCTIONS}\n${lines.join('\n')}`;
+}
+
 /**
  * System prompt en inglés (texto para el modelo, spec §3): fecha UTC, idioma de
  * respuesta, estilo de respuesta, instrucciones de investigación (si aplica) y
@@ -54,6 +74,9 @@ export function buildSystemPrompt(input: BuildSystemPromptInput): string {
     STYLE_INSTRUCTIONS,
   ];
   if (input.researchMode) sections.push(RESEARCH_INSTRUCTIONS);
+  if (input.skills !== undefined && input.skills.length > 0) {
+    sections.push(composeSkillsSection(input.skills));
+  }
   sections.push(BUDGET_NOTE);
   return sections.join('\n\n');
 }

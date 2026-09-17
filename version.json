@@ -1,8 +1,8 @@
 {
-  "version": "1.7.4",
-  "versionCode": 17,
+  "version": "1.7.5",
+  "versionCode": 18,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "2F706B50568686765B8E5C12B2A6B725EE24E80FA52DEAAD554609E2E4A9D874",
-  "notes": "Arregla que Ajustes no abria con una conversacion abierta (bug desde v1.0.0) y la recuperacion tras actualizar la web.",
-  "publishedAt": "2026-09-16"
+  "sha256": "76AA31FB1BEDA3610E8C0D5F0567673D36F7E694E488927D0D4889C096488E76",
+  "notes": "Skills: el asistente puede cargar y leer habilidades guardadas (Ajustes > Avanzado) cuando la tarea coincide. Incluye importar SKILL.md.",
+  "publishedAt": "2026-09-17"
 }

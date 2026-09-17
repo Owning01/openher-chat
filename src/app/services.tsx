@@ -11,6 +11,7 @@ import { createProviderAdapter } from '@/adapters/providers';
 import { IndexedDbConversations } from '@/adapters/storage/IndexedDbConversations';
 import { IndexedDbLegalCases } from '@/adapters/storage/IndexedDbLegalCases';
 import { IndexedDbLegalPacks } from '@/adapters/storage/IndexedDbLegalPacks';
+import { IndexedDbSkills } from '@/adapters/storage/IndexedDbSkills';
 import { LocalKeyVault } from '@/adapters/storage/LocalKeyVault';
 import { LocalSettingsRepository } from '@/adapters/storage/LocalSettingsRepository';
 import { createToolRegistry } from '@/adapters/tools';
@@ -24,10 +25,12 @@ import type { LegalCaseRepository } from '@/domain/ports/LegalCaseRepository';
 import type { LegalPackStore } from '@/domain/ports/LegalPackStore';
 import type { ProviderAdapter } from '@/domain/ports/ProviderAdapter';
 import type { SettingsRepository } from '@/domain/ports/SettingsRepository';
+import type { SkillRepository } from '@/domain/ports/SkillRepository';
 import type { CloudSyncPort } from '@/domain/ports/SyncPort';
 import { composeToolRegistries } from '@/domain/tools/composeRegistry';
 import type { ProviderConfig } from '@/domain/types/provider';
 import type { AppSettings } from '@/domain/types/settings';
+import type { Skill } from '@/domain/types/skill';
 import type { ToolRegistry } from '@/domain/types/tools';
 import { newId } from '@/shared/utils/ids';
 
@@ -50,6 +53,8 @@ export interface AppServices {
   legalCases?: LegalCaseRepository;
   legalPacks?: LegalPackStore;
   legalCorpus?: LegalCorpus;
+  /** Skills guardadas en el dispositivo que el agente puede cargar con `load_skill`. */
+  skills?: SkillRepository;
   createAdapter(config: ProviderConfig): Promise<ProviderAdapter>;
   /**
    * Seam de tools web + legales: sin `legalCaseId` devuelve sólo las tools web
@@ -63,6 +68,8 @@ export interface AppServices {
 export interface CreateToolsContext {
   conversationId?: string | null;
   legalCaseId?: string | null;
+  /** Snapshot de skills del turno; el chat las resuelve una vez por run. */
+  skills?: readonly Skill[];
 }
 
 export interface CreateServicesOverrides {
@@ -76,6 +83,7 @@ export interface CreateServicesOverrides {
   legalCases?: LegalCaseRepository;
   legalPacks?: LegalPackStore;
   legalCorpus?: LegalCorpus;
+  skills?: SkillRepository;
 }
 
 export interface CreateServicesOptions {
@@ -106,6 +114,7 @@ export function createServices(
   // la base quedan con los defaults (`legal/packs/index.json` relativo al origen,
   // asset same-origin servido en `public/legal/packs/`).
   const legalCorpus = overrides.legalCorpus ?? createLegalCorpus({ http, packs: legalPacks });
+  const skills = overrides.skills ?? new IndexedDbSkills({ ownerId });
 
   return {
     ...(auth === undefined ? {} : { auth }),
@@ -118,6 +127,7 @@ export function createServices(
     legalCases,
     legalPacks,
     legalCorpus,
+    skills,
     async createAdapter(config: ProviderConfig): Promise<ProviderAdapter> {
       const apiKey = config.keyRef === null ? undefined : ((await keys.get(config.keyRef)) ?? undefined);
       let openCodeProxyUrl: string | undefined;
@@ -129,7 +139,7 @@ export function createServices(
       return createProviderAdapter(config, { transport, http, now: Date.now, apiKey, openCodeProxyUrl });
     },
     createTools: (settings, context) => {
-      const web = createToolRegistry(settings, { http, keys, now: Date.now });
+      const web = createToolRegistry(settings, { http, keys, now: Date.now, skills: context?.skills });
       const legalCaseId = context?.legalCaseId;
       // Sin caso legal (ausente, nulo o vacío) el modo es general: sólo tools web, sin cambios.
       if (typeof legalCaseId !== 'string' || legalCaseId.trim() === '') return web;

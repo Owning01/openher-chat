@@ -19,6 +19,7 @@ import {
   LEGAL_PACKS_STORE,
   LEGAL_STORES,
   MESSAGES_STORE,
+  SKILLS_STORE,
   UPDATED_AT_INDEX,
   closeOwnerDb,
   getDb,
@@ -57,7 +58,7 @@ const MESSAGE: ChatMessage = {
 };
 
 /** Todos los stores del esquema v2, como literales para poder consultarlos por nombre. */
-const ALL_STORES = [CONVERSATIONS_STORE, MESSAGES_STORE, ...LEGAL_STORES] as const;
+const ALL_STORES = [CONVERSATIONS_STORE, MESSAGES_STORE, SKILLS_STORE, ...LEGAL_STORES] as const;
 
 /** Esquema v1 real (sólo conversaciones y mensajes) para simular una base existente. */
 function upgradeV1(database: IDBPDatabase<OpenHerDbSchema>): void {
@@ -74,11 +75,11 @@ function upgradeV1(database: IDBPDatabase<OpenHerDbSchema>): void {
 }
 
 describe('idb', () => {
-  it('getDb abre la base v2 con todos los stores e índices', async () => {
+  it('getDb abre la base v3 con todos los stores e índices', async () => {
     const db = await getDb();
     expect(db.name).toBe(DB_NAME);
     expect(db.version).toBe(DB_VERSION);
-    expect(DB_VERSION).toBe(2);
+    expect(DB_VERSION).toBe(3);
 
     for (const store of ALL_STORES) {
       expect(db.objectStoreNames.contains(store)).toBe(true);
@@ -99,6 +100,7 @@ describe('idb', () => {
     expect(db.transaction(LEGAL_PACKS_STORE).store.indexNames.contains(INSTALLED_AT_INDEX)).toBe(true);
     expect(db.transaction(ACKNOWLEDGMENTS_STORE).store.indexNames.contains(AT_INDEX)).toBe(true);
     expect(db.transaction(GAPS_STORE).store.indexNames.contains(AT_INDEX)).toBe(true);
+    expect(db.transaction(SKILLS_STORE).store.indexNames.contains(UPDATED_AT_INDEX)).toBe(true);
   });
 
   it('getDb es singleton dentro del mismo contexto', async () => {
