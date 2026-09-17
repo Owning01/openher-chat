@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import type { ReactElement } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { Suspense, type ReactElement } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ConversationsStoreProvider,
@@ -9,13 +9,15 @@ import {
 import { setLocale } from '@/i18n';
 import { MemoryConversationRepository, MemoryKeyVault, MemorySettingsRepository } from '@/test/fakes/MemoryRepos';
 
-import { AppRoutes, chatHref, legalHref, parseRoute } from './routing';
+import { AppShell } from './layout/AppShell';
+import { AppRoutes, chatHref, LazyRoute, lazyWithRetry, legalHref, parseRoute } from './routing';
 import { createServices, ServicesProvider } from './services';
 
 afterEach(() => {
   cleanup();
   window.location.hash = '';
   setLocale('es');
+  sessionStorage.clear();
 });
 
 describe('parseRoute', () => {
@@ -129,11 +131,118 @@ describe('AppRoutes', () => {
   });
 });
 
+/**
+ * Regresión: con una conversación abierta, el efecto de sincronización de URL
+ * del chat devolvía el hash a `#/chat/:id` al entrar a Ajustes y la sección
+ * nunca se abría (bug reportado desde v1.0.0).
+ */
+describe('AppRoutes - navegación del shell', () => {
+  it('con una conversación abierta, Ajustes se abre y no vuelve al chat', async () => {
+    const services = createServices({
+      conversations: new MemoryConversationRepository(),
+      settings: new MemorySettingsRepository(),
+      keys: new MemoryKeyVault(),
+    });
+    const conversation = await services.conversations.create({ title: 'Charla' });
+    const conversations = createConversationsStore(services.conversations);
+    window.location.hash = `#/chat/${conversation.id}`;
+
+    render(
+      <ServicesProvider services={services}>
+        <ConversationsStoreProvider store={conversations}>
+          <AppShell>
+            <AppRoutes />
+          </AppShell>
+        </ConversationsStoreProvider>
+      </ServicesProvider>,
+    );
+
+    expect(await screen.findByTestId('chat-page')).toHaveAttribute(
+      'data-conversation-id',
+      conversation.id,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Ajustes' }));
+
+    expect(await screen.findByTestId('settings-page')).toBeInTheDocument();
+    await waitFor(() => expect(window.location.hash).toBe('#/settings'));
+    expect(screen.queryByTestId('chat-page')).not.toBeInTheDocument();
+  });
+});
+
 describe('chatHref', () => {
   it('construye rutas de chat y codifica el id', () => {
     expect(chatHref()).toBe('#/chat');
     expect(chatHref(null)).toBe('#/chat');
     expect(chatHref('id 1')).toBe('#/chat/id%201');
+  });
+});
+
+describe('lazyWithRetry', () => {
+  it('una carga exitosa limpia el flag de reintento y no recarga', async () => {
+    sessionStorage.setItem('openher.chunk-retry.test-ok', '1');
+    const reload = vi.fn();
+    const Lazy = lazyWithRetry(
+      'test-ok',
+      async () => ({ default: () => <div>contenido ok</div> }),
+      reload,
+    );
+
+    render(
+      <Suspense fallback={<span>cargando</span>}>
+        <Lazy />
+      </Suspense>,
+    );
+
+    expect(await screen.findByText('contenido ok')).toBeInTheDocument();
+    expect(reload).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('openher.chunk-retry.test-ok')).toBeNull();
+  });
+
+  it('el primer fallo de chunk recarga una vez y deja el fallback visible', async () => {
+    sessionStorage.removeItem('openher.chunk-retry.test-fail');
+    const reload = vi.fn();
+    const Lazy = lazyWithRetry(
+      'test-fail',
+      async () => {
+        throw new Error('chunk 404');
+      },
+      reload,
+    );
+
+    render(
+      <Suspense fallback={<span>cargando</span>}>
+        <Lazy />
+      </Suspense>,
+    );
+
+    await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
+    expect(sessionStorage.getItem('openher.chunk-retry.test-fail')).toBe('1');
+    expect(screen.getByText('cargando')).toBeInTheDocument();
+  });
+
+  it('con el reintento ya usado el borde muestra el error en vez del spinner eterno', async () => {
+    sessionStorage.setItem('openher.chunk-retry.test-error', '1');
+    const reload = vi.fn();
+    const Lazy = lazyWithRetry(
+      'test-error',
+      async () => {
+        throw new Error('chunk 404');
+      },
+      reload,
+    );
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    render(
+      <LazyRoute label="Ajustes">
+        <Lazy />
+      </LazyRoute>,
+    );
+
+    expect(await screen.findByTestId('route-error')).toBeInTheDocument();
+    expect(screen.getByText('No se pudo abrir esta sección')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument();
+    expect(reload).not.toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 });
 

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import type { AppServices } from '@/app/services';
@@ -224,8 +224,35 @@ describe('ChatPage', () => {
   });
 });
 
-describe('ChatPage - menú de modos (T27)', () => {
-  it('abre el menú de modos desde la cabecera con el estado general', async () => {
+/**
+ * Regresión: con una conversación cargada en el store, el efecto que sincroniza
+ * la URL tras el primer envío devolvía el hash a `#/chat/:id` al salir del chat
+ * (Ajustes nunca abría). El bug se reportó desde v1.0.0.
+ */
+describe('ChatPage - sincronización de URL', () => {
+  it('no devuelve la URL al chat cuando la ruta deja de ser el chat', async () => {
+    const harness = createChatHarness();
+    const conversation = await harness.repo.create({ title: 'Mi chat' });
+    await harness.repo.appendMessage(
+      userMessage('m1', 'hola', { conversationId: conversation.id, createdAt: 1 }),
+    );
+    window.location.hash = `#/chat/${conversation.id}`;
+    renderChatPage(harness.services);
+
+    // El mensaje visible prueba que el store ya cargó la conversación.
+    expect(await screen.findByText('hola')).toBeInTheDocument();
+
+    // Salir del chat (p. ej. Ajustes) con la página aún montada.
+    window.location.hash = '#/settings';
+    // Deja correr el hashchange y los efectos de React antes de mirar la URL.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    });
+    expect(window.location.hash).toBe('#/settings');
+  });
+});
+
+describe('ChatPage - menú de modos (T27)', () => {  it('abre el menú de modos desde la cabecera con el estado general', async () => {
     const harness = createChatHarness();
     renderChatPage(harness.services);
 

@@ -1,8 +1,8 @@
 {
-  "version": "1.7.3",
-  "versionCode": 16,
+  "version": "1.7.4",
+  "versionCode": 17,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "5AA657EB6CF37D9DD7901D1DB94634C423989CE1C7D6862C8957564D219643FA",
-  "notes": "Modo abogado activa directo (sin dialogo, reutiliza o crea expediente) + tool X en la app.",
+  "sha256": "2F706B50568686765B8E5C12B2A6B725EE24E80FA52DEAAD554609E2E4A9D874",
+  "notes": "Arregla que Ajustes no abria con una conversacion abierta (bug desde v1.0.0) y la recuperacion tras actualizar la web.",
   "publishedAt": "2026-09-16"
 }

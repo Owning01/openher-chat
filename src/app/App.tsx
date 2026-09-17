@@ -21,7 +21,7 @@ import { bootstrapApp } from './bootstrap';
 import type { BootstrappedApp } from './bootstrap';
 import { AlertBanner } from './layout/AlertBanner';
 import { AppShell } from './layout/AppShell';
-import { AppRoutes, navigate, ONBOARDING_HREF, SETTINGS_HREF, useRoute } from './routing';
+import { AppRoutes, navigate, ONBOARDING_HREF, preloadRoutes, SETTINGS_HREF, useRoute } from './routing';
 import { ServicesProvider } from './services';
 import type { AppServices } from './services';
 
@@ -240,6 +240,11 @@ function EnteredShell({ settings, storageError }: EnteredShellProps) {
     if (!needsOnboarding(settings)) return;
     navigate(ONBOARDING_HREF);
   }, [settings]);
+
+  // Chunks de Ajustes/Expedientes listos en caché apenas la app quedó en pantalla.
+  useEffect(() => {
+    preloadRoutes();
+  }, []);
 
   return (
     <AppShell>

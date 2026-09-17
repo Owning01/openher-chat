@@ -41,7 +41,7 @@ describe('LocalSettingsRepository', () => {
     expect(loaded.theme).toBe('dark');
     expect(loaded.schemaVersion).toBe(SETTINGS_SCHEMA_VERSION);
     expect(loaded.chat).toEqual(DEFAULT_CHAT_DEFAULTS);
-    expect(loaded.proxy).toEqual({ mode: 'direct', baseUrl: null, openCodeProxyUrl: null });
+    expect(loaded.proxy).toEqual({ mode: 'direct', baseUrl: null, openCodeProxyUrl: null, xServiceUrl: null });
   });
 
   it('sin localStorage carga defaults y save es no-op', async () => {

@@ -533,7 +533,7 @@ describe('settingsStore', () => {
     expect(store.getState().agentBudget().maxSteps).toBe(6);
     expect(store.getState().historyBudget().keepLastTurns).toBe(6);
     expect(store.getState().search().maxResults).toBe(5);
-    expect(store.getState().proxy()).toEqual({ mode: 'direct', baseUrl: null, openCodeProxyUrl: null });
+    expect(store.getState().proxy()).toEqual({ mode: 'direct', baseUrl: null, openCodeProxyUrl: null, xServiceUrl: null });
     expect(store.getState().appearance()).toEqual({ theme: 'system', locale: 'es' });
   });
 

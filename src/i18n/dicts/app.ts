@@ -14,6 +14,9 @@ export const app = defineDict({
     noProviderDescription: 'Agrega un proveedor con su API key para empezar a chatear.',
     noProviderAction: 'Ir a ajustes',
     storageErrorTitle: 'Almacenamiento no disponible',
+    routeErrorTitle: 'No se pudo abrir esta sección',
+    routeErrorDescription:
+      '«{section}» no cargó porque la app quedó con una versión vieja. Reintentá para traer la última.',
   },
   en: {
     title: 'OpenHer Chat',
@@ -28,6 +31,9 @@ export const app = defineDict({
     noProviderDescription: 'Add a provider with its API key to start chatting.',
     noProviderAction: 'Go to settings',
     storageErrorTitle: 'Storage unavailable',
+    routeErrorTitle: 'This section could not be opened',
+    routeErrorDescription:
+      '"{section}" did not load because the app is on an old version. Retry to fetch the latest one.',
   },
 });
 

@@ -239,22 +239,22 @@ describe('researchWarning', () => {
 
   it('avisa cuando el proxy personalizado no tiene URL', () => {
     expect(
-      researchWarning({ ...base, proxy: { mode: 'custom', baseUrl: null, openCodeProxyUrl: null } }),
+      researchWarning({ ...base, proxy: { mode: 'custom', baseUrl: null, openCodeProxyUrl: null, xServiceUrl: null } }),
     ).toEqual({ kind: 'missingProxyUrl' });
   });
 
   it('avisa cuando la URL del proxy personalizado es inválida en vez de hacer bypass silencioso', () => {
-    expect(researchWarning({ ...base, proxy: { mode: 'custom', baseUrl: 'no-es-una-url', openCodeProxyUrl: null } })).toEqual({
+    expect(researchWarning({ ...base, proxy: { mode: 'custom', baseUrl: 'no-es-una-url', openCodeProxyUrl: null, xServiceUrl: null } })).toEqual({
       kind: 'invalidProxyUrl',
     });
-    expect(researchWarning({ ...base, proxy: { mode: 'custom', baseUrl: 'ftp://proxy.test', openCodeProxyUrl: null } })).toEqual({
+    expect(researchWarning({ ...base, proxy: { mode: 'custom', baseUrl: 'ftp://proxy.test', openCodeProxyUrl: null, xServiceUrl: null } })).toEqual({
       kind: 'invalidProxyUrl',
     });
-    expect(researchWarning({ ...base, proxy: { mode: 'custom', baseUrl: 'javascript:alert(1)', openCodeProxyUrl: null } })).toEqual({
+    expect(researchWarning({ ...base, proxy: { mode: 'custom', baseUrl: 'javascript:alert(1)', openCodeProxyUrl: null, xServiceUrl: null } })).toEqual({
       kind: 'invalidProxyUrl',
     });
     expect(
-      researchWarning({ ...base, browser: true, proxy: { mode: 'custom', baseUrl: 'https://proxy.test', openCodeProxyUrl: null } }),
+      researchWarning({ ...base, browser: true, proxy: { mode: 'custom', baseUrl: 'https://proxy.test', openCodeProxyUrl: null, xServiceUrl: null } }),
     ).toBeNull();
   });
 
@@ -269,7 +269,7 @@ describe('researchWarning', () => {
     expect(researchWarning(base)).toBeNull();
     expect(researchWarning({ ...base, keys: { brave: true, tavily: false } })).toBeNull();
     expect(
-      researchWarning({ ...base, browser: true, proxy: { mode: 'custom', baseUrl: 'https://proxy.test', openCodeProxyUrl: null } }),
+      researchWarning({ ...base, browser: true, proxy: { mode: 'custom', baseUrl: 'https://proxy.test', openCodeProxyUrl: null, xServiceUrl: null } }),
     ).toBeNull();
   });
 });

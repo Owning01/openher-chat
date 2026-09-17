@@ -175,11 +175,14 @@ function ChatPageContent() {
   }, [conversationId, storeConversationId, load]);
 
   // Si el primer envío crea la conversación, sincroniza la URL y refresca el historial.
+  // Sólo aplica con la ruta de chat: al abrir Ajustes/Expedientes el `conversationId`
+  // de la ruta pasa a null y este efecto no debe devolver la URL a la conversación.
   useEffect(() => {
+    if (route.name !== 'chat') return;
     if (conversationId !== null || storeConversationId === null) return;
     navigate(chatHref(storeConversationId));
     void loadConversations();
-  }, [conversationId, storeConversationId, loadConversations]);
+  }, [route, conversationId, storeConversationId, loadConversations]);
 
   // Título, preview y modelo cambian dentro del turno: refresca la lista al volver a idle.
   const previousRunStatus = useRef(controller.runStatus);
