@@ -19,6 +19,8 @@ export interface MarkdownProps {
   streaming?: boolean;
   /** Callback para abrir el reporte visual / artefacto HTML a pantalla completa */
   onOpenVisualReport?: (html: string) => void;
+  /** Callback para solicitar modificaciones al agente sobre el bloque HTML */
+  onRequestHtmlEdit?: (instruction: string, code: string) => void;
 }
 
 const BASE_COMPONENTS: Omit<Components, 'pre'> = {
@@ -45,8 +47,14 @@ const BASE_COMPONENTS: Omit<Components, 'pre'> = {
 };
 
 /** Markdown GFM sin HTML crudo: solo http/https se convierten en enlaces externos. */
-export function Markdown({ children, className, streaming = false, onOpenVisualReport }: MarkdownProps) {
-  // Objeto estable mientras `streaming` o `onOpenVisualReport` no cambien
+export function Markdown({
+  children,
+  className,
+  streaming = false,
+  onOpenVisualReport,
+  onRequestHtmlEdit,
+}: MarkdownProps) {
+  // Objeto estable mientras `streaming`, `onOpenVisualReport` o `onRequestHtmlEdit` no cambien
   const components = useMemo<Components>(
     () => ({
       ...BASE_COMPONENTS,
@@ -59,11 +67,12 @@ export function Markdown({ children, className, streaming = false, onOpenVisualR
             language={block.language}
             streaming={streaming}
             onExpand={onOpenVisualReport}
+            onRequestEdit={onRequestHtmlEdit}
           />
         );
       },
     }),
-    [streaming, onOpenVisualReport],
+    [streaming, onOpenVisualReport, onRequestHtmlEdit],
   );
   return (
     <div className={cn('space-y-2 break-words text-sm leading-relaxed text-text', className)}>

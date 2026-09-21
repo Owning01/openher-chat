@@ -141,9 +141,29 @@ export function pickDynamicTheme(seed: string | number = 0): ReportTheme {
 }
 
 /** Genera el bloque de variables CSS para inyectar en el documento HTML. */
-export function generateThemeCssVars(themeId: ReportThemeId): string {
+export function generateThemeCssVars(
+  themeId: ReportThemeId,
+  colorMode: 'dark' | 'light' = 'light',
+): string {
   const theme = REPORT_THEMES[themeId] ?? REPORT_THEMES['editorial-navy'];
+
+  if (colorMode === 'dark') {
+    return `:root {
+  color-scheme: dark;
+  --primary: ${theme.secondary};
+  --secondary: ${theme.accent};
+  --accent: ${theme.primary};
+  --bg-main: #09090b;
+  --bg-card: #18181b;
+  --text-title: #f4f4f5;
+  --text-body: #e4e4e7;
+  --text-muted: #a1a1aa;
+  --border: #27272a;
+}`;
+  }
+
   return `:root {
+  color-scheme: light;
   --primary: ${theme.primary};
   --secondary: ${theme.secondary};
   --accent: ${theme.accent};
@@ -217,18 +237,27 @@ export function extractReportTitle(rawHtml: string): string | null {
  * Prepara el HTML completo para ser renderizado dentro del iframe, asegurando
  * doctype, scripts permitidos de estilo, viewport responsivo y las variables de tema.
  */
-export function prepareReportHtml(rawHtml: string, themeId: ReportThemeId = 'editorial-navy'): string {
-  const cssVars = generateThemeCssVars(themeId);
+export function prepareReportHtml(
+  rawHtml: string,
+  themeId: ReportThemeId = 'editorial-navy',
+  colorMode: 'dark' | 'light' = 'light',
+): string {
+  const cssVars = generateThemeCssVars(themeId, colorMode);
+  const isDark = colorMode === 'dark';
 
   // Si ya tiene <html> y <head>, inyecta el estilo y variables en el <head>
   if (/<head[\s>]/i.test(rawHtml)) {
     const styleTag = `<style id="openher-theme">\n${cssVars}\nbody { background-color: var(--bg-main); color: var(--text-body); }\n</style>`;
-    return rawHtml.replace(/<\/head>/i, `${styleTag}\n</head>`);
+    let result = rawHtml.replace(/<\/head>/i, `${styleTag}\n</head>`);
+    if (isDark && !result.includes('class="dark"') && !result.includes("class='dark'")) {
+      result = result.replace(/<html([^>]*)>/i, '<html$1 class="dark" data-theme="dark">');
+    }
+    return result;
   }
 
   // Si es un fragmento sin boilerplate HTML, envuélvelo en una plantilla completa con Tailwind
   return `<!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="${isDark ? 'dark' : 'light'}" data-theme="${colorMode}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -248,7 +277,7 @@ ${cssVars}
     }
   </style>
 </head>
-<body class="p-6 md:p-10 min-h-screen antialiased">
+<body class="p-6 md:p-10 min-h-screen antialiased ${isDark ? 'bg-[#09090b] text-[#f4f4f5]' : 'bg-[#f8fafc] text-[#334155]'}">
   <div class="max-w-5xl mx-auto space-y-6">
     ${rawHtml}
   </div>
@@ -263,35 +292,42 @@ ${cssVars}
 export function prepareStreamingReportHtml(
   rawHtml: string,
   themeId: ReportThemeId = 'editorial-navy',
+  colorMode: 'dark' | 'light' = 'light',
 ): string {
   if (typeof rawHtml !== 'string' || rawHtml.trim() === '') {
     return prepareReportHtml(
       '<div class="flex items-center justify-center p-12 text-sm text-slate-400 font-mono">Dibujando vista previa en vivo…</div>',
       themeId,
+      colorMode,
     );
   }
 
-  const cssVars = generateThemeCssVars(themeId);
+  const cssVars = generateThemeCssVars(themeId, colorMode);
   const themeStyle = `<style id="openher-theme">\n${cssVars}\nbody { background-color: var(--bg-main); color: var(--text-body); }\n</style>`;
   const tailwindScript = '<script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>';
 
   // Caso 1: Contiene <!DOCTYPE o <html
   if (/<!DOCTYPE|<html/i.test(rawHtml)) {
+    let output = rawHtml;
     // Si ya cerró </head>, inyecta justo antes de </head>
-    if (/<\/head>/i.test(rawHtml)) {
-      return rawHtml.replace(/<\/head>/i, `${tailwindScript}\n${themeStyle}\n</head>`);
+    if (/<\/head>/i.test(output)) {
+      output = output.replace(/<\/head>/i, `${tailwindScript}\n${themeStyle}\n</head>`);
+    } else if (/<head[\s>]/i.test(output)) {
+      // Si abrió <head> pero no lo cerró aún
+      output = output.replace(/(<head[^>]*>)/i, `$1\n${tailwindScript}\n${themeStyle}\n`);
+    } else if (/<html[\s>]/i.test(output)) {
+      // Si abrió <html...> sin <head> todavía
+      output = output.replace(/(<html[^>]*>)/i, `$1\n<head>\n${tailwindScript}\n${themeStyle}\n</head>\n`);
     }
-    // Si abrió <head> pero no lo cerró aún
-    if (/<head[\s>]/i.test(rawHtml)) {
-      return rawHtml.replace(/(<head[^>]*>)/i, `$1\n${tailwindScript}\n${themeStyle}\n`);
+
+    if (colorMode === 'dark' && !output.includes('class="dark"') && !output.includes("class='dark'")) {
+      output = output.replace(/<html([^>]*)>/i, '<html$1 class="dark" data-theme="dark">');
     }
-    // Si abrió <html...> sin <head> todavía
-    if (/<html[\s>]/i.test(rawHtml)) {
-      return rawHtml.replace(/(<html[^>]*>)/i, `$1\n<head>\n${tailwindScript}\n${themeStyle}\n</head>\n`);
-    }
+    return output;
   }
 
   // Caso 2: Es un fragmento parcial (e.g. <div>, <section>, <table>)
-  return prepareReportHtml(rawHtml, themeId);
+  return prepareReportHtml(rawHtml, themeId, colorMode);
 }
+
 

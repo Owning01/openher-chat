@@ -86,6 +86,8 @@ export interface MessageListProps {
   legalMode?: boolean;
   /** Solicitud para generar un reporte visual interactivo nuevo */
   onVisualReport?: (assistantMessageId: string) => void;
+  /** Solicitud para modificar el HTML artifact / reporte interactivo */
+  onRequestHtmlEdit?: (instruction: string, code: string) => void;
 }
 
 export function MessageList({
@@ -97,6 +99,7 @@ export function MessageList({
   onDelete,
   legalMode = false,
   onVisualReport,
+  onRequestHtmlEdit,
 }: MessageListProps) {
   const busy = runStatus !== 'idle';
   const lastAssistantId = useMemo(() => findLastAssistantId(messages), [messages]);
@@ -138,6 +141,7 @@ export function MessageList({
               onDelete={onDelete}
               onOpenVisualReport={handleOpenVisualReport}
               onGenerateVisualReport={onVisualReport}
+              onRequestHtmlEdit={onRequestHtmlEdit}
             />
           </li>
         ))}
@@ -148,6 +152,7 @@ export function MessageList({
           rawHtml={currentVisualReportHtml}
           title={activeVisualReport.title}
           initialThemeId={pickDynamicTheme(activeVisualReport.id).id}
+          onRequestEdit={onRequestHtmlEdit}
           onClose={() => setActiveVisualReport(null)}
         />
       ) : null}
@@ -186,6 +191,7 @@ interface MessageItemProps {
   onDelete: (messageId: string) => void;
   onOpenVisualReport?: (messageId: string, html: string) => void;
   onGenerateVisualReport?: (messageId: string) => void;
+  onRequestHtmlEdit?: (instruction: string, code: string) => void;
 }
 
 function MessageItemInner({
@@ -200,6 +206,7 @@ function MessageItemInner({
   onDelete,
   onOpenVisualReport,
   onGenerateVisualReport,
+  onRequestHtmlEdit,
 }: MessageItemProps) {
   const [editing, setEditing] = useState(false);
   const guard = useCitationGuard();
@@ -333,6 +340,7 @@ function MessageItemInner({
               blocks.length,
               streaming,
               (html) => onOpenVisualReport?.(message.id, html),
+              onRequestHtmlEdit,
             ),
           )}
           {htmlReport !== null && message.status === 'complete' ? (
@@ -409,13 +417,18 @@ function renderBlock(
   total: number,
   streaming: boolean,
   onOpenVisualReport?: (html: string) => void,
+  onRequestHtmlEdit?: (instruction: string, code: string) => void,
 ): ReactNode {
   const live = streaming && index === total - 1;
   switch (block.type) {
     case 'text':
       return (
         <div key={`text-${index}`} data-block="text">
-          <Markdown streaming={live} onOpenVisualReport={onOpenVisualReport}>
+          <Markdown
+            streaming={live}
+            onOpenVisualReport={onOpenVisualReport}
+            onRequestHtmlEdit={onRequestHtmlEdit}
+          >
             {block.text}
           </Markdown>
           {live ? <StreamingCursor /> : null}

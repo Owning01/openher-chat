@@ -84,4 +84,58 @@ describe('LiveHtmlArtifact', () => {
 
     expect(writeText).toHaveBeenCalledWith(html);
   });
+
+  it('permite alternar entre modo claro y modo oscuro', () => {
+    const html = '<div>Contenido con tema</div>';
+    render(<LiveHtmlArtifact code={html} />);
+
+    const iframe = screen.getByTestId('live-artifact-iframe');
+    // Inicialmente light mode
+    expect(iframe.getAttribute('srcdoc')).toContain('data-theme="light"');
+
+    const toggleBtn = screen.getByTestId('live-artifact-colormode-toggle');
+    fireEvent.click(toggleBtn);
+
+    // Ahora dark mode
+    expect(iframe.getAttribute('srcdoc')).toContain('data-theme="dark"');
+  });
+
+  it('abre barra de modificación y llama a onRequestEdit al enviar instrucción', () => {
+    const onRequestEdit = vi.fn();
+    const html = '<div>Tarjeta de métricas</div>';
+    render(<LiveHtmlArtifact code={html} onRequestEdit={onRequestEdit} />);
+
+    // Abre barra de modificar
+    const modifyBtn = screen.getByTestId('live-artifact-edit-toggle');
+    fireEvent.click(modifyBtn);
+
+    expect(screen.getByTestId('live-artifact-edit-bar')).toBeInTheDocument();
+
+    // Escribe instrucción
+    const input = screen.getByTestId('live-artifact-edit-input');
+    fireEvent.change(input, { target: { value: 'Agrega una gráfica de barras' } });
+
+    // Envía
+    fireEvent.click(screen.getByTestId('live-artifact-edit-send'));
+
+    expect(onRequestEdit).toHaveBeenCalledTimes(1);
+    expect(onRequestEdit).toHaveBeenCalledWith('Agrega una gráfica de barras', html);
+  });
+
+  it('permite enviar sugerencia rápida desde los chips de modificación', () => {
+    const onRequestEdit = vi.fn();
+    const html = '<div>Tarjeta</div>';
+    render(<LiveHtmlArtifact code={html} onRequestEdit={onRequestEdit} />);
+
+    fireEvent.click(screen.getByTestId('live-artifact-edit-toggle'));
+
+    const suggestionChip = screen.getByText('+ Agregar métricas clave');
+    fireEvent.click(suggestionChip);
+
+    // Al hacer clic en el chip se pre-llena el input, pulsamos enviar
+    fireEvent.click(screen.getByTestId('live-artifact-edit-send'));
+
+    expect(onRequestEdit).toHaveBeenCalledTimes(1);
+    expect(onRequestEdit).toHaveBeenCalledWith('Agregar métricas clave', html);
+  });
 });

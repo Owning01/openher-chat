@@ -69,6 +69,7 @@ export const DEFAULT_UI_SETTINGS: UiSettings = {
   researchPanelVisible: true,
   autoCheckUpdates: true,
   cloudSync: true,
+  themeVariant: 'monochrome',
 };
 
 /**

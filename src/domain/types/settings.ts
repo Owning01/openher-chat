@@ -63,6 +63,8 @@ export interface UiSettings {
    * sesión (los baja si la nube tiene). Solo con login; apagable.
    */
   cloudSync: boolean;
+  /** Variante de tema visual (34 temas disponibles, defecto: 'monochrome'). */
+  themeVariant: string;
 }
 
 export interface AppSettings {

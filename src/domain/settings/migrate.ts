@@ -153,6 +153,7 @@ function migrateUi(value: unknown, fallback: UiSettings): UiSettings {
     researchPanelVisible: readBoolean(source, 'researchPanelVisible', fallback.researchPanelVisible),
     autoCheckUpdates: readBoolean(source, 'autoCheckUpdates', fallback.autoCheckUpdates),
     cloudSync: readBoolean(source, 'cloudSync', fallback.cloudSync),
+    themeVariant: readText(source['themeVariant'], fallback.themeVariant),
   };
 }
 

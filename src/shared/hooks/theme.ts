@@ -1,3 +1,11 @@
+import {
+  applyThemeVars,
+  DEFAULT_THEME_NAME,
+  getThemeDefinition,
+  resolveTheme as resolveThemeColors,
+  themeToCSSVars,
+} from '@/domain/themes';
+
 export type Theme = 'light' | 'dark' | 'system';
 
 type ResolvedTheme = 'light' | 'dark';
@@ -51,13 +59,23 @@ export function resolveTheme(theme: Theme): ResolvedTheme {
   return readDarkQuery()?.matches ? 'dark' : 'light';
 }
 
-export function applyTheme(theme: Theme): () => void {
+export function applyTheme(theme: Theme, themeVariant: string = DEFAULT_THEME_NAME): () => void {
   const root = document.documentElement;
 
   const apply = (): void => {
     const resolved = resolveTheme(theme);
     root.classList.toggle('dark', resolved === 'dark');
     root.style.colorScheme = resolved;
+    root.setAttribute('data-theme', resolved);
+
+    try {
+      const themeDef = getThemeDefinition(themeVariant);
+      const resolvedColors = resolveThemeColors(themeDef, resolved);
+      const cssVars = themeToCSSVars(resolvedColors);
+      applyThemeVars(cssVars);
+    } catch {
+      // Ignorar fallback
+    }
   };
 
   apply();
@@ -69,3 +87,4 @@ export function applyTheme(theme: Theme): () => void {
 
   return subscribeToChange(mediaQueryList, apply);
 }
+

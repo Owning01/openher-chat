@@ -81,7 +81,12 @@ describe('defaults de settings', () => {
   });
 
   it('DEFAULT_UI_SETTINGS arranca con panel visible y chequeo de updates activo', () => {
-    expect(DEFAULT_UI_SETTINGS).toEqual({ researchPanelVisible: true, autoCheckUpdates: true, cloudSync: true });
+    expect(DEFAULT_UI_SETTINGS).toEqual({
+      researchPanelVisible: true,
+      autoCheckUpdates: true,
+      cloudSync: true,
+      themeVariant: 'monochrome',
+    });
   });
 
   it('createDefaultSettings inyecta now y no comparte objetos anidados', () => {

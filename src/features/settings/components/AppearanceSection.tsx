@@ -1,5 +1,6 @@
 import { useId } from 'react';
 
+import { DEFAULT_THEME_NAME, THEME_DEFINITIONS, THEME_NAMES } from '@/domain/themes';
 import type { Locale, ThemeMode } from '@/domain/types/settings';
 import { setLocale } from '@/i18n';
 import { useT } from '@/i18n/useT';
@@ -15,14 +16,22 @@ const LOCALES: readonly Locale[] = ['es', 'en'];
 export function AppearanceSection() {
   const t = useT();
   const theme = useSettingsStore((state) => state.settings.theme);
+  const ui = useSettingsStore((state) => state.settings.ui);
+  const themeVariant = ui.themeVariant ?? DEFAULT_THEME_NAME;
   const locale = useSettingsStore((state) => state.settings.locale);
   const patch = useSettingsStore((state) => state.patch);
   const themeId = useId();
+  const themeVariantId = useId();
   const localeId = useId();
 
   const themeOptions: SelectOption[] = THEMES.map((value) => ({
     value,
     label: t(`common.theme.${value}`),
+  }));
+
+  const themeVariantOptions: SelectOption[] = THEME_NAMES.map((name) => ({
+    value: name,
+    label: THEME_DEFINITIONS[name]?.label ?? name,
   }));
 
   const localeOptions: SelectOption[] = [
@@ -42,12 +51,27 @@ export function AppearanceSection() {
           options={themeOptions}
           onChange={(event) => {
             if (!isThemeMode(event.target.value)) return;
-            applyTheme(event.target.value);
+            applyTheme(event.target.value, themeVariant);
             void patch({ theme: event.target.value });
           }}
         />
       </div>
       <div className="space-y-1.5">
+        <label htmlFor={themeVariantId} className="block text-sm font-medium text-text">
+          {t('settings.appearanceThemeVariant')}
+        </label>
+        <Select
+          id={themeVariantId}
+          value={themeVariant}
+          options={themeVariantOptions}
+          onChange={(event) => {
+            const nextVariant = event.target.value;
+            applyTheme(theme, nextVariant);
+            void patch({ ui: { ...ui, themeVariant: nextVariant } });
+          }}
+        />
+      </div>
+      <div className="space-y-1.5 sm:col-span-2">
         <label htmlFor={localeId} className="block text-sm font-medium text-text">
           {t('settings.appearanceLocale')}
         </label>

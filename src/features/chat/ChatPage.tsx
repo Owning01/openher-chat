@@ -228,6 +228,14 @@ function ChatPageContent() {
     },
     [controller.send],
   );
+  const handleRequestHtmlEdit = useCallback(
+    (instruction: string, code: string): void => {
+      void controller.send(
+        `Por favor, modifica el informe HTML anterior aplicando las siguientes instrucciones:\n\n${instruction}\n\nCódigo HTML actual como referencia:\n\`\`\`html\n${code}\n\`\`\``
+      );
+    },
+    [controller.send],
+  );
 
   const conversation = useMemo(
     () => items.find((entry) => entry.id === conversationId),
@@ -512,6 +520,7 @@ function ChatPageContent() {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onVisualReport={handleVisualReport}
+                    onRequestHtmlEdit={handleRequestHtmlEdit}
                   />
                 )}
                 {busy ? <StreamingIndicator /> : null}

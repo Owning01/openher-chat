@@ -173,7 +173,8 @@ export const settings = defineDict({
     proxyUnreachable: 'No se pudo conectar con el proxy',
     proxyHttpError: 'El proxy respondió con HTTP {status}',
 
-    appearanceTheme: 'Tema',
+    appearanceTheme: 'Modo',
+    appearanceThemeVariant: 'Paleta de tema (OpenCode)',
     appearanceLocale: 'Idioma',
     localeEs: 'Español',
     localeEn: 'English',
@@ -395,7 +396,8 @@ export const settings = defineDict({
     proxyUnreachable: 'Could not reach the proxy',
     proxyHttpError: 'The proxy responded with HTTP {status}',
 
-    appearanceTheme: 'Theme',
+    appearanceTheme: 'Mode',
+    appearanceThemeVariant: 'Theme palette (OpenCode)',
     appearanceLocale: 'Language',
     localeEs: 'Spanish',
     localeEn: 'English',

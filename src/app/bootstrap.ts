@@ -26,7 +26,7 @@ export async function bootstrapApp(
   const settings = await services.settings.load();
 
   setLocale(settings.locale);
-  applyTheme(settings.theme);
+  applyTheme(settings.theme, settings.ui.themeVariant);
 
   let storageError: string | null = null;
   try {

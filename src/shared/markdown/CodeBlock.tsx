@@ -25,9 +25,17 @@ export interface CodeBlockProps {
   /** El código aún está llegando: difiere el highlight pesado. */
   streaming?: boolean;
   onExpand?: (code: string) => void;
+  onRequestEdit?: (instruction: string, code: string) => void;
 }
 
-export function CodeBlock({ code, language, className, streaming = false, onExpand }: CodeBlockProps) {
+export function CodeBlock({
+  code,
+  language,
+  className,
+  streaming = false,
+  onExpand,
+  onRequestEdit,
+}: CodeBlockProps) {
   const resolvedLanguage = resolveLanguage(language);
 
   if (resolvedLanguage === 'html' || resolvedLanguage === 'htm' || resolvedLanguage === 'svg') {
@@ -38,6 +46,7 @@ export function CodeBlock({ code, language, className, streaming = false, onExpa
         className={className}
         streaming={streaming}
         onExpand={onExpand}
+        onRequestEdit={onRequestEdit}
       />
     );
   }

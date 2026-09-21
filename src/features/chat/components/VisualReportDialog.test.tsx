@@ -55,4 +55,47 @@ describe('VisualReportDialog', () => {
     fireEvent.click(fullscreenBtn);
     expect(fullscreenBtn).toHaveTextContent('Ventana');
   });
+
+  it('alterna entre modo claro y modo oscuro en el diálogo', () => {
+    render(
+      <VisualReportDialog
+        open={true}
+        onClose={vi.fn()}
+        rawHtml="<div>Dashboard</div>"
+      />,
+    );
+
+    const iframe = screen.getByTestId('visual-report-iframe');
+    expect(iframe.getAttribute('srcdoc')).toContain('data-theme="light"');
+
+    const modeBtn = screen.getByTestId('visual-report-colormode');
+    fireEvent.click(modeBtn);
+
+    expect(iframe.getAttribute('srcdoc')).toContain('data-theme="dark"');
+  });
+
+  it('permite abrir barra de modificación y llama a onRequestEdit', () => {
+    const onRequestEdit = vi.fn();
+    const onClose = vi.fn();
+    const html = '<div>Reporte interactivo</div>';
+    render(
+      <VisualReportDialog
+        open={true}
+        onClose={onClose}
+        rawHtml={html}
+        onRequestEdit={onRequestEdit}
+      />,
+    );
+
+    const modifyBtn = screen.getByTestId('visual-report-edit-toggle');
+    fireEvent.click(modifyBtn);
+
+    const input = screen.getByTestId('visual-report-edit-input');
+    fireEvent.change(input, { target: { value: 'Agrega una tabla de costos' } });
+
+    fireEvent.click(screen.getByTestId('visual-report-edit-send'));
+
+    expect(onRequestEdit).toHaveBeenCalledWith('Agrega una tabla de costos', html);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 });
