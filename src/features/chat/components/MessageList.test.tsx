@@ -242,4 +242,25 @@ describe('MessageList', () => {
     fireEvent.click(generateBtn);
     expect(onVisualReport).toHaveBeenCalledWith('a1');
   });
+
+  it('durante streaming de bloque html dibuja el artefacto interactivo en vivo con badge y permite expandir', () => {
+    const partialHtml = 'Analizando métricas:\n```html\n<div class="metrics"><h1>Auditoría en Progreso</h1>';
+    const streamingMsg = assistantMessage('a1', [{ type: 'text', text: partialHtml }], {
+      status: 'streaming',
+    });
+    render(<MessageList messages={[streamingMsg]} runStatus="running" {...handlers()} />);
+
+    // El artefacto interactivo se dibuja en vivo dentro del mensaje
+    expect(screen.getByTestId('live-html-artifact')).toBeInTheDocument();
+    expect(screen.getByTestId('live-drawing-badge')).toHaveTextContent('Dibujando en vivo…');
+    expect(screen.getByTestId('live-artifact-iframe')).toBeInTheDocument();
+
+    // Al pulsar el botón de expandir en el artefacto en vivo, abre el diálogo modal
+    const expandBtn = screen.getByTestId('live-artifact-expand');
+    expect(expandBtn).toBeInTheDocument();
+    fireEvent.click(expandBtn);
+
+    expect(screen.getByTestId('visual-report-dialog')).toBeInTheDocument();
+  });
 });
+

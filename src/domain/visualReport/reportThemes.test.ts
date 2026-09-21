@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   extractHtmlReport,
+  extractReportTitle,
   generateThemeCssVars,
   pickDynamicTheme,
   prepareReportHtml,
+  prepareStreamingReportHtml,
   REPORT_THEMES,
   THEME_KEYS,
 } from './reportThemes';
@@ -59,4 +61,28 @@ describe('reportThemes', () => {
     expect(preparedFull).toContain('--primary: #7C2D12');
     expect(preparedFull).toContain('</head>');
   });
+
+  it('extractHtmlReport soporta bloques ```html sin cerrar durante streaming', () => {
+    const streamingText = 'Analizando datos...\n```html\n<div class="grid"><h1>Progreso</h1>';
+    const extracted = extractHtmlReport(streamingText);
+    expect(extracted).toBe('<div class="grid"><h1>Progreso</h1>');
+  });
+
+  it('extractReportTitle obtiene el título de etiquetas title, h1 o h2', () => {
+    expect(extractReportTitle('<!DOCTYPE html><html><head><title>Auditoría 2026</title></head>')).toBe('Auditoría 2026');
+    expect(extractReportTitle('<div class="p-4"><h1 class="text-xl">Resumen Ejecutivo</h1></div>')).toBe('Resumen Ejecutivo');
+    expect(extractReportTitle('<div><h2>Métricas Clave</h2></div>')).toBe('Métricas Clave');
+    expect(extractReportTitle('<div>Sin encabezado</div>')).toBeNull();
+  });
+
+  it('prepareStreamingReportHtml maneja cabeceras no cerradas y fragmentos en tiempo real', () => {
+    const partialDoc = '<!DOCTYPE html><html><head><title>Streaming</title>\n<body><div>Contenido</div>';
+    const prepared = prepareStreamingReportHtml(partialDoc, 'emerald-mint');
+    expect(prepared).toContain('tailwindcss.min.js');
+    expect(prepared).toContain('--primary: #065F46');
+
+    const empty = prepareStreamingReportHtml('');
+    expect(empty).toContain('Dibujando vista previa en vivo');
+  });
 });
+

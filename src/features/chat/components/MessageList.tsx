@@ -111,6 +111,16 @@ export function MessageList({
     setActiveVisualReport({ id: messageId, html });
   }, []);
 
+  // Si el diálogo está abierto y el mensaje continúa recibiendo tokens en streaming,
+  // sincroniza el HTML en vivo para que el modal a pantalla completa también dibuje en tiempo real
+  const currentVisualReportHtml = useMemo(() => {
+    if (!activeVisualReport) return null;
+    const msg = messages.find((m) => m.id === activeVisualReport.id);
+    if (!msg) return activeVisualReport.html;
+    const extracted = extractHtmlReport(messageText(msg));
+    return extracted ?? activeVisualReport.html;
+  }, [activeVisualReport, messages]);
+
   return (
     <>
       <ol data-testid="chat-message-list" className="flex flex-col gap-4">
@@ -132,10 +142,10 @@ export function MessageList({
           </li>
         ))}
       </ol>
-      {activeVisualReport ? (
+      {activeVisualReport && currentVisualReportHtml ? (
         <VisualReportDialog
           open={Boolean(activeVisualReport)}
-          rawHtml={activeVisualReport.html}
+          rawHtml={currentVisualReportHtml}
           title={activeVisualReport.title}
           initialThemeId={pickDynamicTheme(activeVisualReport.id).id}
           onClose={() => setActiveVisualReport(null)}
@@ -316,8 +326,16 @@ function MessageItemInner({
         )
       ) : (
         <div className="w-full space-y-2 rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3">
-          {blocks.map((block, index) => renderBlock(block, index, blocks.length, streaming))}
-          {htmlReport !== null ? (
+          {blocks.map((block, index) =>
+            renderBlock(
+              block,
+              index,
+              blocks.length,
+              streaming,
+              (html) => onOpenVisualReport?.(message.id, html),
+            ),
+          )}
+          {htmlReport !== null && message.status === 'complete' ? (
             <div
               data-testid="visual-report-callout"
               className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3"
@@ -385,13 +403,21 @@ function MessageItemInner({
  */
 const MessageItem = memo(MessageItemInner);
 
-function renderBlock(block: DisplayBlock, index: number, total: number, streaming: boolean): ReactNode {
+function renderBlock(
+  block: DisplayBlock,
+  index: number,
+  total: number,
+  streaming: boolean,
+  onOpenVisualReport?: (html: string) => void,
+): ReactNode {
   const live = streaming && index === total - 1;
   switch (block.type) {
     case 'text':
       return (
         <div key={`text-${index}`} data-block="text">
-          <Markdown streaming={live}>{block.text}</Markdown>
+          <Markdown streaming={live} onOpenVisualReport={onOpenVisualReport}>
+            {block.text}
+          </Markdown>
           {live ? <StreamingCursor /> : null}
         </div>
       );

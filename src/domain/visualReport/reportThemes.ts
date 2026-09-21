@@ -156,11 +156,11 @@ export function generateThemeCssVars(themeId: ReportThemeId): string {
 }`;
 }
 
-/** Extrae un fragmento o documento HTML de un texto con código Markdown. */
+/** Extrae un fragmento o documento HTML de un texto con código Markdown, incluso durante streaming. */
 export function extractHtmlReport(text: string): string | null {
   if (typeof text !== 'string' || text.trim() === '') return null;
 
-  // 1. Busca bloque ```html ... ```
+  // 1. Busca bloque ```html ... ``` (completo)
   const codeBlockMatch = /```html\s*([\s\S]*?)\s*```/i.exec(text);
   if (codeBlockMatch && codeBlockMatch[1] && codeBlockMatch[1].trim() !== '') {
     return codeBlockMatch[1].trim();
@@ -172,9 +172,42 @@ export function extractHtmlReport(text: string): string | null {
     return tagMatch[1].trim();
   }
 
-  // 3. Si el texto completo es un documento HTML directo
+  // 3. Busca bloque ```html ... sin cerrar (durante streaming continuo)
+  const unclosedMatch = /```html\s*([\s\S]+)$/i.exec(text);
+  if (unclosedMatch && unclosedMatch[1] && unclosedMatch[1].trim() !== '') {
+    return unclosedMatch[1].trim();
+  }
+
+  // 4. Si el texto completo es un documento HTML directo
   if (/<!DOCTYPE\s+html|<html[\s>]/i.test(text)) {
     return text.trim();
+  }
+
+  return null;
+}
+
+/**
+ * Extrae un título descriptivo del HTML si contiene <title>, <h1> o <h2>.
+ */
+export function extractReportTitle(rawHtml: string): string | null {
+  if (typeof rawHtml !== 'string') return null;
+
+  const titleMatch = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(rawHtml);
+  if (titleMatch && titleMatch[1]) {
+    const clean = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+    if (clean) return clean;
+  }
+
+  const h1Match = /<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(rawHtml);
+  if (h1Match && h1Match[1]) {
+    const clean = h1Match[1].replace(/<[^>]+>/g, '').trim();
+    if (clean) return clean;
+  }
+
+  const h2Match = /<h2[^>]*>([\s\S]*?)<\/h2>/i.exec(rawHtml);
+  if (h2Match && h2Match[1]) {
+    const clean = h2Match[1].replace(/<[^>]+>/g, '').trim();
+    if (clean) return clean;
   }
 
   return null;
@@ -184,7 +217,7 @@ export function extractHtmlReport(text: string): string | null {
  * Prepara el HTML completo para ser renderizado dentro del iframe, asegurando
  * doctype, scripts permitidos de estilo, viewport responsivo y las variables de tema.
  */
-export function prepareReportHtml(rawHtml: string, themeId: ReportThemeId): string {
+export function prepareReportHtml(rawHtml: string, themeId: ReportThemeId = 'editorial-navy'): string {
   const cssVars = generateThemeCssVars(themeId);
 
   // Si ya tiene <html> y <head>, inyecta el estilo y variables en el <head>
@@ -222,3 +255,43 @@ ${cssVars}
 </body>
 </html>`;
 }
+
+/**
+ * Prepara el HTML progresivo para renderizado en vivo mientras el agente transmite tokens.
+ * Tolera documentos HTML incompletos, etiquetas no cerradas o fragmentos que aún crecen.
+ */
+export function prepareStreamingReportHtml(
+  rawHtml: string,
+  themeId: ReportThemeId = 'editorial-navy',
+): string {
+  if (typeof rawHtml !== 'string' || rawHtml.trim() === '') {
+    return prepareReportHtml(
+      '<div class="flex items-center justify-center p-12 text-sm text-slate-400 font-mono">Dibujando vista previa en vivo…</div>',
+      themeId,
+    );
+  }
+
+  const cssVars = generateThemeCssVars(themeId);
+  const themeStyle = `<style id="openher-theme">\n${cssVars}\nbody { background-color: var(--bg-main); color: var(--text-body); }\n</style>`;
+  const tailwindScript = '<script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>';
+
+  // Caso 1: Contiene <!DOCTYPE o <html
+  if (/<!DOCTYPE|<html/i.test(rawHtml)) {
+    // Si ya cerró </head>, inyecta justo antes de </head>
+    if (/<\/head>/i.test(rawHtml)) {
+      return rawHtml.replace(/<\/head>/i, `${tailwindScript}\n${themeStyle}\n</head>`);
+    }
+    // Si abrió <head> pero no lo cerró aún
+    if (/<head[\s>]/i.test(rawHtml)) {
+      return rawHtml.replace(/(<head[^>]*>)/i, `$1\n${tailwindScript}\n${themeStyle}\n`);
+    }
+    // Si abrió <html...> sin <head> todavía
+    if (/<html[\s>]/i.test(rawHtml)) {
+      return rawHtml.replace(/(<html[^>]*>)/i, `$1\n<head>\n${tailwindScript}\n${themeStyle}\n</head>\n`);
+    }
+  }
+
+  // Caso 2: Es un fragmento parcial (e.g. <div>, <section>, <table>)
+  return prepareReportHtml(rawHtml, themeId);
+}
+

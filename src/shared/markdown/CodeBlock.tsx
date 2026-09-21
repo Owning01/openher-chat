@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { cn } from '@/shared/utils/cn';
 
 import { CopyButton } from './CopyButton';
+import { LiveHtmlArtifact } from './LiveHtmlArtifact';
 import './highlight.css';
 
 export const PLAIN_TEXT_LANGUAGE = 'text';
@@ -23,10 +24,24 @@ export interface CodeBlockProps {
   className?: string;
   /** El código aún está llegando: difiere el highlight pesado. */
   streaming?: boolean;
+  onExpand?: (code: string) => void;
 }
 
-export function CodeBlock({ code, language, className, streaming = false }: CodeBlockProps) {
+export function CodeBlock({ code, language, className, streaming = false, onExpand }: CodeBlockProps) {
   const resolvedLanguage = resolveLanguage(language);
+
+  if (resolvedLanguage === 'html' || resolvedLanguage === 'htm' || resolvedLanguage === 'svg') {
+    return (
+      <LiveHtmlArtifact
+        code={code}
+        language={resolvedLanguage}
+        className={className}
+        streaming={streaming}
+        onExpand={onExpand}
+      />
+    );
+  }
+
   const highlighted = useMemo(() => {
     if (resolvedLanguage === PLAIN_TEXT_LANGUAGE) return null;
     if (code.length > MAX_HIGHLIGHT_LENGTH) return null;

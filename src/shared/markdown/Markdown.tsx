@@ -17,6 +17,8 @@ export interface MarkdownProps {
    * complete (ver `CodeBlock`). Sólo lo usa el último bloque en streaming.
    */
   streaming?: boolean;
+  /** Callback para abrir el reporte visual / artefacto HTML a pantalla completa */
+  onOpenVisualReport?: (html: string) => void;
 }
 
 const BASE_COMPONENTS: Omit<Components, 'pre'> = {
@@ -43,19 +45,25 @@ const BASE_COMPONENTS: Omit<Components, 'pre'> = {
 };
 
 /** Markdown GFM sin HTML crudo: solo http/https se convierten en enlaces externos. */
-export function Markdown({ children, className, streaming = false }: MarkdownProps) {
-  // Objeto estable mientras `streaming` no cambie: si `pre` fuese una función
-  // nueva por render, react-markdown desmontaría cada CodeBlock por token.
+export function Markdown({ children, className, streaming = false, onOpenVisualReport }: MarkdownProps) {
+  // Objeto estable mientras `streaming` o `onOpenVisualReport` no cambien
   const components = useMemo<Components>(
     () => ({
       ...BASE_COMPONENTS,
       pre({ node, children }) {
         const block = readCodeBlock(node);
         if (block === null) return <pre>{children}</pre>;
-        return <CodeBlock code={block.code} language={block.language} streaming={streaming} />;
+        return (
+          <CodeBlock
+            code={block.code}
+            language={block.language}
+            streaming={streaming}
+            onExpand={onOpenVisualReport}
+          />
+        );
       },
     }),
-    [streaming],
+    [streaming, onOpenVisualReport],
   );
   return (
     <div className={cn('space-y-2 break-words text-sm leading-relaxed text-text', className)}>

@@ -78,4 +78,11 @@ describe('CodeBlock', () => {
 
     expect(screen.getByRole('button', { name: 'Copiar' })).toBeInTheDocument();
   });
+
+  it('renderiza LiveHtmlArtifact para lenguaje html', () => {
+    render(<CodeBlock code="<div class='card'>Hola</div>" language="html" />);
+    expect(screen.getByTestId('live-html-artifact')).toBeInTheDocument();
+    expect(screen.getByTestId('live-artifact-iframe')).toBeInTheDocument();
+  });
 });
+
