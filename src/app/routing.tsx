@@ -83,6 +83,9 @@ const OnboardingPage = lazyWithRetry('onboarding', () =>
 const LegalPage = lazyWithRetry('legal', () =>
   import('@/features/legal/LegalPage').then((module) => ({ default: module.LegalPage })),
 );
+const LegalManualPage = lazyWithRetry('manual', () =>
+  import('@/features/legal/LegalManualPage').then((module) => ({ default: module.LegalManualPage })),
+);
 
 /**
  * Precarga los chunks de rutas diferidas cuando la app ya está en pantalla:
@@ -93,6 +96,7 @@ export function preloadRoutes(): void {
   window.setTimeout(() => {
     void import('@/features/settings/SettingsPage').catch(() => undefined);
     void import('@/features/legal/LegalPage').catch(() => undefined);
+    void import('@/features/legal/LegalManualPage').catch(() => undefined);
     void import('@/features/onboarding/OnboardingPage').catch(() => undefined);
   }, 1500);
 }
@@ -104,12 +108,14 @@ export type Route =
   | { name: 'onboarding'; conversationId: null }
   // `login` es la entrada pública cuando hay auth sin sesión (la ve el AuthGate).
   | { name: 'login'; conversationId: null }
+  // `manual` es la guía práctica y forense para el letrado.
+  | { name: 'manual'; conversationId: null }
   // `caseId`/`conversationId` nulos = lista sin selección; el layout los lee igual que en el chat.
   | { name: 'legal'; caseId: string | null; conversationId: string | null };
 
 const DEFAULT_ROUTE: Route = { name: 'chat', conversationId: null };
 
-/** Hash → ruta. `#/chat/:id?`, `#/legal/:caseId?/:conversationId?`, `#/settings` y `#/onboarding`; cualquier otro valor cae a `#/chat`. */
+/** Hash → ruta. `#/chat/:id?`, `#/legal/:caseId?/:conversationId?`, `#/settings`, `#/manual` y `#/onboarding`; cualquier otro valor cae a `#/chat`. */
 export function parseRoute(hash: string): Route {
   const raw = hash.startsWith('#') ? hash.slice(1) : hash;
   const [pathPart, queryPart] = raw.split('?');
@@ -119,6 +125,7 @@ export function parseRoute(hash: string): Route {
   if (head === 'settings') return { name: 'settings' };
   if (head === 'onboarding') return { name: 'onboarding', conversationId: null };
   if (head === 'login') return { name: 'login', conversationId: null };
+  if (head === 'manual' || head === 'guia') return { name: 'manual', conversationId: null };
   if (head === 'legal') {
     const caseId = segment !== undefined && segment !== '' ? safeDecode(segment) : null;
     const conversationId =
@@ -146,6 +153,7 @@ export const SETTINGS_HREF = '#/settings';
 export const ONBOARDING_HREF = '#/onboarding';
 export const LOGIN_HREF = '#/login';
 export const LEGAL_HREF = '#/legal';
+export const MANUAL_HREF = '#/manual';
 
 /** Href del expediente: `#/legal`, `#/legal/:caseId` o `#/legal/:caseId/:conversationId` (query si hay conversación sin caso). */
 export function legalHref(caseId?: string | null, conversationId?: string | null): string {
@@ -185,6 +193,13 @@ export function AppRoutes() {
     return (
       <LazyRoute label={t('app.settingsTitle')}>
         <SettingsPage />
+      </LazyRoute>
+    );
+  }
+  if (route.name === 'manual') {
+    return (
+      <LazyRoute label={t('legalManual.title')}>
+        <LegalManualPage />
       </LazyRoute>
     );
   }

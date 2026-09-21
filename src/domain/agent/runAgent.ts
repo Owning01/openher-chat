@@ -77,6 +77,10 @@ export interface RunAgentParams {
    * `selectHistoryByBudget`.
    */
   model?: ModelInfo;
+  /** Habilita la ejecución concurrente / especulativa de herramientas de solo lectura. */
+  speculativeExecution?: boolean;
+  /** Habilita rescate cognitivo coercitivo ante fallos reiterados o thrashing de herramientas. */
+  cognitiveRescue?: boolean;
 }
 
 const CACHED_CALL_NOTE = '[note: identical call already executed; reusing cached result]';
@@ -93,6 +97,101 @@ const NOT_EXECUTED_DETAIL: Record<NotExecutedReason, string> = {
   failed: 'was not executed because the run stopped after repeated tool failures',
   skipped: 'was not executed in this run',
 };
+
+export const COGNITIVE_RESCUE_DIRECTIVE =
+  '[SISTEMA DE RESCATE COGNITIVO DEL AGENTE]\n' +
+  'Se ha detectado un bucle improductivo o fallo reiterado en la invocación de herramientas (thrashing/doom-loop).\n' +
+  'La ejecución de herramientas ha sido suspendida para preservar el objetivo. ' +
+  'Reflexiona críticamente sobre los obstáculos encontrados y sintetiza la mejor respuesta final posible con la información disponible.';
+
+const READ_ONLY_TOOLS = new Set([
+  'web_search',
+  'fetch_page',
+  'open_url',
+  'read_document',
+  'search_document_chunks',
+  'audit_document',
+  'summarize_document',
+]);
+
+function isReadOnlyTool(name: string): boolean {
+  return READ_ONLY_TOOLS.has(name);
+}
+
+/** Coeficiente de Sørensen-Dice sobre bigramas para detectar thrashing de argumentos (> 0.85). */
+export function computeArgumentSimilarity(a: string, b: string): number {
+  if (a === b) return 1;
+  if (a.length < 2 || b.length < 2) return 0;
+
+  const getBigrams = (str: string) => {
+    const bigrams = new Map<string, number>();
+    for (let i = 0; i < str.length - 1; i++) {
+      const bigram = str.slice(i, i + 2);
+      bigrams.set(bigram, (bigrams.get(bigram) ?? 0) + 1);
+    }
+    return bigrams;
+  };
+
+  const bigramsA = getBigrams(a);
+  const bigramsB = getBigrams(b);
+
+  let intersection = 0;
+  for (const [bigram, countA] of bigramsA.entries()) {
+    const countB = bigramsB.get(bigram) ?? 0;
+    intersection += Math.min(countA, countB);
+  }
+
+  const total = a.length - 1 + (b.length - 1);
+  return (2 * intersection) / total;
+}
+
+export interface ToolHistoryEntry {
+  name: string;
+  argsText: string;
+  ok: boolean;
+  step: number;
+}
+
+export function detectThrashing(history: readonly ToolHistoryEntry[]): boolean {
+  if (history.length < 2) return false;
+  const last = history[history.length - 1];
+  const prev = history[history.length - 2];
+  if (!last || !prev) return false;
+
+  if (last.name === prev.name) {
+    if (!last.ok && computeArgumentSimilarity(last.argsText, prev.argsText) >= 0.85) {
+      return true;
+    }
+    if (history.length >= 3) {
+      const prev2 = history[history.length - 3];
+      if (
+        prev2 &&
+        prev2.name === last.name &&
+        computeArgumentSimilarity(last.argsText, prev.argsText) >= 0.85 &&
+        computeArgumentSimilarity(prev.argsText, prev2.argsText) >= 0.85
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+const SECRET_PATTERNS = [
+  /sk-[a-zA-Z0-9_-]{20,}/g,
+  /gsk_[a-zA-Z0-9_-]{20,}/g,
+  /csk-[a-zA-Z0-9_-]{20,}/g,
+  /AIza[0-9A-Za-z-_]{35}/g,
+  /bearer\s+[a-zA-Z0-9_.-]{20,}/gi,
+];
+
+function redactSecrets(text: string): string {
+  let sanitized = text;
+  for (const pattern of SECRET_PATTERNS) {
+    sanitized = sanitized.replace(pattern, '[REDACTED_SECRET]');
+  }
+  return sanitized;
+}
 
 const MESSAGE_ERROR_CODES: readonly MessageErrorCode[] = [
   'auth',
@@ -157,6 +256,8 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
   const runBlocks: MessageContent[] = [];
   const toolResultCache = new Map<string, ToolResult>();
   let consecutiveToolFailures = 0;
+  let cognitiveRescueAttempted = false;
+  const toolCallHistory: Array<{ name: string; argsText: string; ok: boolean; step: number }> = [];
   let contextLengthRetried = false;
   let runUsage: TokenUsage | undefined;
   let finalStatus: AgentRunStatus = 'complete';
@@ -181,7 +282,9 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
     // Visión: transporte Y modelo. Sin ella las imágenes degradan a descriptor
     // de texto en el wire (nunca se envían bytes que el proveedor rechazaría).
     const imagesSupported = capabilities.images && p.model?.supportsImages !== false;
-    const toolDefinitions = toolsEnabled ? d.tools.list() : [];
+    // Prompt Caching: ordenamiento canónico determinista de schemas por nombre de herramienta.
+    const rawTools = toolsEnabled ? d.tools.list() : [];
+    const toolDefinitions = [...rawTools].sort((a, b) => a.name.localeCompare(b.name));
     const requestTools = toolDefinitions.length > 0 ? toolDefinitions : undefined;
 
     steps: for (;;) {
@@ -360,58 +463,169 @@ export async function* runAgent(p: RunAgentParams, d: RunAgentDeps): AsyncGenera
 
       if (shouldRunTools) {
         try {
-          for (const call of attempt.toolCalls) {
-            if (p.signal.aborted) {
-              abortedDuringTools = true;
-              break;
-            }
+          const isSpeculative =
+            p.speculativeExecution === true &&
+            attempt.toolCalls.length > 1 &&
+            attempt.toolCalls.every((c) => isReadOnlyTool(c.name));
+
+          if (isSpeculative) {
             if (elapsedWallClock(budgetState, d.clock()) >= p.budget.maxWallClockMs) {
               budgetDuringTools = true;
-              break;
-            }
-            if (budgetState.toolCalls >= p.budget.maxToolCalls) {
-              budgetDuringTools = true;
-              break;
-            }
-
-            const prepared = prepareToolCall(call, d.tools, toolResultCache);
-            yield { type: 'tool-start', stepIndex, toolCall: prepared.call };
-            startedToolCallIds.add(prepared.call.id);
-
-            let result: ToolResult;
-            if (prepared.kind === 'immediate') {
-              result = prepared.result;
             } else {
-              const execution = await executePreparedTool(prepared, p, d);
-              if (execution.kind === 'aborted') {
+              const maxAllowed = Math.max(0, p.budget.maxToolCalls - budgetState.toolCalls);
+              const toExecute = attempt.toolCalls.slice(0, maxAllowed);
+              if (toExecute.length < attempt.toolCalls.length) {
+                budgetDuringTools = true;
+              }
+
+              const preparedList = toExecute.map((call) => {
+                const prep = prepareToolCall(call, d.tools, toolResultCache);
+                startedToolCallIds.add(prep.call.id);
+                return prep;
+              });
+
+              for (const prep of preparedList) {
+                yield { type: 'tool-start', stepIndex, toolCall: prep.call };
+              }
+
+              const executions = await Promise.all(
+                preparedList.map(async (prep) => {
+                  if (prep.kind === 'immediate') {
+                    return { prep, exec: { kind: 'result' as const, result: prep.result } };
+                  }
+                  const execution = await executePreparedTool(prep, p, d);
+                  if (execution.kind === 'result') {
+                    toolResultCache.set(prep.cacheKey, execution.result);
+                  }
+                  return { prep, exec: execution };
+                }),
+              );
+
+              for (const { prep, exec } of executions) {
+                if (exec.kind === 'aborted' || p.signal.aborted) {
+                  abortedDuringTools = true;
+                  break;
+                }
+                budgetState.toolCalls += 1;
+                const limitedResult = truncateToolResult(exec.result, prep.def, p.budget.maxToolResultChars);
+                executedToolCallIds.add(prep.call.id);
+                runBlocks.push({
+                  type: 'tool-result',
+                  toolCallId: prep.call.id,
+                  toolName: prep.call.name,
+                  result: limitedResult,
+                });
+
+                const argsText = prep.kind === 'ready' ? stableStringify(prep.args) : prep.call.argumentsText;
+                toolCallHistory.push({
+                  name: prep.call.name,
+                  argsText,
+                  ok: limitedResult.ok,
+                  step: stepIndex,
+                });
+
+                if (limitedResult.ok) {
+                  consecutiveToolFailures = 0;
+                } else {
+                  consecutiveToolFailures += 1;
+                  lastToolFailure = limitedResult;
+                }
+                yield { type: 'tool-end', stepIndex, toolCall: prep.call, result: limitedResult };
+
+                const shouldRescue = p.cognitiveRescue === true && !cognitiveRescueAttempted;
+                const thrashing = detectThrashing(toolCallHistory);
+                if (consecutiveToolFailures >= 2 || (p.cognitiveRescue === true && thrashing)) {
+                  if (shouldRescue) {
+                    cognitiveRescueAttempted = true;
+                    answerForced = true;
+                    consecutiveToolFailures = 0;
+                    runBlocks.push({
+                      type: 'text',
+                      text: COGNITIVE_RESCUE_DIRECTIVE,
+                    });
+                    break;
+                  } else {
+                    failedTwice = true;
+                    break;
+                  }
+                }
+              }
+            }
+          } else {
+            for (const call of attempt.toolCalls) {
+              if (p.signal.aborted) {
                 abortedDuringTools = true;
                 break;
               }
-              result = execution.result;
-              toolResultCache.set(prepared.cacheKey, result);
-            }
+              if (elapsedWallClock(budgetState, d.clock()) >= p.budget.maxWallClockMs) {
+                budgetDuringTools = true;
+                break;
+              }
+              if (budgetState.toolCalls >= p.budget.maxToolCalls) {
+                budgetDuringTools = true;
+                break;
+              }
 
-            budgetState.toolCalls += 1;
-            const limitedResult = truncateToolResult(result, prepared.def, p.budget.maxToolResultChars);
-            executedToolCallIds.add(prepared.call.id);
-            runBlocks.push({
-              type: 'tool-result',
-              toolCallId: prepared.call.id,
-              toolName: prepared.call.name,
-              result: limitedResult,
-            });
+              const prepared = prepareToolCall(call, d.tools, toolResultCache);
+              yield { type: 'tool-start', stepIndex, toolCall: prepared.call };
+              startedToolCallIds.add(prepared.call.id);
 
-            if (limitedResult.ok) {
-              consecutiveToolFailures = 0;
-            } else {
-              consecutiveToolFailures += 1;
-              lastToolFailure = limitedResult;
-            }
-            yield { type: 'tool-end', stepIndex, toolCall: prepared.call, result: limitedResult };
+              let result: ToolResult;
+              if (prepared.kind === 'immediate') {
+                result = prepared.result;
+              } else {
+                const execution = await executePreparedTool(prepared, p, d);
+                if (execution.kind === 'aborted') {
+                  abortedDuringTools = true;
+                  break;
+                }
+                result = execution.result;
+                toolResultCache.set(prepared.cacheKey, result);
+              }
 
-            if (consecutiveToolFailures >= 2) {
-              failedTwice = true;
-              break;
+              budgetState.toolCalls += 1;
+              const limitedResult = truncateToolResult(result, prepared.def, p.budget.maxToolResultChars);
+              executedToolCallIds.add(prepared.call.id);
+              runBlocks.push({
+                type: 'tool-result',
+                toolCallId: prepared.call.id,
+                toolName: prepared.call.name,
+                result: limitedResult,
+              });
+
+              const argsText = prepared.kind === 'ready' ? stableStringify(prepared.args) : prepared.call.argumentsText;
+              toolCallHistory.push({
+                name: prepared.call.name,
+                argsText,
+                ok: limitedResult.ok,
+                step: stepIndex,
+              });
+
+              if (limitedResult.ok) {
+                consecutiveToolFailures = 0;
+              } else {
+                consecutiveToolFailures += 1;
+                lastToolFailure = limitedResult;
+              }
+              yield { type: 'tool-end', stepIndex, toolCall: prepared.call, result: limitedResult };
+
+              const shouldRescue = p.cognitiveRescue === true && !cognitiveRescueAttempted;
+              const thrashing = detectThrashing(toolCallHistory);
+              if (consecutiveToolFailures >= 2 || (p.cognitiveRescue === true && thrashing)) {
+                if (shouldRescue) {
+                  cognitiveRescueAttempted = true;
+                  answerForced = true;
+                  consecutiveToolFailures = 0;
+                  runBlocks.push({
+                    type: 'text',
+                    text: COGNITIVE_RESCUE_DIRECTIVE,
+                  });
+                  break;
+                } else {
+                  failedTwice = true;
+                  break;
+                }
+              }
             }
           }
         } catch (cause) {
@@ -680,9 +894,10 @@ function effectiveToolTimeout(def: ToolDefinition, budgetTimeoutMs: number): num
 }
 
 function truncateToolResult(result: ToolResult, def: ToolDefinition | undefined, maxToolResultChars: number): ToolResult {
+  const sanitized = redactSecrets(result.content);
   const limit = def === undefined ? maxToolResultChars : Math.min(def.maxResultChars, maxToolResultChars);
-  const content = truncateToLimit(result.content, limit);
-  return content === result.content ? result : { ...result, content };
+  const content = truncateToLimit(sanitized, limit);
+  return content === result.content && sanitized === result.content ? result : { ...result, content };
 }
 
 /**

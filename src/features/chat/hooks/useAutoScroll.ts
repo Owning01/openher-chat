@@ -60,7 +60,9 @@ export function useAutoScroll<T extends HTMLElement = HTMLDivElement>(
     if (!enabled || !pinnedRef.current) return;
     const element = scrollRef.current;
     if (element === null) return;
-    element.scrollTop = element.scrollHeight;
+    if (element.scrollTop !== element.scrollHeight) {
+      element.scrollTop = element.scrollHeight;
+    }
   }, [revision, enabled]);
 
   return { scrollRef, isAtBottom: enabled ? isAtBottom : true, onScroll, scrollToBottom };

@@ -1,7 +1,7 @@
 import { Monitor, Moon, Scale, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import { LEGAL_HREF, navigate, SETTINGS_HREF, useRoute } from '@/app/routing';
+import { LEGAL_HREF, MANUAL_HREF, navigate, SETTINGS_HREF, useRoute } from '@/app/routing';
 import type { Route } from '@/app/routing';
 import { useServices } from '@/app/services';
 import type { Conversation } from '@/domain/types/conversation';
@@ -12,7 +12,7 @@ import { useConversationsStore } from '@/features/conversations/state/conversati
 import { useT } from '@/i18n/useT';
 import type { Translate } from '@/i18n/useT';
 import { useTheme } from '@/shared/hooks/useTheme';
-import { LogOut, Menu, Plus, Settings } from '@/shared/icons';
+import { BookOpen, LogOut, Menu, Plus, Settings } from '@/shared/icons';
 import type { LucideIcon } from '@/shared/icons';
 import { IconButton, useToast } from '@/shared/ui';
 
@@ -89,6 +89,11 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
         onClick={() => navigate(LEGAL_HREF)}
       />
       <IconButton
+        label={t('legalManual.title')}
+        icon={<BookOpen aria-hidden="true" />}
+        onClick={() => navigate(MANUAL_HREF)}
+      />
+      <IconButton
         label={t('app.themeCurrent', { mode: t(`common.theme.${theme}`) })}
         icon={<ThemeIcon aria-hidden="true" />}
         onClick={() => void cycleTheme()}
@@ -114,6 +119,7 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
 function resolveTitle(route: Route, conversation: Conversation | undefined, t: Translate): string {
   if (route.name === 'settings') return t('app.settingsTitle');
   if (route.name === 'legal') return t('legalCases.title');
+  if (route.name === 'manual') return t('legalManual.title');
   // En el chat el título de la conversación ya lo muestra la cabecera propia
   // de `ChatPage`: acá va el nombre de la app para no duplicarlo.
   void conversation;

@@ -102,4 +102,37 @@ describe('ModelPicker', () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it('inyecta modelos free de Zen cuando el proveedor es opencode', () => {
+    const opencodeProvider: ProviderConfig = {
+      id: 'opencode-zen',
+      label: 'OpenCode Zen',
+      kind: 'opencode',
+      baseUrl: 'https://opencode.example/v1',
+      requiresKey: true,
+      keyRef: 'key1',
+      models: [],
+      defaultModelId: null,
+      createdAt: 0,
+      updatedAt: 0,
+    };
+
+    const { container } = render(
+      <ModelPicker
+        providers={[opencodeProvider]}
+        providerId="opencode-zen"
+        modelId="deepseek-v4-flash-free"
+        label="Modelo"
+        placeholder="Modelo"
+        onSelect={() => undefined}
+      />,
+    );
+
+    const select = screen.getByRole('combobox', { name: 'Modelo' });
+    expect(select).toBeInTheDocument();
+    const options = Array.from(container.querySelectorAll('option')).map((o) => o.textContent);
+    expect(options).toContain('DeepSeek V4 Flash (Free)');
+    expect(options).toContain('Nemotron 3 Ultra (Free)');
+  });
 });
+

@@ -1,6 +1,7 @@
 export {
   ArrowLeft,
   ArrowRight,
+  BookOpen,
   Brain,
   Check,
   ChevronDown,

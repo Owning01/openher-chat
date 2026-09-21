@@ -11,6 +11,8 @@ apk/
 # Agent scratch
 scratch/
 .debug/
+importante/
+prueba-documentos/
 
 # Local overrides and env
 *.local

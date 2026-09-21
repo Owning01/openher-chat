@@ -53,28 +53,41 @@ export interface LegalGapEntry {
   missingArticle?: string;
 }
 
+import type { LegalCaseRepository } from '@/domain/ports/LegalCaseRepository';
+import { createDocumentTools } from './documentTools';
+export * from './documentTools';
+
 /** Deps propias de las tools legales (no tocan `ToolRegistryDeps`, congelado). */
 export interface LegalToolDeps {
   corpus: LegalToolCorpus;
+  cases?: LegalCaseRepository;
+  caseId?: string;
   reportGap?: (entry: LegalGapEntry) => void;
   now?: () => number;
 }
 
 /**
- * Crea el registry con las tools legales. No filtra por modo: el caller
+ * Crea el registry con las tools legales y de documentos. No filtra por modo: el caller
  * decide cuándo exponerlo (T19).
  */
 export function createLegalToolRegistry(deps: LegalToolDeps): ToolRegistry {
   const now = deps.now ?? Date.now;
   const legalSearch = createLegalSearchTool(deps, now);
   const citeArticle = createCiteArticleTool(deps, now);
+  const docTools =
+    deps.cases && deps.caseId
+      ? createDocumentTools({ cases: deps.cases, caseId: deps.caseId, now })
+      : [];
+
+  const allTools = [legalSearch, citeArticle, ...docTools];
+  const toolsByName = new Map<string, ToolDefinition>();
+  for (const t of allTools) {
+    toolsByName.set(t.name, t);
+  }
+
   return {
-    list: () => [legalSearch, citeArticle],
-    get: (name: string): ToolDefinition | undefined => {
-      if (name === legalSearch.name) return legalSearch;
-      if (name === citeArticle.name) return citeArticle;
-      return undefined;
-    },
+    list: () => [...toolsByName.values()],
+    get: (name: string): ToolDefinition | undefined => toolsByName.get(name),
   };
 }
 

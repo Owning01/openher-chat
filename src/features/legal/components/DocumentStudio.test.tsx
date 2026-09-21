@@ -36,11 +36,11 @@ function mockClipboard() {
 }
 
 describe('DocumentStudio', () => {
-  it('ofrece las tres plantillas y muestra la checklist de la demanda (art. 330)', () => {
+  it('ofrece las plantillas registradas y muestra la checklist de la demanda (art. 330)', () => {
     render(<DocumentStudio caseData={CASE} index={null} />);
 
     const select = screen.getByTestId('document-template') as HTMLSelectElement;
-    expect(select.options).toHaveLength(3);
+    expect(select.options).toHaveLength(5);
     const checklist = screen.getByTestId('document-checklist');
     expect(checklist).toHaveTextContent('CPCCN-330');
     expect(checklist).toHaveTextContent('La petición en términos claros y positivos');
@@ -73,6 +73,7 @@ describe('DocumentStudio', () => {
       'Exportación bloqueada',
     );
     expect(screen.getByTestId('document-export-download')).toBeDisabled();
+    expect(screen.getByTestId('document-export-docx')).toBeDisabled();
     expect(screen.getByTestId('document-export-copy')).toBeDisabled();
     expect(screen.getByTestId('document-export-print')).toBeDisabled();
   });
@@ -93,6 +94,7 @@ describe('DocumentStudio', () => {
 
     expect(screen.queryByTestId('document-export-blocked')).toBeNull();
     expect(screen.getByTestId('document-export-copy')).toBeEnabled();
+    expect(screen.getByTestId('document-export-docx')).toBeEnabled();
 
     fireEvent.click(screen.getByTestId('document-export-copy'));
 
@@ -132,5 +134,41 @@ describe('DocumentStudio', () => {
     const limits = screen.getByTestId('document-limits');
     expect(limits).toHaveTextContent('no presentable');
     expect(limits).toHaveTextContent('Android');
+  });
+
+  it('permite alternar a la vista de redacción por capítulos y copiar el prompt estructurado', async () => {
+    const writeText = mockClipboard();
+    render(<DocumentStudio caseData={CASE} index={null} />);
+
+    // Alternar a vista de capítulos
+    fireEvent.click(screen.getByTestId('document-view-sections'));
+    expect(screen.getByTestId('document-sections-view')).toBeVisible();
+
+    // El botón para pedir redacción al asistente copia el prompt anti-truncamiento
+    const promptBtn = screen.getByTestId('document-section-prompt-btn');
+    fireEvent.click(promptBtn);
+
+    await vi.waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+    const copiedPrompt = writeText.mock.calls[0]?.[0] ?? '';
+    expect(copiedPrompt).toContain('ANTI-TRUNCAMIENTO');
+    expect(copiedPrompt).toContain('Caso testigo');
+
+    expect(await screen.findByTestId('document-section-prompt-feedback')).toHaveTextContent(
+      'Prompt copiado',
+    );
+  });
+
+  it('permite alternar a la auditoría forense y muestra las métricas de completitud', () => {
+    render(<DocumentStudio caseData={CASE} index={null} />);
+
+    // Alternar a vista de auditoría
+    fireEvent.click(screen.getByTestId('document-view-audit'));
+    const auditPanel = screen.getByTestId('document-audit-panel');
+    expect(auditPanel).toBeVisible();
+
+    // Contiene métricas de palabras y fojas
+    expect(auditPanel).toHaveTextContent('Palabras');
+    expect(auditPanel).toHaveTextContent('Fojas aprox.');
+    expect(auditPanel).toHaveTextContent('Reserva Caso Federal');
   });
 });

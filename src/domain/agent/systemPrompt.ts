@@ -1,6 +1,13 @@
 import type { Locale } from '../types/settings';
 import type { SkillPromptEntry } from '../types/skill';
 
+export interface SystemPromptCapabilities {
+  webResearch?: boolean;
+  legalDocuments?: boolean;
+  skills?: boolean;
+  vision?: boolean;
+}
+
 export interface BuildSystemPromptInput {
   researchMode: boolean;
   now: number;
@@ -10,6 +17,10 @@ export interface BuildSystemPromptInput {
    * cambia (el prefijo cacheable de los turnos sin skills queda intacto).
    */
   skills?: readonly SkillPromptEntry[];
+  /** Plataforma de ejecución detectada (Android vs Web/Desktop PWA). */
+  platform?: 'android' | 'web';
+  /** Resumen de capacidades y herramientas activas en este turno. */
+  capabilities?: SystemPromptCapabilities;
 }
 
 const LANGUAGE_INSTRUCTIONS: Record<Locale, string> = {
@@ -33,12 +44,16 @@ const STYLE_INSTRUCTIONS = [
 const RESEARCH_INSTRUCTIONS = [
   'Research mode is enabled: you can call the provided web tools.',
   '- EVERY time the user asks to research, look up, check, or asks about current events, you MUST call the web tools before answering; never answer such requests from memory alone.',
+  '- Multi-query exploration: perform fan-out searches with varied keywords and timeframes instead of relying on a single query.',
+  '- Deep inspection: use `open_url` to inspect complete source pages when snippets lack depth or when verifying technical/factual details.',
   '- Search before stating facts that may have changed recently and prefer the most recent results.',
+  '- Fact-checking & gotchas: actively look for failure modes, counter-evidence, hidden costs, or discrepancies across sources. State agreements and contradictions explicitly.',
   '- Cite every borrowed fact with bracketed numbers like [1], [2] that map, in order, to the `sources` array of the tool results you actually used.',
   '- Never invent URLs, titles, or sources; only cite pages returned by the tools.',
   '- If the tools fail or return nothing useful, say so instead of guessing.',
   '- Once you have enough evidence, stop calling tools and write the final answer in the same turn; never end with only tool calls.',
   '- Research answers must be THOROUGH, not summaries: explain the findings step by step, include concrete data (numbers, dates, names), describe what each source says, note agreements and contradictions between sources, and state what could not be verified. Write a complete briefing the reader could act on without opening the links.',
+  '- Visual Reports: When the user requests a visual report, dashboard, or visual synthesis, format it as a self-contained, beautifully styled HTML document inside a ```html code block with interactive metric cards, comparison matrices, and clear sectioning.',
 ].join('\n');
 
 const BUDGET_NOTE =
@@ -58,6 +73,37 @@ function composeSkillsSection(skills: readonly SkillPromptEntry[]): string {
   return `${SKILLS_INSTRUCTIONS}\n${lines.join('\n')}`;
 }
 
+/** Manifiesto de entorno y contexto de ejecución del dispositivo (Agent Harness). */
+function composeEnvironmentSection(
+  platform?: 'android' | 'web',
+  capabilities?: SystemPromptCapabilities,
+  researchMode?: boolean,
+  hasSkills?: boolean,
+): string {
+  const hostLabel =
+    platform === 'android'
+      ? 'Android mobile device (Capacitor native shell)'
+      : 'Web browser / desktop PWA';
+
+  const lines = [
+    'Environment & Execution Context:',
+    `- Host: OpenHer Chat client running on ${hostLabel}.`,
+    '- Architecture: Single-user local-first application. All chats, legal cases, settings, and API keys are stored solely on the user device (IndexedDB/KeyVault). There is no intermediate server, proxy, or tracking backend.',
+  ];
+
+  const caps: string[] = [];
+  if (capabilities?.webResearch ?? researchMode) caps.push('Web search & page retrieval (web_search, fetch_page)');
+  if (capabilities?.legalDocuments) caps.push('Legal document studio (read, patch, chunk search, forensic linting/audit)');
+  if (capabilities?.skills ?? hasSkills) caps.push('User skills (load_skill)');
+  if (capabilities?.vision) caps.push('Multimodal image perception');
+
+  if (caps.length > 0) {
+    lines.push(`- Active capabilities in this session: ${caps.join(', ')}.`);
+  }
+
+  return lines.join('\n');
+}
+
 /**
  * System prompt en inglés (texto para el modelo, spec §3): fecha UTC, idioma de
  * respuesta, estilo de respuesta, instrucciones de investigación (si aplica) y
@@ -67,14 +113,16 @@ function composeSkillsSection(skills: readonly SkillPromptEntry[]): string {
  * un timestamp con segundos invalidaría la caché de prompt en cada turno.
  */
 export function buildSystemPrompt(input: BuildSystemPromptInput): string {
+  const hasSkills = input.skills !== undefined && input.skills.length > 0;
   const sections = [
     'You are OpenHer, a helpful AI assistant.',
     `Current date (UTC): ${new Date(input.now).toISOString().slice(0, 10)}.`,
+    composeEnvironmentSection(input.platform, input.capabilities, input.researchMode, hasSkills),
     LANGUAGE_INSTRUCTIONS[input.locale],
     STYLE_INSTRUCTIONS,
   ];
   if (input.researchMode) sections.push(RESEARCH_INSTRUCTIONS);
-  if (input.skills !== undefined && input.skills.length > 0) {
+  if (hasSkills && input.skills !== undefined) {
     sections.push(composeSkillsSection(input.skills));
   }
   sections.push(BUDGET_NOTE);

@@ -212,4 +212,34 @@ describe('MessageList', () => {
 
     expect(container.querySelector('.hljs-keyword')).not.toBeNull();
   });
+
+  it('muestra el callout de informe visual y abre el diálogo al hacer click cuando hay reporte HTML', () => {
+    const reportHtml = '```html\n<div class="card"><h1>Reporte Gráfico</h1></div>\n```';
+    const message = assistantMessage('a1', [{ type: 'text', text: reportHtml }], { status: 'complete' });
+    render(<MessageList messages={[message]} runStatus="idle" {...handlers()} />);
+
+    const callout = screen.getByTestId('visual-report-callout');
+    expect(callout).toBeInTheDocument();
+
+    const openButtons = screen.getAllByRole('button', { name: 'Ver informe visual' });
+    expect(openButtons.length).toBeGreaterThanOrEqual(1);
+
+    fireEvent.click(openButtons[0]!);
+    expect(screen.getByTestId('visual-report-dialog')).toBeInTheDocument();
+    expect(screen.getByTestId('visual-report-iframe')).toBeInTheDocument();
+  });
+
+  it('dispara onVisualReport al presionar Generar informe visual en un mensaje sin HTML', () => {
+    const onVisualReport = vi.fn();
+    const message = assistantMessage('a1', [{ type: 'text', text: 'Respuesta analítica sin html' }], {
+      status: 'complete',
+    });
+    render(<MessageList messages={[message]} runStatus="idle" onVisualReport={onVisualReport} {...handlers()} />);
+
+    const generateBtn = screen.getByRole('button', { name: 'Generar informe visual' });
+    expect(generateBtn).toBeInTheDocument();
+
+    fireEvent.click(generateBtn);
+    expect(onVisualReport).toHaveBeenCalledWith('a1');
+  });
 });

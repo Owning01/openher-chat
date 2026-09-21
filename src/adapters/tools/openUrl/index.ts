@@ -199,13 +199,27 @@ export function parseReaderText(text: string, fallbackTitle: string): ExtractedA
   };
 }
 
+import { createObservationPack, formatObservationSummary } from '@/domain/agent/observationPack';
+
 function buildSuccess(url: string, article: ExtractedArticle, startedAt: number, endedAt: number): ToolResult {
   const title = article.title.trim() === '' ? url : article.title.trim();
   const description = article.description.trim();
   const lines = [`Title: ${title}`, `URL: ${url}`];
   if (description !== '') lines.push(`Description: ${description}`);
-  lines.push('', article.text.trim() === '' ? 'No readable text was found on this page.' : article.text);
+
+  if (article.text.length > 2_500) {
+    const pack = createObservationPack({
+      title,
+      sourceUrl: url,
+      fullContent: article.text,
+      now: () => endedAt,
+    });
+    lines.push('', formatObservationSummary(pack));
+  } else {
+    lines.push('', article.text.trim() === '' ? 'No readable text was found on this page.' : article.text);
+  }
   if (article.truncated) lines.push('', '[Content truncated to the extraction limit.]');
+
   const source: SourceRef = { url, title, accessedAt: endedAt };
   if (description !== '') source.snippet = description;
   return { ok: true, content: lines.join('\n'), sources: [source], durationMs: Math.max(0, endedAt - startedAt) };

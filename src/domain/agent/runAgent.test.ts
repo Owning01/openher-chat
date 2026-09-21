@@ -6,7 +6,14 @@ import type { ChatMessage, MessageContent, MessageErrorCode, ToolErrorCode, Tool
 import type { ModelInfo, ProviderCapabilities } from '../types/provider';
 import type { StreamEvent, WireMessage } from '../types/stream';
 import type { ToolDefinition, ToolRegistry } from '../types/tools';
-import { runAgent, type RunAgentDeps, type RunAgentParams } from './runAgent';
+import {
+  COGNITIVE_RESCUE_DIRECTIVE,
+  computeArgumentSimilarity,
+  detectThrashing,
+  runAgent,
+  type RunAgentDeps,
+  type RunAgentParams,
+} from './runAgent';
 
 interface FakeScript {
   events?: StreamEvent[];
@@ -1744,5 +1751,141 @@ describe('runAgent - ids de tool-call únicos por intento (B2/B6)', () => {
     expectNoOrphanToolCalls(end.message.content);
     // El wire del paso siguiente aparea cada call con su result (precondición de B6).
     expectValidWirePairs(h.provider.requests[1]?.messages ?? []);
+  });
+});
+
+describe('runAgent - cognitive rescue, speculative execution & security', () => {
+  it('computeArgumentSimilarity detecta similitud por bigramas', () => {
+    expect(computeArgumentSimilarity('{"q":"test"}', '{"q":"test"}')).toBe(1);
+    expect(computeArgumentSimilarity('{"q":"jurisprudencia"}', '{"q":"jurisprudencia "}'))
+      .toBeGreaterThan(0.85);
+    expect(computeArgumentSimilarity('{"query":"laboral"}', '{"filter":"penal"}'))
+      .toBeLessThan(0.5);
+  });
+
+  it('detectThrashing identifica bucles reiterados con mismos argumentos', () => {
+    expect(
+      detectThrashing([
+        { name: 'search', argsText: '{"q":"fallo"}', ok: false, step: 0 },
+        { name: 'search', argsText: '{"q":"fallo"}', ok: false, step: 0 },
+      ]),
+    ).toBe(true);
+
+    expect(
+      detectThrashing([
+        { name: 'search', argsText: '{"q":"fallo"}', ok: true, step: 0 },
+        { name: 'search', argsText: '{"q":"fallo"}', ok: true, step: 0 },
+        { name: 'search', argsText: '{"q":"fallo"}', ok: true, step: 0 },
+      ]),
+    ).toBe(true);
+
+    expect(
+      detectThrashing([
+        { name: 'search', argsText: '{"q":"fallo"}', ok: true, step: 0 },
+        { name: 'fetch', argsText: '{"url":"https://example.com"}', ok: true, step: 0 },
+      ]),
+    ).toBe(false);
+  });
+
+  it('redacta claves secretas (sk-..., gsk_...) en resultados de herramientas', async () => {
+    const h = createHarness({ params: { researchMode: true } });
+    h.tools.add(
+      makeTool('web_search', async () => {
+        return okResult('Error en upstream con api_key: sk-1234567890abcdef1234567890');
+      }),
+    );
+    h.provider.scripts.push(
+      {
+        events: [
+          { type: 'tool-call', toolCall: { id: 'call-sec', name: 'web_search', argumentsText: '{"q":"test"}' } },
+          { type: 'stop', reason: 'tool_use' },
+        ],
+      },
+      { events: [{ type: 'text-delta', delta: 'Listo' }, { type: 'stop', reason: 'end_turn' }] },
+    );
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+    expect(end.status).toBe('complete');
+    const toolResults = end.message.content.filter((c) => c.type === 'tool-result');
+    expect(toolResults.length).toBe(1);
+    const firstResult = toolResults[0];
+    expect(firstResult).toBeDefined();
+    if (firstResult && firstResult.type === 'tool-result') {
+      expect(firstResult.result.content).toContain('[REDACTED_SECRET]');
+      expect(firstResult.result.content).not.toContain('sk-1234567890abcdef1234567890');
+    }
+  });
+
+  it('ejecuta herramientas de solo lectura concurrentemente si speculativeExecution está activo', async () => {
+    const h = createHarness({ params: { researchMode: true, speculativeExecution: true } });
+    let running = 0;
+    let maxConcurrent = 0;
+
+    h.tools.add(
+      makeTool('web_search', async () => {
+        running += 1;
+        maxConcurrent = Math.max(maxConcurrent, running);
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        running -= 1;
+        return okResult('res-search');
+      }),
+    );
+    h.tools.add(
+      makeTool('fetch_page', async () => {
+        running += 1;
+        maxConcurrent = Math.max(maxConcurrent, running);
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        running -= 1;
+        return okResult('res-fetch');
+      }),
+    );
+
+    h.provider.scripts.push(
+      {
+        events: [
+          { type: 'tool-call', toolCall: { id: 'c1', name: 'web_search', argumentsText: '{"q":"a"}' } },
+          { type: 'tool-call', toolCall: { id: 'c2', name: 'fetch_page', argumentsText: '{"url":"b"}' } },
+          { type: 'stop', reason: 'tool_use' },
+        ],
+      },
+      { events: [{ type: 'text-delta', delta: 'Listo' }, { type: 'stop', reason: 'end_turn' }] },
+    );
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+    expect(end.status).toBe('complete');
+    expect(maxConcurrent).toBe(2);
+  });
+
+  it('rescate cognitivo ante fallas consecutivas: suspende tools e inyecta directiva coercitiva', async () => {
+    const h = createHarness({ params: { researchMode: true, cognitiveRescue: true } });
+    h.tools.add(
+      makeTool('web_search', async () => {
+        return failResult('network', 'Fallo de conexión');
+      }),
+    );
+
+    h.provider.scripts.push(
+      {
+        events: [
+          { type: 'tool-call', toolCall: { id: 'f1', name: 'web_search', argumentsText: '{"q":"a"}' } },
+          { type: 'tool-call', toolCall: { id: 'f2', name: 'web_search', argumentsText: '{"q":"a"}' } },
+          { type: 'stop', reason: 'tool_use' },
+        ],
+      },
+      { events: [{ type: 'text-delta', delta: 'Síntesis de rescate final' }, { type: 'stop', reason: 'end_turn' }] },
+    );
+
+    const events = await collect(runAgent(h.params, h.deps));
+    const end = runEnd(events);
+
+    expect(end.status).toBe('complete');
+    const rescueBlock = end.message.content.find(
+      (c) => c.type === 'text' && c.text === COGNITIVE_RESCUE_DIRECTIVE,
+    );
+    expect(rescueBlock).toBeDefined();
+
+    expect(h.provider.requests[1]?.tools).toBeUndefined();
   });
 });

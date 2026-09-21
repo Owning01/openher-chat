@@ -144,6 +144,8 @@ export class IndexedDbConversations implements ConversationRepository {
   }
 
   async searchMessages(query: string, limit: number): Promise<MessageSearchHit[]> {
+    const needle = query.trim().toLocaleLowerCase();
+    if (needle === '' || limit <= 0) return [];
     const db = await getDb(this.ownerId);
     const messages = await db.getAll('messages');
     return searchInMessages(messages, query, limit);

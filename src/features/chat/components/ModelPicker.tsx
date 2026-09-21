@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
 import type { ProviderConfig } from '@/domain/types/provider';
+import { ensureZenFreeModels } from '@/domain/providers/zenFreeModels';
 import { ChevronDown } from '@/shared/icons';
 import { cn } from '@/shared/utils/cn';
 
@@ -99,7 +100,11 @@ function buildCatalog(providers: readonly ProviderConfig[]): PickerCatalog {
   );
 
   for (const provider of sortedProviders) {
-    const models = [...provider.models].sort(
+    const rawModels =
+      provider.kind === 'opencode' || provider.id.includes('opencode') || provider.id.includes('zen')
+        ? ensureZenFreeModels(provider.models)
+        : provider.models;
+    const models = [...rawModels].sort(
       (a, b) => compareName(a.label, b.label) || compareName(a.id, b.id),
     );
     if (models.length === 0) continue;

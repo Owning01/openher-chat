@@ -145,6 +145,8 @@ export function createServices(
       if (typeof legalCaseId !== 'string' || legalCaseId.trim() === '') return web;
       const legal = createLegalToolRegistry({
         corpus: legalCorpus,
+        cases: legalCases,
+        caseId: legalCaseId,
         reportGap: (entry) => {
           void persistLegalGap(legalCases, legalCaseId, entry);
         },

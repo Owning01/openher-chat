@@ -220,6 +220,14 @@ function ChatPageContent() {
     },
     [controller.deleteMessage, loadConversations],
   );
+  const handleVisualReport = useCallback(
+    (_messageId: string): void => {
+      void controller.send(
+        'Por favor, genera un informe visual interactivo y detallado en HTML que sintetice los hallazgos y datos de este análisis con un diseño moderno, métricas visuales y estructura limpia en un bloque ```html.'
+      );
+    },
+    [controller.send],
+  );
 
   const conversation = useMemo(
     () => items.find((entry) => entry.id === conversationId),
@@ -503,6 +511,7 @@ function ChatPageContent() {
                     onContinue={handleContinue}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onVisualReport={handleVisualReport}
                   />
                 )}
                 {busy ? <StreamingIndicator /> : null}

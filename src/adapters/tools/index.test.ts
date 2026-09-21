@@ -188,13 +188,14 @@ describe('createToolRegistry — ejecución', () => {
     expect(result.content).toContain('Heading First paragraph');
   });
 
-  it('trunca el contenido de open_url al cap para el modelo', async () => {
+  it('trunca o empaqueta el contenido de open_url al cap para el modelo', async () => {
     const long = 'palabra '.repeat(1500);
     const http = fakeHttp(() => textResponse(`<html><body><article><p>${long}</p></article></body></html>`));
     const registry = createToolRegistry(makeSettings(), { http, keys: keyVaultWith({}), now: () => FIXED_NOW });
     const result = await mustGet(registry, 'open_url').execute({ url: 'https://example.com/long' }, toolContext());
     expect(result.ok).toBe(true);
-    expect(result.content).toContain('[... truncated');
+    // SoL-Pi ObservationPack empaqueta el contenido extenso (>2.500 chars) y respeta el cap del modelo
+    expect(result.content.includes('[OBSERVATION_PACK') || result.content.includes('[... truncated')).toBe(true);
     expect(result.content.length).toBeLessThan(OPEN_URL_MAX_RESULT_CHARS + 200);
   });
 });

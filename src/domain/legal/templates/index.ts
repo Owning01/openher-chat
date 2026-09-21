@@ -1,10 +1,18 @@
 import type { DocumentKind, LegalTemplate, LegalTemplateChecklistItem } from '../../types/legal';
 import { ANSWER_TEMPLATE } from './answer';
+import { APPEAL_TEMPLATE } from './appeal';
 import { CLAIM_TEMPLATE } from './claim';
 import { DEMAND_LETTER_TEMPLATE } from './demandLetter';
+import { EVIDENCE_TEMPLATE } from './evidence';
 
 /** Todas las plantillas de documento disponibles, en orden canónico. */
-export const LEGAL_TEMPLATES: readonly LegalTemplate[] = [CLAIM_TEMPLATE, ANSWER_TEMPLATE, DEMAND_LETTER_TEMPLATE];
+export const LEGAL_TEMPLATES: readonly LegalTemplate[] = [
+  CLAIM_TEMPLATE,
+  ANSWER_TEMPLATE,
+  APPEAL_TEMPLATE,
+  EVIDENCE_TEMPLATE,
+  DEMAND_LETTER_TEMPLATE,
+];
 
 /** Registro por id para búsquedas directas y búsquedas O(1). */
 export const LEGAL_TEMPLATES_BY_ID: Readonly<Record<string, LegalTemplate>> = Object.freeze(

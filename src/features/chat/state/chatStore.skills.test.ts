@@ -33,7 +33,7 @@ describe('chatStore - skills', () => {
     const request = h.provider.requests[0];
     expect(request?.system).toContain('- informe-laboral: Redacta informes laborales');
     expect(request?.system).toContain('load_skill');
-    expect(request?.tools?.map((tool) => tool.name)).toEqual(['web_search', 'open_url', 'load_skill']);
+    expect(request?.tools?.map((tool) => tool.name)).toEqual(['load_skill', 'open_url', 'web_search']);
   });
 
   it('sin skills el turno general sigue sin tools ni bloque nuevo en el prompt', async () => {

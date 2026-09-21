@@ -3,9 +3,10 @@ import { useState } from 'react';
 import type { Role } from '@/domain/types/chat';
 import { useCitationGuard } from '@/features/legal/state/CitationGuardContext';
 import { useT } from '@/i18n/useT';
-import { Download, FileText, Pencil, Play, RefreshCw, Trash } from '@/shared/icons';
+import { Download, FileText, Pencil, Play, RefreshCw, Sparkles, Trash } from '@/shared/icons';
 import { CopyButton } from '@/shared/markdown/CopyButton';
 import { Button, IconButton, TextArea } from '@/shared/ui';
+import { cn } from '@/shared/utils/cn';
 import { downloadBinaryFile, downloadTextFile } from '@/shared/utils/download';
 import { DOCX_MIME, markdownToDocx } from '@/adapters/documents/docxWriter';
 
@@ -20,6 +21,9 @@ export interface MessageActionsProps {
   onRegenerate: (messageId: string) => void;
   onEditStart: (messageId: string) => void;
   onDelete: (messageId: string) => void;
+  /** Generar o abrir reporte visual interactivo en HTML */
+  onVisualReport?: (messageId: string) => void;
+  hasVisualReport?: boolean;
 }
 
 export function MessageActions({
@@ -32,6 +36,8 @@ export function MessageActions({
   onRegenerate,
   onEditStart,
   onDelete,
+  onVisualReport,
+  hasVisualReport,
 }: MessageActionsProps) {
   const t = useT();
   // En contexto legal el copiar usa el texto post-guard (con los `[VERIFICAR]`
@@ -63,6 +69,15 @@ export function MessageActions({
           onClick={() =>
             downloadBinaryFile(`respuesta-${messageId.slice(0, 8)}.docx`, markdownToDocx(copyText), DOCX_MIME)
           }
+        />
+      ) : null}
+      {role === 'assistant' && onVisualReport !== undefined ? (
+        <IconButton
+          size="sm"
+          disabled={disabled || text.trim() === ''}
+          label={hasVisualReport ? t('chat.viewVisualReport') : t('chat.visualReport')}
+          icon={<Sparkles aria-hidden="true" className={cn('size-4', hasVisualReport && 'text-primary')} />}
+          onClick={() => onVisualReport(messageId)}
         />
       ) : null}
       {role === 'assistant' && onContinue !== undefined ? (

@@ -126,7 +126,7 @@ export function Dialog({ open, onClose, title, children, footer, className }: Di
           </h2>
           <IconButton label={t('common.close')} icon={<X />} size="sm" onClick={onClose} />
         </header>
-        {children ? <div className="text-sm text-text">{children}</div> : null}
+        {children ? <div className="flex-1 min-h-0 flex flex-col text-sm text-text">{children}</div> : null}
         {footer ? <footer className="flex items-center justify-end gap-2">{footer}</footer> : null}
       </div>
     </div>,

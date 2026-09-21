@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import type { ProviderConfig } from '@/domain/types/provider';
+import { ensureZenFreeModels } from '@/domain/providers/zenFreeModels';
 import { LocalProviderConfigRepository } from '@/features/settings/state/providerStorage';
 
 /**
@@ -15,7 +16,13 @@ export function useProviderCatalog(): ProviderConfig[] {
     void new LocalProviderConfigRepository()
       .load()
       .then((loaded) => {
-        if (active) setProviders(loaded);
+        if (!active) return;
+        const normalized = loaded.map((p) =>
+          p.kind === 'opencode' || p.id.includes('opencode') || p.id.includes('zen')
+            ? { ...p, models: ensureZenFreeModels(p.models) }
+            : p,
+        );
+        setProviders(normalized);
       })
       .catch(() => undefined);
     return () => {

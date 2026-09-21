@@ -5,9 +5,12 @@ import type { ChatMessage, MessageContent, ToolResult } from '@/domain/types/cha
 import { splitAttachmentBlocks } from '@/domain/chat/attachments';
 import { deanonymize } from '@/domain/legal/redaction';
 import type { RedactionMapping } from '@/domain/legal/redaction';
+import { extractHtmlReport, pickDynamicTheme } from '@/domain/visualReport/reportThemes';
 import { useCitationGuard } from '@/features/legal/state/CitationGuardContext';
 import { useT } from '@/i18n/useT';
+import { Sparkles } from '@/shared/icons';
 import { Markdown } from '@/shared/markdown/Markdown';
+import { Button } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 
 import { useChatStore } from '../state/chatStore';
@@ -16,6 +19,7 @@ import { MessageActions, MessageEditForm } from './MessageActions';
 import { MessageUsage } from './MessageUsage';
 import { ReasoningBlock } from './ReasoningBlock';
 import { ToolCallCard } from './ToolCallCard';
+import { VisualReportDialog } from './VisualReportDialog';
 
 export type DisplayBlock =
   | { type: 'text'; text: string }
@@ -80,6 +84,8 @@ export interface MessageListProps {
    * (sólo el guard, neutro fuera del provider).
    */
   legalMode?: boolean;
+  /** Solicitud para generar un reporte visual interactivo nuevo */
+  onVisualReport?: (assistantMessageId: string) => void;
 }
 
 export function MessageList({
@@ -90,29 +96,52 @@ export function MessageList({
   onEdit,
   onDelete,
   legalMode = false,
+  onVisualReport,
 }: MessageListProps) {
   const busy = runStatus !== 'idle';
   const lastAssistantId = useMemo(() => findLastAssistantId(messages), [messages]);
   const streamingId = useMemo(() => findStreamingAssistantId(messages), [messages]);
+  const [activeVisualReport, setActiveVisualReport] = useState<{
+    id: string;
+    html: string;
+    title?: string;
+  } | null>(null);
+
+  const handleOpenVisualReport = useCallback((messageId: string, html: string) => {
+    setActiveVisualReport({ id: messageId, html });
+  }, []);
 
   return (
-    <ol data-testid="chat-message-list" className="flex flex-col gap-4">
-      {messages.map((message) => (
-        <li key={message.id}>
-          <MessageItem
-            message={message}
-            isLastAssistant={message.id === lastAssistantId}
-            streaming={message.id === streamingId}
-            busy={busy}
-            legalMode={legalMode}
-            onRegenerate={onRegenerate}
-            onContinue={onContinue}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        </li>
-      ))}
-    </ol>
+    <>
+      <ol data-testid="chat-message-list" className="flex flex-col gap-4">
+        {messages.map((message) => (
+          <li key={message.id}>
+            <MessageItem
+              message={message}
+              isLastAssistant={message.id === lastAssistantId}
+              streaming={message.id === streamingId}
+              busy={busy}
+              legalMode={legalMode}
+              onRegenerate={onRegenerate}
+              onContinue={onContinue}
+              onEdit={onEdit}
+              onDelete={onDelete}
+              onOpenVisualReport={handleOpenVisualReport}
+              onGenerateVisualReport={onVisualReport}
+            />
+          </li>
+        ))}
+      </ol>
+      {activeVisualReport ? (
+        <VisualReportDialog
+          open={Boolean(activeVisualReport)}
+          rawHtml={activeVisualReport.html}
+          title={activeVisualReport.title}
+          initialThemeId={pickDynamicTheme(activeVisualReport.id).id}
+          onClose={() => setActiveVisualReport(null)}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -145,6 +174,8 @@ interface MessageItemProps {
   onContinue?: (assistantMessageId: string) => void;
   onEdit: (userMessageId: string, text: string) => void;
   onDelete: (messageId: string) => void;
+  onOpenVisualReport?: (messageId: string, html: string) => void;
+  onGenerateVisualReport?: (messageId: string) => void;
 }
 
 function MessageItemInner({
@@ -157,6 +188,8 @@ function MessageItemInner({
   onContinue,
   onEdit,
   onDelete,
+  onOpenVisualReport,
+  onGenerateVisualReport,
 }: MessageItemProps) {
   const [editing, setEditing] = useState(false);
   const guard = useCitationGuard();
@@ -206,12 +239,32 @@ function MessageItemInner({
     setEditing(false);
   }, []);
 
+  const htmlReport = useMemo(
+    () => (!isUser && message.status === 'complete' ? extractHtmlReport(rawText) : null),
+    [isUser, message.status, rawText],
+  );
+
+  const handleVisualReportClick = useCallback(
+    (messageId: string) => {
+      if (htmlReport !== null) {
+        onOpenVisualReport?.(messageId, htmlReport);
+      } else {
+        onGenerateVisualReport?.(messageId);
+      }
+    },
+    [htmlReport, onOpenVisualReport, onGenerateVisualReport],
+  );
+
   return (
     <article
       data-testid="chat-message"
       data-role={message.role}
       data-status={message.status}
-      className={cn('group flex flex-col gap-1.5', isUser ? 'items-end' : 'items-start')}
+      className={cn(
+        'group flex flex-col gap-1.5',
+        isUser ? 'items-end' : 'items-start',
+        message.status === 'complete' && 'chat-message-contained',
+      )}
     >
       {isUser ? (
         editing ? (
@@ -264,6 +317,26 @@ function MessageItemInner({
       ) : (
         <div className="w-full space-y-2 rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3">
           {blocks.map((block, index) => renderBlock(block, index, blocks.length, streaming))}
+          {htmlReport !== null ? (
+            <div
+              data-testid="visual-report-callout"
+              className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3"
+            >
+              <div className="flex items-center gap-2 text-xs font-medium text-primary">
+                <Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                <span>{t('chat.viewVisualReport')}</span>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                className="gap-1.5 bg-surface text-xs font-semibold shadow-xs hover:bg-surface-subtle"
+                onClick={() => onOpenVisualReport?.(message.id, htmlReport)}
+              >
+                <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
+                <span>{t('chat.viewVisualReport')}</span>
+              </Button>
+            </div>
+          ) : null}
         </div>
       )}
       {editing ? null : (
@@ -281,6 +354,12 @@ function MessageItemInner({
           onRegenerate={onRegenerate}
           onEditStart={handleEditStart}
           onDelete={onDelete}
+          onVisualReport={
+            !isUser && (htmlReport !== null || onGenerateVisualReport !== undefined)
+              ? handleVisualReportClick
+              : undefined
+          }
+          hasVisualReport={htmlReport !== null}
         />
       )}
       {showCounts ? (

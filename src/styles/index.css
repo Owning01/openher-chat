@@ -262,6 +262,13 @@ body {
   inset: -0.625rem;
 }
 
+/* Aislamiento de renderizado para mensajes completados: el navegador salta
+   layout/paint de mensajes fuera de pantalla hasta que el usuario hace scroll. */
+.chat-message-contained {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 80px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,

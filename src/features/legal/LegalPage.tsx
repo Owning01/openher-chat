@@ -12,7 +12,9 @@ import { DEFAULT_LEGAL_ANALYSIS_BUDGET, DEFAULT_LEGAL_RETRIEVAL_BUDGET } from '@
 import type {
   LegalAnalysisBudget,
   LegalCase,
+  LegalFact,
   LegalIndex,
+  LegalParty,
   LegalPassage,
   LegalRetrievalBudget,
 } from '@/domain/types/legal';
@@ -20,13 +22,18 @@ import type { ProviderConfig } from '@/domain/types/provider';
 import type { AppSettings } from '@/domain/types/settings';
 import { LocalProviderConfigRepository } from '@/features/settings/state/providerStorage';
 import { useT } from '@/i18n/useT';
-import { Plus } from '@/shared/icons';
-import { Button, Dialog, Spinner } from '@/shared/ui';
+import { BookOpen, Plus } from '@/shared/icons';
+import { Badge, Button, Dialog, Spinner } from '@/shared/ui';
 
 import { AdversarialPanel } from './components/AdversarialPanel';
 import { DocumentStudio } from './components/DocumentStudio';
+import { LegalManual } from './components/LegalManual';
 import { CaseForm } from './components/CaseForm';
 import { CaseList } from './components/CaseList';
+import { DeadlineCalculator } from './components/DeadlineCalculator';
+import { PartyFormDialog } from './components/PartyFormDialog';
+import { FactFormDialog } from './components/FactFormDialog';
+import { KeyDateFormDialog } from './components/KeyDateFormDialog';
 import { CaseStoreProvider, createCaseStore, useCaseStore } from './state/caseStore';
 import { AnalysisStoreProvider, createAnalysisStore, useAnalysisStore } from './state/analysisStore';
 import type { AnalysisStore, ExecuteAdversarialCall } from './state/analysisStore';
@@ -74,6 +81,7 @@ function LegalPageContent() {
   const error = useCaseStore((state) => state.error);
   const list = useCaseStore((state) => state.list);
   const create = useCaseStore((state) => state.create);
+  const update = useCaseStore((state) => state.update);
   const select = useCaseStore((state) => state.select);
   const selected = useCaseStore((state) => state.selected);
 
@@ -232,6 +240,14 @@ function LegalPageContent() {
     navigate(legalHref(id, routeConversationId));
   };
 
+  const handleUpdateCase = useCallback(
+    async (patch: Partial<Omit<LegalCase, 'id' | 'createdAt'>>) => {
+      if (selectedCase === null) return;
+      await update(selectedCase.id, patch);
+    },
+    [update, selectedCase],
+  );
+
   const handleCreate = async (input: CreateLegalCaseInput): Promise<void> => {
     setSubmitError(null);
     const created = await create(input);
@@ -279,7 +295,7 @@ function LegalPageContent() {
       ) : null}
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
-        <div className="relative min-h-0 flex-1">
+        <div className="w-full shrink-0 border-b border-border lg:w-80 lg:border-b-0 lg:border-r">
           <div className="h-full overflow-y-auto">
             <CaseList
               cases={cases}
@@ -291,36 +307,39 @@ function LegalPageContent() {
             />
           </div>
         </div>
-        <CaseDetail
-          legalCase={selectedCase}
-          conversationId={routeConversationId}
-          className="h-[42dvh] max-h-96 min-h-80 shrink-0 border-t border-border lg:h-auto lg:max-h-none lg:w-96 lg:border-l lg:border-t-0"
-          analysisSlot={
-            analysisStore === null ? (
-              <p className="mt-1 text-xs text-warning">{t('legalAnalysis.loadError')}</p>
-            ) : (
-              <AnalysisStoreProvider store={analysisStore}>
-                <LegalAnalysisMount
-                  legalCase={selectedCase}
-                  brief={legalBrief}
-                  systemPrompt={legalSystem}
-                  budgets={budgets}
-                  index={legalIndex}
-                  corpusStatus={corpusStatus}
-                  providerTarget={providerTarget}
-                  executeCall={executeLegalCall}
-                />
-              </AnalysisStoreProvider>
-            )
-          }
-          documentsSlot={
-            <LegalDocumentsMount
-              legalCase={selectedCase}
-              index={legalIndex}
-              cases={services.legalCases}
-            />
-          }
-        />
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <CaseDetail
+            legalCase={selectedCase}
+            conversationId={routeConversationId}
+            onUpdateCase={handleUpdateCase}
+            className="h-full"
+            analysisSlot={
+              analysisStore === null ? (
+                <p className="mt-1 text-xs text-warning">{t('legalAnalysis.loadError')}</p>
+              ) : (
+                <AnalysisStoreProvider store={analysisStore}>
+                  <LegalAnalysisMount
+                    legalCase={selectedCase}
+                    brief={legalBrief}
+                    systemPrompt={legalSystem}
+                    budgets={budgets}
+                    index={legalIndex}
+                    corpusStatus={corpusStatus}
+                    providerTarget={providerTarget}
+                    executeCall={executeLegalCall}
+                  />
+                </AnalysisStoreProvider>
+              )
+            }
+            documentsSlot={
+              <LegalDocumentsMount
+                legalCase={selectedCase}
+                index={legalIndex}
+                cases={services.legalCases}
+              />
+            }
+          />
+        </div>
       </div>
 
       <Dialog open={dialogOpen} title={t('legalCases.createTitle')} onClose={() => setDialogOpen(false)}>
@@ -352,91 +371,405 @@ interface CaseDetailProps {
   className?: string;
   analysisSlot: ReactNode;
   documentsSlot: ReactNode;
+  onUpdateCase?: (patch: Partial<Omit<LegalCase, 'id' | 'createdAt'>>) => Promise<void>;
 }
 
-/** Detalle del expediente; el análisis y los documentos llegan como slots (G1). */
-function CaseDetail({ legalCase, conversationId, className, analysisSlot, documentsSlot }: CaseDetailProps) {
+type LegalTab = 'case' | 'deadlines' | 'analysis' | 'documents' | 'manual';
+
+/** Detalle del expediente con tabs de trabajo y CRUD interactivo de partes, hechos y fechas. */
+function CaseDetail({
+  legalCase,
+  conversationId,
+  className,
+  analysisSlot,
+  documentsSlot,
+  onUpdateCase,
+}: CaseDetailProps) {
   const t = useT();
+  const [activeTab, setActiveTab] = useState<LegalTab>('case');
+
+  const [partyDialogOpen, setPartyDialogOpen] = useState(false);
+  const [editingParty, setEditingParty] = useState<LegalParty | null>(null);
+
+  const [factDialogOpen, setFactDialogOpen] = useState(false);
+  const [editingFact, setEditingFact] = useState<LegalFact | null>(null);
+
+  const [dateDialogOpen, setDateDialogOpen] = useState(false);
+
+  if (legalCase === null) {
+    return (
+      <aside
+        data-testid="legal-detail"
+        aria-label={t('legalCases.title')}
+        className={`flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto bg-surface-subtle/30 p-4 sm:p-6 ${className ?? ''}`}
+      >
+        <div className="flex flex-col gap-1">
+          <p data-testid="legal-detail-empty" className="text-sm font-medium text-text">
+            {t('legalCases.detailEmpty')}
+          </p>
+          <p className="text-xs text-muted">
+            {t('legalManual.subtitle')}
+          </p>
+        </div>
+        <div className="border-t border-border pt-4">
+          <LegalManual />
+        </div>
+      </aside>
+    );
+  }
+
+  const handleSaveParty = (party: LegalParty) => {
+    if (!onUpdateCase) return;
+    const exists = legalCase.parties.some((p) => p.id === party.id);
+    const parties = exists
+      ? legalCase.parties.map((p) => (p.id === party.id ? party : p))
+      : [...legalCase.parties, party];
+    void onUpdateCase({ parties });
+  };
+
+  const handleDeleteParty = (partyId: string) => {
+    if (!onUpdateCase) return;
+    const parties = legalCase.parties.filter((p) => p.id !== partyId);
+    void onUpdateCase({ parties });
+  };
+
+  const handleSaveFact = (fact: LegalFact) => {
+    if (!onUpdateCase) return;
+    const exists = legalCase.facts.some((f) => f.id === fact.id);
+    const facts = exists
+      ? legalCase.facts.map((f) => (f.id === fact.id ? fact : f))
+      : [...legalCase.facts, fact];
+    void onUpdateCase({ facts });
+  };
+
+  const handleDeleteFact = (factId: string) => {
+    if (!onUpdateCase) return;
+    const facts = legalCase.facts.filter((f) => f.id !== factId);
+    void onUpdateCase({ facts });
+  };
+
+  const handleSaveKeyDate = (keyDate: { id: string; label: string; date: string }) => {
+    if (!onUpdateCase) return;
+    const keyDates = [...legalCase.keyDates, keyDate];
+    void onUpdateCase({ keyDates });
+  };
+
+  const handleDeleteKeyDate = (keyDateId: string) => {
+    if (!onUpdateCase) return;
+    const keyDates = legalCase.keyDates.filter((k) => k.id !== keyDateId);
+    void onUpdateCase({ keyDates });
+  };
 
   return (
-    <aside data-testid="legal-detail" aria-label={t('legalCases.title')} className={`flex min-h-0 flex-col gap-4 overflow-y-auto bg-surface-subtle/30 p-4 ${className ?? ''}`}>
-      {legalCase === null ? (
-        <p data-testid="legal-detail-empty" className="text-sm text-muted">
-          {t('legalCases.detailEmpty')}
-        </p>
-      ) : (
-        <>
-          <header className="shrink-0 space-y-0.5">
-            <h3 className="truncate text-sm font-semibold text-text">{legalCase.title}</h3>
+    <aside
+      data-testid="legal-detail"
+      aria-label={t('legalCases.title')}
+      className={`flex min-h-0 flex-1 flex-col overflow-hidden bg-surface-subtle/30 ${className ?? ''}`}
+    >
+      <header className="shrink-0 space-y-1 border-b border-border bg-surface px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-base font-semibold text-text">{legalCase.title}</h3>
             <p className="truncate text-xs text-muted">
               {legalCase.court} ·{' '}
               {legalCase.status === 'archived' ? t('legalCases.statusArchived') : t('legalCases.statusActive')}
             </p>
-            {conversationId !== null ? (
-              <a
-                href={chatHref(conversationId)}
-                className="inline-flex text-xs font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-              >
-                {t('legalCases.openChat')}
-              </a>
-            ) : null}
-          </header>
+          </div>
+          {conversationId !== null ? (
+            <a
+              href={chatHref(conversationId)}
+              className="inline-flex items-center text-xs font-medium text-primary underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+            >
+              {t('legalCases.openChat')}
+            </a>
+          ) : null}
+        </div>
 
-          <DetailSection title={t('legalCases.partiesTitle')} testId="legal-parties">
-            {legalCase.parties.length === 0 ? (
-              <EmptyHint text={t('legalCases.emptyParties')} />
-            ) : (
-              <ul className="space-y-1">
-                {legalCase.parties.map((party) => (
-                  <li key={party.id} className="truncate text-sm text-text">
-                    {party.name} · {party.role}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </DetailSection>
+        {/* Selector de pestañas */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={activeTab === 'case' ? 'primary' : 'ghost'}
+            data-testid="tab-case"
+            onClick={() => setActiveTab('case')}
+          >
+            {t('legalCases.tabCase')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={activeTab === 'deadlines' ? 'primary' : 'ghost'}
+            data-testid="tab-deadlines"
+            onClick={() => setActiveTab('deadlines')}
+          >
+            {t('legalCases.tabDeadlines')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={activeTab === 'analysis' ? 'primary' : 'ghost'}
+            data-testid="tab-analysis"
+            onClick={() => setActiveTab('analysis')}
+          >
+            {t('legalCases.tabAnalysis')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={activeTab === 'documents' ? 'primary' : 'ghost'}
+            data-testid="tab-documents"
+            onClick={() => setActiveTab('documents')}
+          >
+            {t('legalCases.tabDocuments')}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={activeTab === 'manual' ? 'primary' : 'ghost'}
+            data-testid="tab-manual"
+            icon={<BookOpen aria-hidden="true" className="size-3.5" />}
+            onClick={() => setActiveTab('manual')}
+          >
+            {t('legalManual.title')}
+          </Button>
+        </div>
+      </header>
 
-          <DetailSection title={t('legalCases.factsTitle')} testId="legal-facts">
-            {legalCase.facts.length === 0 ? (
-              <EmptyHint text={t('legalCases.emptyFacts')} />
-            ) : (
-              <ul className="space-y-1">
-                {legalCase.facts.map((fact) => (
-                  <li key={fact.id} className="text-sm text-text">
-                    {fact.statement}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </DetailSection>
+      {/* Tab: Expediente (Partes, Hechos, Fechas) */}
+      <div className={`flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto p-4 ${activeTab === 'case' ? 'block' : 'hidden'}`}>
+        <DetailSection
+          title={t('legalCases.partiesTitle')}
+          testId="legal-parties"
+          action={
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              data-testid="add-party-btn"
+              icon={<Plus aria-hidden="true" className="size-3.5" />}
+              onClick={() => {
+                setEditingParty(null);
+                setPartyDialogOpen(true);
+              }}
+            >
+              {t('legalCases.addParty')}
+            </Button>
+          }
+        >
+          {legalCase.parties.length === 0 ? (
+            <EmptyHint text={t('legalCases.emptyParties')} />
+          ) : (
+            <ul className="space-y-1.5">
+              {legalCase.parties.map((party) => (
+                <li
+                  key={party.id}
+                  className="flex items-center justify-between gap-2 rounded-md border border-border/50 bg-surface p-2 text-sm text-text shadow-2xs"
+                >
+                  <div className="min-w-0 flex-1 truncate">
+                    <span className="font-semibold text-text">{party.name}</span>
+                    <span className="text-xs text-muted"> · {party.role}</span>
+                    {party.taxId ? <span className="ml-1.5 text-xs text-muted">({party.taxId})</span> : null}
+                    {party.representative ? (
+                      <p className="truncate text-xs text-muted/80">{party.representative}</p>
+                    ) : null}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setEditingParty(party);
+                        setPartyDialogOpen(true);
+                      }}
+                    >
+                      {t('legalCases.editParty')}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteParty(party.id)}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </DetailSection>
 
-          <DetailSection title={t('legalCases.keyDatesTitle')} testId="legal-key-dates">
-            {legalCase.keyDates.length === 0 ? (
-              <EmptyHint text={t('legalCases.emptyKeyDates')} />
-            ) : (
-              <ul className="space-y-1">
-                {legalCase.keyDates.map((keyDate) => (
-                  <li key={keyDate.id} className="text-sm text-text">
-                    {keyDate.label} · {keyDate.date}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </DetailSection>
+        <DetailSection
+          title={t('legalCases.factsTitle')}
+          testId="legal-facts"
+          action={
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              data-testid="add-fact-btn"
+              icon={<Plus aria-hidden="true" className="size-3.5" />}
+              onClick={() => {
+                setEditingFact(null);
+                setFactDialogOpen(true);
+              }}
+            >
+              {t('legalCases.addFact')}
+            </Button>
+          }
+        >
+          {legalCase.facts.length === 0 ? (
+            <EmptyHint text={t('legalCases.emptyFacts')} />
+          ) : (
+            <ul className="space-y-2">
+              {legalCase.facts.map((fact) => (
+                <li
+                  key={fact.id}
+                  className="flex flex-col gap-1 rounded-md border border-border/50 bg-surface p-2.5 text-sm text-text shadow-2xs"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-normal text-text">{fact.statement}</p>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setEditingFact(fact);
+                          setFactDialogOpen(true);
+                        }}
+                      >
+                        {t('legalCases.editFact')}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleDeleteFact(fact.id)}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 pt-1 text-xs text-muted">
+                    {fact.date ? <span>📅 {fact.date}</span> : null}
+                    <Badge
+                      variant={
+                        fact.certainty === 'certain'
+                          ? 'success'
+                          : fact.certainty === 'doubtful'
+                            ? 'warning'
+                            : 'neutral'
+                      }
+                    >
+                      {t(`legalCases.certainty${capitalize(fact.certainty)}` as never) ?? fact.certainty}
+                    </Badge>
+                    {fact.source ? <span>Ref: {fact.source}</span> : null}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </DetailSection>
 
-          {/* Panel adversarial (T24) cableado por G1 vía el store del padre. */}
-          <section data-testid="legal-analysis-mount" aria-label={t('legalCases.analysisTitle')} className="shrink-0">
-            <h4 className="text-xs font-semibold text-muted uppercase">{t('legalCases.analysisTitle')}</h4>
-            <div className="mt-1">{analysisSlot}</div>
-          </section>
+        <DetailSection
+          title={t('legalCases.keyDatesTitle')}
+          testId="legal-key-dates"
+          action={
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              data-testid="add-keydate-btn"
+              icon={<Plus aria-hidden="true" className="size-3.5" />}
+              onClick={() => setDateDialogOpen(true)}
+            >
+              {t('legalCases.addKeyDate')}
+            </Button>
+          }
+        >
+          {legalCase.keyDates.length === 0 ? (
+            <EmptyHint text={t('legalCases.emptyKeyDates')} />
+          ) : (
+            <ul className="space-y-1">
+              {legalCase.keyDates.map((keyDate) => (
+                <li
+                  key={keyDate.id}
+                  className="flex items-center justify-between gap-2 rounded-md border border-border/50 bg-surface px-2.5 py-1.5 text-sm text-text shadow-2xs"
+                >
+                  <span className="font-medium">{keyDate.label}</span>
+                  <div className="flex items-center gap-2 font-mono text-xs text-muted">
+                    <span>{keyDate.date}</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteKeyDate(keyDate.id)}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </DetailSection>
+      </div>
 
-          {/* Estudio de documentos (T24) cableado por G1 vía el store del padre. */}
-          <section data-testid="legal-documents-mount" aria-label={t('legalCases.documentsTitle')} className="shrink-0">
-            <h4 className="text-xs font-semibold text-muted uppercase">{t('legalCases.documentsTitle')}</h4>
-            <div className="mt-1">{documentsSlot}</div>
-          </section>
-        </>
-      )}
+      {/* Tab: Plazos y Prescripción */}
+      <div className={`flex min-h-0 flex-1 flex-col overflow-y-auto p-4 ${activeTab === 'deadlines' ? 'block' : 'hidden'}`}>
+        <DeadlineCalculator caseData={legalCase} />
+      </div>
+
+      {/* Tab: Análisis Adversarial */}
+      <section
+        data-testid="legal-analysis-mount"
+        aria-label={t('legalCases.analysisTitle')}
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto p-4 ${activeTab === 'analysis' ? 'block' : 'hidden'}`}
+      >
+        <h4 className="sr-only">{t('legalCases.analysisTitle')}</h4>
+        <div className="mt-1">{analysisSlot}</div>
+      </section>
+
+      {/* Tab: Estudio de Documentos */}
+      <section
+        data-testid="legal-documents-mount"
+        aria-label={t('legalCases.documentsTitle')}
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto p-4 ${activeTab === 'documents' ? 'block' : 'hidden'}`}
+      >
+        <h4 className="sr-only">{t('legalCases.documentsTitle')}</h4>
+        <div className="mt-1">{documentsSlot}</div>
+      </section>
+
+      {/* Tab: Manual Forense */}
+      <section
+        data-testid="legal-manual-mount"
+        aria-label={t('legalManual.title')}
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto p-4 ${activeTab === 'manual' ? 'block' : 'hidden'}`}
+      >
+        <h4 className="sr-only">{t('legalManual.title')}</h4>
+        <LegalManual />
+      </section>
+
+      <PartyFormDialog
+        open={partyDialogOpen}
+        party={editingParty}
+        onClose={() => setPartyDialogOpen(false)}
+        onSave={handleSaveParty}
+      />
+      <FactFormDialog
+        open={factDialogOpen}
+        fact={editingFact}
+        onClose={() => setFactDialogOpen(false)}
+        onSave={handleSaveFact}
+      />
+      <KeyDateFormDialog
+        open={dateDialogOpen}
+        onClose={() => setDateDialogOpen(false)}
+        onSave={handleSaveKeyDate}
+      />
     </aside>
   );
 }
@@ -444,18 +777,28 @@ function CaseDetail({ legalCase, conversationId, className, analysisSlot, docume
 function DetailSection({
   title,
   testId,
+  action,
   children,
 }: {
   title: string;
   testId: string;
+  action?: ReactNode;
   children: ReactNode;
 }) {
   return (
-    <section data-testid={testId} className="shrink-0">
-      <h4 className="text-xs font-semibold text-muted uppercase">{title}</h4>
-      <div className="mt-1">{children}</div>
+    <section data-testid={testId} className="space-y-1.5 shrink-0">
+      <div className="flex items-center justify-between border-b border-border/50 pb-1">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted">{title}</h4>
+        {action}
+      </div>
+      <div className="pt-0.5">{children}</div>
     </section>
   );
+}
+
+function capitalize(s: string): string {
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function EmptyHint({ text }: { text: string }) {

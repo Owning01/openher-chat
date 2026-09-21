@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { StoreApi, UseBoundStore } from 'zustand';
 
 import { createToolRegistry } from '@/adapters/tools';
+import { isNativePlatform } from '@/adapters/tools/platform';
 import type { AppServices } from '@/app/services';
 import { generateTitle } from '@/domain/agent/generateTitle';
 import { compactMessages, preserveRecentBudget, shouldCompact } from '@/domain/agent/compaction';
@@ -148,6 +149,9 @@ interface TurnContext {
   content: MessageContent[];
   lastCheckpointAt: number;
   checkpointChain: Promise<void>;
+  hasStreamedAny?: boolean;
+  pendingStepEvent?: AgentEvent | null;
+  flushTimer?: ReturnType<typeof setTimeout> | number | null;
 }
 
 interface ResolvedTarget {
@@ -260,6 +264,21 @@ export function applyCompaction(history: readonly ChatMessage[], conversation: C
   return [anchor, ...rest];
 }
 
+function scheduleFrame(callback: () => void): number | ReturnType<typeof setTimeout> {
+  if (typeof requestAnimationFrame === 'function') {
+    return requestAnimationFrame(callback);
+  }
+  return setTimeout(callback, 16);
+}
+
+function clearScheduledFrame(handle: number | ReturnType<typeof setTimeout>): void {
+  if (typeof cancelAnimationFrame === 'function' && typeof handle === 'number') {
+    cancelAnimationFrame(handle);
+  } else {
+    clearTimeout(handle as ReturnType<typeof setTimeout>);
+  }
+}
+
 /**
  * Orquesta una conversación: persiste cada turno en el repo, consume `runAgent`,
  * refleja bloques/steps en vivo y sella el mensaje final con `finishReason`.
@@ -347,6 +366,29 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         .catch(() => undefined);
     }
 
+    function scheduleStreamingFlush(token: number, assistantId: string, ctx: TurnContext): void {
+      if (ctx.flushTimer !== undefined && ctx.flushTimer !== null) return;
+      ctx.flushTimer = scheduleFrame(() => {
+        ctx.flushTimer = null;
+        if (!isCurrent(token)) return;
+        flushPendingDeltas(token, assistantId, ctx);
+      });
+    }
+
+    function flushPendingDeltas(token: number, assistantId: string, ctx: TurnContext): void {
+      if (ctx.flushTimer !== undefined && ctx.flushTimer !== null) {
+        clearScheduledFrame(ctx.flushTimer);
+        ctx.flushTimer = null;
+      }
+      if (!isCurrent(token)) return;
+      if (ctx.pendingStepEvent !== undefined && ctx.pendingStepEvent !== null) {
+        const ev = ctx.pendingStepEvent;
+        ctx.pendingStepEvent = null;
+        updateLiveSteps(token, (steps) => applyAgentEvent(steps, ev, clock()));
+      }
+      updateAssistant(token, assistantId, ctx.content);
+    }
+
     async function persistPatch(messageId: string, patch: MessageUpdate): Promise<void> {
       try {
         await repo.updateMessage(messageId, patch);
@@ -427,29 +469,44 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
     async function handleAgentEvent(event: AgentEvent, token: number, assistantId: string, ctx: TurnContext): Promise<void> {
       switch (event.type) {
         case 'run-start':
+          flushPendingDeltas(token, assistantId, ctx);
           updateLiveSteps(token, (steps) => applyAgentEvent(steps, event, clock()));
           return;
         case 'step-start':
+          flushPendingDeltas(token, assistantId, ctx);
           updateLiveSteps(token, (steps) => applyAgentEvent(steps, event, clock()));
           return;
         case 'text-delta':
           ctx.content = appendContentDelta(ctx.content, 'text', event.delta);
-          updateLiveSteps(token, (steps) => applyAgentEvent(steps, event, clock()));
-          updateAssistant(token, assistantId, ctx.content);
           scheduleCheckpoint(assistantId, ctx);
+          if (ctx.hasStreamedAny !== true) {
+            ctx.hasStreamedAny = true;
+            updateLiveSteps(token, (steps) => applyAgentEvent(steps, event, clock()));
+            updateAssistant(token, assistantId, ctx.content);
+            return;
+          }
+          ctx.pendingStepEvent = event;
+          scheduleStreamingFlush(token, assistantId, ctx);
           return;
         case 'reasoning-delta':
           ctx.content = appendContentDelta(ctx.content, 'reasoning', event.delta);
-          updateAssistant(token, assistantId, ctx.content);
           scheduleCheckpoint(assistantId, ctx);
+          if (ctx.hasStreamedAny !== true) {
+            ctx.hasStreamedAny = true;
+            updateAssistant(token, assistantId, ctx.content);
+            return;
+          }
+          scheduleStreamingFlush(token, assistantId, ctx);
           return;
         case 'tool-start':
+          flushPendingDeltas(token, assistantId, ctx);
           ctx.content = [...ctx.content, { type: 'tool-call', toolCall: event.toolCall }];
           updateLiveSteps(token, (steps) => applyAgentEvent(steps, event, clock()));
           updateAssistant(token, assistantId, ctx.content);
           scheduleCheckpoint(assistantId, ctx);
           return;
         case 'tool-end':
+          flushPendingDeltas(token, assistantId, ctx);
           ctx.content = [
             ...ctx.content,
             { type: 'tool-result', toolCallId: event.toolCall.id, toolName: event.toolCall.name, result: event.result },
@@ -459,9 +516,11 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           scheduleCheckpoint(assistantId, ctx);
           return;
         case 'step-end':
+          flushPendingDeltas(token, assistantId, ctx);
           updateLiveSteps(token, (steps) => applyAgentEvent(steps, event, clock()));
           return;
         case 'run-end':
+          flushPendingDeltas(token, assistantId, ctx);
           await finalizeTurn(event.status, event.message, event.error, token, assistantId, ctx);
           return;
       }
@@ -708,7 +767,14 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       const runController = new AbortController();
       controller = runController;
 
-      const ctx: TurnContext = { content: [], lastCheckpointAt: clock(), checkpointChain: Promise.resolve() };
+      const ctx: TurnContext = {
+        content: [],
+        lastCheckpointAt: clock(),
+        checkpointChain: Promise.resolve(),
+        hasStreamedAny: false,
+        pendingStepEvent: null,
+        flushTimer: null,
+      };
 
       try {
         await repo.appendMessage(assistant);
@@ -737,6 +803,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
             webResearchMode,
             legalMode,
             skillsMode ? skills : [],
+            target.model,
           ),
           history: applyCompaction(input.history, conversation),
           userMessage: input.userMessage,
@@ -749,6 +816,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           historyBudget: settings.history,
           researchMode: webResearchMode,
           enableTools,
+          speculativeExecution: true,
           signal: runController.signal,
         };
         if (target.model !== undefined) params.model = target.model;
@@ -779,6 +847,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       } catch (cause) {
         await finalizeWithError(cause, token, assistant.id);
       } finally {
+        flushPendingDeltas(token, assistant.id, ctx);
         if (isCurrent(token)) {
           controller = null;
           set({ runStatus: 'idle' });
@@ -1268,6 +1337,7 @@ function composeSystemPrompt(
   webResearchMode: boolean,
   legalMode: boolean,
   skills: readonly Skill[] = [],
+  model?: ModelInfo,
 ): string {
   const override = conversation.systemPromptOverride;
   const persona = (override !== null && override.trim() !== '' ? override : settings.chat.systemPrompt).trim();
@@ -1276,6 +1346,13 @@ function composeSystemPrompt(
     now,
     locale: settings.locale,
     skills: skills.map((skill) => ({ name: skill.name, description: skill.description })),
+    platform: isNativePlatform() ? 'android' : 'web',
+    capabilities: {
+      webResearch: webResearchMode,
+      legalDocuments: legalMode,
+      skills: skills.length > 0,
+      vision: model?.supportsImages !== false,
+    },
   });
   const circuitRole = legalMode === false ? null : (conversation.legalRole ?? null);
   if (circuitRole !== null) {

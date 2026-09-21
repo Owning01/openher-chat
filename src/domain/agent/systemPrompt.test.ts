@@ -21,6 +21,9 @@ describe('buildSystemPrompt', () => {
     expect(withResearch).toContain('[1], [2]');
     expect(withResearch).toContain('Never invent URLs');
     expect(withResearch).toContain('most recent results');
+    expect(withResearch).toContain('Multi-query exploration');
+    expect(withResearch).toContain('Fact-checking & gotchas');
+    expect(withResearch).toContain('Visual Reports');
 
     const withoutResearch = buildSystemPrompt({ researchMode: false, now: NOW, locale: 'en' });
     expect(withoutResearch).not.toContain('Research mode');
@@ -57,5 +60,37 @@ describe('buildSystemPrompt', () => {
     expect(withSkills).toContain('Never invent a skill');
     expect(base).not.toContain('load_skill');
     expect(buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es', skills: [] })).toBe(base);
+  });
+
+  it('incluye el manifiesto de entorno y arquitectura local-first', () => {
+    const prompt = buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es' });
+    expect(prompt).toContain('Environment & Execution Context:');
+    expect(prompt).toContain('Single-user local-first application');
+    expect(prompt).toContain('IndexedDB/KeyVault');
+    expect(prompt).toContain('Web browser / desktop PWA');
+  });
+
+  it('refleja plataforma Android cuando se ejecuta en entorno nativo', () => {
+    const prompt = buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es', platform: 'android' });
+    expect(prompt).toContain('Android mobile device (Capacitor native shell)');
+  });
+
+  it('declara las capacidades activas del turno (búsqueda, documentos, skills, visión)', () => {
+    const prompt = buildSystemPrompt({
+      researchMode: true,
+      now: NOW,
+      locale: 'es',
+      capabilities: {
+        webResearch: true,
+        legalDocuments: true,
+        skills: true,
+        vision: true,
+      },
+    });
+    expect(prompt).toContain('Active capabilities in this session:');
+    expect(prompt).toContain('Web search & page retrieval');
+    expect(prompt).toContain('Legal document studio');
+    expect(prompt).toContain('User skills (load_skill)');
+    expect(prompt).toContain('Multimodal image perception');
   });
 });

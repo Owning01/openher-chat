@@ -34,6 +34,8 @@ describe('parseRoute', () => {
     expect(parseRoute('#/chat/abc')).toEqual({ name: 'chat', conversationId: 'abc' });
     expect(parseRoute('#/settings')).toEqual({ name: 'settings' });
     expect(parseRoute('#/onboarding')).toEqual({ name: 'onboarding', conversationId: null });
+    expect(parseRoute('#/manual')).toEqual({ name: 'manual', conversationId: null });
+    expect(parseRoute('#/guia')).toEqual({ name: 'manual', conversationId: null });
     expect(parseRoute('#/otra')).toEqual({ name: 'chat', conversationId: null });
   });
 
