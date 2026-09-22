@@ -20,6 +20,7 @@ export default defineConfig({
     },
   },
   build: {
+    target: ['chrome109', 'edge109', 'firefox115', 'es2020'],
     rollupOptions: {
       output: {
         manualChunks(id) {

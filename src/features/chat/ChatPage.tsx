@@ -326,6 +326,7 @@ function ChatPageContent() {
       const linked = cases.find((entry) => entry.status === 'active') ?? cases[0] ?? null;
       if (linked !== null) {
         await setLegalCase(linked.id);
+        push({ title: t('modes.legalActivated'), variant: 'success' });
         return;
       }
       const created = await api.getState().create({
@@ -479,8 +480,11 @@ function ChatPageContent() {
               void setResearchMode(enabled);
             }}
             onToggleLegal={(enabled) => {
-              // Apagar desvincula; encender lo resuelve `handleActivateLegal`.
-              if (!enabled) void setLegalCase(null);
+              if (enabled) {
+                handleActivateLegal();
+              } else {
+                void setLegalCase(null);
+              }
             }}
             onActivateLegal={handleActivateLegal}
             onConfigureLegal={() => navigate(SETTINGS_HREF)}

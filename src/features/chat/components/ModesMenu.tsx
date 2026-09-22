@@ -113,9 +113,19 @@ export function ModesMenu({
             {/* Modo Abogado */}
             <div
               data-testid="legal-switch"
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                if ((e.target as HTMLElement).closest('button[role="switch"]')) return;
+                if (legalOn) {
+                  onToggleLegal(false);
+                } else {
+                  onActivateLegal();
+                }
+              }}
               className={cn(
-                'flex items-center justify-between gap-2.5 rounded-xl border p-2.5 transition-colors',
-                legalOn ? 'border-primary/40 bg-primary/5' : 'border-border/60 bg-surface-subtle/50',
+                'flex cursor-pointer select-none items-center justify-between gap-2.5 rounded-xl border p-2.5 transition-colors',
+                legalOn ? 'border-primary/40 bg-primary/5' : 'border-border/60 bg-surface-subtle/50 hover:bg-surface-subtle',
               )}
             >
               <div className="min-w-0 flex-1">
