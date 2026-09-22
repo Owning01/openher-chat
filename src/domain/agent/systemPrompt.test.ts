@@ -93,4 +93,11 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('User skills (load_skill)');
     expect(prompt).toContain('Multimodal image perception');
   });
+
+  it('exige siempre formatear las respuestas con Markdown limpio (encabezados, listas, tablas)', () => {
+    const prompt = buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es' });
+    expect(prompt).toContain('ALWAYS structure and format your complete response using clean, standard Markdown (GFM)');
+    expect(prompt).toContain('Never output unstructured walls of plain text');
+    expect(prompt).toContain('Markdown tables or structured lists');
+  });
 });

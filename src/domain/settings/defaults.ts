@@ -18,7 +18,7 @@ export const SETTINGS_SCHEMA_VERSION = 1;
 
 /** System prompt por defecto: breve, en inglés (texto para el modelo). */
 export const DEFAULT_SYSTEM_PROMPT =
-  'You are a helpful assistant. Answer in the user language, be concise, and use Markdown when it improves clarity.';
+  'You are a helpful assistant. Always answer in the user language, provide thorough explanations, and structure your responses using standard Markdown (with headings, lists, bold accents, and tables where appropriate).';
 
 export const DEFAULT_AGENT_BUDGET: AgentBudget = {
   maxSteps: 6,
@@ -69,7 +69,7 @@ export const DEFAULT_UI_SETTINGS: UiSettings = {
   researchPanelVisible: true,
   autoCheckUpdates: true,
   cloudSync: true,
-  themeVariant: 'monochrome',
+  themeVariant: 'ade-minimal',
 };
 
 /**

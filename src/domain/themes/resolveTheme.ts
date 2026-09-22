@@ -112,13 +112,28 @@ export function themeToCSSVars(resolved: Record<string, string>): Record<string,
   vars['--color-border-subtle'] = vars['--border-subtle'] ?? resolved['borderSubtle'] ?? '#27272a';
   vars['--color-text'] = vars['--text'] ?? resolved['text'] ?? '#fafafa';
   vars['--color-muted'] = vars['--muted'] ?? resolved['textMuted'] ?? '#a1a1aa';
-  vars['--color-primary'] = vars['--primary'] ?? resolved['primary'] ?? '#fafafa';
-  vars['--color-focus-ring'] = vars['--primary'] ?? '#fafafa';
+  vars['--color-primary'] = vars['--primary'] ?? resolved['primary'] ?? '#5e6ad2';
+  vars['--color-focus-ring'] = vars['--primary'] ?? '#5e6ad2';
+
+  if (resolved['success']) vars['--color-success'] = resolved['success'];
+  if (resolved['warning']) vars['--color-warning'] = resolved['warning'];
+  if (resolved['error']) vars['--color-danger'] = resolved['error'];
+  if (resolved['info']) vars['--color-info'] = resolved['info'];
 
   // Color de texto sobre botón primary
-  const primaryBg = vars['--color-primary'] ?? '#fafafa';
+  const primaryBg = vars['--color-primary'] ?? '#5e6ad2';
   vars['--color-on-primary'] = luminance(primaryBg) > 0.4 ? '#09090b' : '#fafafa';
-  vars['--color-primary-soft'] = mixHex(primaryBg, vars['--color-background'], 0.8);
+  vars['--color-primary-soft'] = mixHex(primaryBg, vars['--color-background'], 0.82);
+
+  if (vars['--color-success']) {
+    vars['--color-success-soft'] = mixHex(vars['--color-success'], vars['--color-background'], 0.85);
+  }
+  if (vars['--color-warning']) {
+    vars['--color-warning-soft'] = mixHex(vars['--color-warning'], vars['--color-background'], 0.85);
+  }
+  if (vars['--color-danger']) {
+    vars['--color-danger-soft'] = mixHex(vars['--color-danger'], vars['--color-background'], 0.85);
+  }
 
   const bg = vars['--color-background'] ?? '#000000';
   const surface = vars['--color-surface'] ?? bg;

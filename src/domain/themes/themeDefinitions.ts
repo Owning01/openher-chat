@@ -7849,4 +7849,4 @@ export const THEME_DEFINITIONS: Record<string, ThemeDefinition> = {
 
 export const THEME_NAMES: readonly string[] = Object.keys(THEME_DEFINITIONS);
 
-export const DEFAULT_THEME_NAME = 'monochrome';
+export const DEFAULT_THEME_NAME = 'ade-minimal';

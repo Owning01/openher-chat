@@ -85,7 +85,7 @@ describe('defaults de settings', () => {
       researchPanelVisible: true,
       autoCheckUpdates: true,
       cloudSync: true,
-      themeVariant: 'monochrome',
+      themeVariant: 'ade-minimal',
     });
   });
 

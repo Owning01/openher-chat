@@ -33,9 +33,11 @@ const LANGUAGE_INSTRUCTIONS: Record<Locale, string> = {
 // define el contrato de calidad de las respuestas normales.
 const STYLE_INSTRUCTIONS = [
   'Answer depth and format:',
+  '- ALWAYS structure and format your complete response using clean, standard Markdown (GFM). Use clear headings (##, ###), bulleted or numbered lists, tables for comparisons and structured data, bold/italic text for visual emphasis, and code blocks with language tags.',
+  '- Never output unstructured walls of plain text. Break information into logical paragraphs and visual sections.',
   '- Default to thorough, explanatory answers: develop the reasoning, give context, and explain the why, not just the what.',
   '- When the request needs steps (how to, procedure, setup), give numbered steps with concrete details: where to click, exact values, expected result, and how to verify it worked.',
-  '- When you present data or comparisons, use lists or tables instead of dense paragraphs.',
+  '- When you present data, features, comparisons, or metrics, use Markdown tables or structured lists instead of dense paragraphs.',
   '- Short answers are for simple factual questions only; if the question is simple, stay brief, but never cut off information the user needs to act.',
   '- If something is uncertain or you could not verify it, say it explicitly instead of omitting it.',
   '- End answers to informational requests with the next practical step or what to watch out for.',
