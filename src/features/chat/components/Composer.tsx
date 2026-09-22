@@ -31,7 +31,6 @@ import { matchCommands, expandSlashInput } from '@/domain/prompts/commands';
 import type { SlashCommand } from '@/domain/prompts/commands';
 import { Brain, Globe, Mic, Paperclip, Plus, Send, Sparkles, Square, TriangleAlert, X } from '@/shared/icons';
 import { Button, IconButton, Switch, TextArea, Tooltip } from '@/shared/ui';
-import { cn } from '@/shared/utils/cn';
 import { newId } from '@/shared/utils/ids';
 
 import { CommandMenu } from './CommandMenu';
@@ -683,25 +682,6 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
                 </div>
               ) : null}
             </div>
-
-            {/* Chip de Búsqueda Web / Investigación directa en el Composer (estilo ChatGPT/Perplexity) */}
-            {research !== undefined && !research.disabled ? (
-              <button
-                type="button"
-                aria-label={t('research.toggleLabel')}
-                title={research.enabled ? 'Búsqueda web activada' : 'Activar búsqueda web'}
-                onClick={() => research.onToggle(!research.enabled)}
-                className={cn(
-                  'flex h-7 items-center gap-1.5 rounded-lg border px-2 text-[11px] font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring active:scale-95',
-                  research.enabled
-                    ? 'border-accent/40 bg-accent/15 text-accent font-semibold shadow-2xs'
-                    : 'border-border/70 bg-surface-subtle/70 text-muted hover:border-border hover:text-text',
-                )}
-              >
-                <Globe aria-hidden="true" className={cn('size-3.5 shrink-0', research.enabled ? 'text-accent' : 'text-muted')} />
-                <span className="hidden sm:inline">Web</span>
-              </button>
-            ) : null}
 
             {/* Medidor visual de Tokens de Contexto hacia 250k (Autocompact) */}
             <button

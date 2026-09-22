@@ -539,9 +539,14 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
 
     async function ensureConversation(firstText: string, token: number): Promise<string | null> {
       const current = get().conversationId;
-      if (current !== null) return current;
+      if (current !== null) {
+        const existing = await repo.get(current);
+        if (existing !== null) return current;
+      }
+      const settings = await services.settings.load();
+      const defaultResearch = get().researchMode || settings.tools.webSearchEnabled;
       let created = await repo.create({ title: conversationTitleFromText(firstText) });
-      if (get().researchMode) {
+      if (defaultResearch) {
         created = await repo.update(created.id, { researchMode: true });
       }
       const pendingLegal = get().legalCaseId;
@@ -566,9 +571,13 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       const titleSource = content !== '' ? content : (images[0]?.name ?? '');
       const conversationId = await ensureConversation(titleSource, token);
       if (conversationId === null) return;
-      const conversation = await repo.get(conversationId);
+      let conversation = await repo.get(conversationId);
       if (!isCurrent(token)) return;
-      if (conversation === null) throw configurationError('The conversation no longer exists.');
+      if (conversation === null) {
+        conversation = await repo.create({ title: conversationTitleFromText(titleSource) });
+        publishConversation?.(conversation);
+        set({ conversationId: conversation.id });
+      }
 
       const history = await repo.listMessages(conversationId);
       if (!isCurrent(token)) return;

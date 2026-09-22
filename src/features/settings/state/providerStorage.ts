@@ -1,4 +1,5 @@
 import type { ModelApi, ModelInfo, ProviderConfig, ProviderKind, ProviderQuirks } from '@/domain/types/provider';
+import { ensureZenFreeModels } from '@/domain/providers/zenFreeModels';
 
 import { isHttpUrl, isProviderKind } from './validation';
 
@@ -66,7 +67,11 @@ export function sanitizeProviderConfig(raw: unknown, now: number): ProviderConfi
   const requiresKey = record.requiresKey === true;
   const keyRef = requiresKey ? (readNonEmptyString(record.keyRef) ?? `provider:${id}`) : null;
 
-  const models = sanitizeModelInfos(record.models);
+  const rawModels = sanitizeModelInfos(record.models);
+  const models =
+    kind === 'opencode' || id.includes('opencode') || id.includes('zen')
+      ? ensureZenFreeModels(rawModels)
+      : rawModels;
   const rawDefaultModelId = readNonEmptyString(record.defaultModelId);
   const defaultModelId =
     rawDefaultModelId !== null && models.some((model) => model.id === rawDefaultModelId) ? rawDefaultModelId : null;
