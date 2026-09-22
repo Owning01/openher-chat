@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { useT } from '@/i18n/useT';
-import { Check, ChevronDown, Globe, Scale } from '@/shared/icons';
+import { Check, Globe, Scale } from '@/shared/icons';
 import { Switch } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 
