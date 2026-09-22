@@ -42,20 +42,7 @@ export function ModesMenu({
   className,
 }: ModesMenuProps) {
   const t = useT();
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const legalOn = legalCaseId != null;
-
-  useEffect(() => {
-    if (!popoverOpen) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setPopoverOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [popoverOpen]);
 
   const summary =
     legalOn && researchMode
@@ -68,119 +55,63 @@ export function ModesMenu({
 
   return (
     <div
-      ref={containerRef}
       data-testid="modes-menu"
       role="group"
       aria-label={t('modes.buttonLabel')}
-      className={cn('relative inline-flex items-center', className)}
+      className={cn('inline-flex items-center gap-2', className)}
     >
-      {/* Botón principal de Modos en la cabecera */}
-      <button
-        type="button"
-        aria-expanded={popoverOpen}
-        aria-haspopup="true"
-        onClick={() => setPopoverOpen((prev) => !prev)}
-        className={cn(
-          'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition-all shadow-2xs backdrop-blur-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring active:scale-95',
-          legalOn
-            ? 'border-primary/50 bg-primary-soft text-primary font-semibold'
-            : 'border-border/80 bg-surface/80 text-text hover:bg-surface hover:border-border',
-        )}
+      {/* Botón directo de Modo Abogado en la cabecera */}
+      <div
+        data-testid="legal-switch"
+        className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-surface/80 px-2.5 py-1 text-xs transition-colors hover:border-border hover:bg-surface"
       >
         <Scale aria-hidden="true" className={cn('size-3.5 shrink-0', legalOn ? 'text-primary' : 'text-muted')} />
-        <span>{legalOn ? t('modes.legalShort') : 'Modos'}</span>
-        <ChevronDown aria-hidden="true" className={cn('size-3 text-muted transition-transform duration-150', popoverOpen && 'rotate-180')} />
-      </button>
-
-      {/* Popover flotante de selección de Modos */}
-      {popoverOpen ? (
-        <div
-          role="dialog"
-          aria-label="Menú de modos"
-          className="absolute top-full right-0 z-30 mt-2 w-72 rounded-2xl border border-border bg-surface p-3 shadow-raised"
-          style={{ animation: 'pop-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both' }}
+        <span
+          onClick={() => {
+            if (legalOn) onToggleLegal(false);
+            else onActivateLegal();
+          }}
+          className={cn('cursor-pointer select-none font-medium', legalOn ? 'text-primary font-semibold' : 'text-muted hover:text-text')}
         >
-          <div className="mb-2.5 flex items-center justify-between border-b border-border/60 pb-2">
-            <span className="text-xs font-semibold text-text">Modos de conversación</span>
-            {legalOn ? (
-              <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                Abogado activo
-              </span>
-            ) : null}
-          </div>
+          <span className="sm:hidden">{t('modes.legalShort')}</span>
+          <span className="hidden sm:inline">{t('modes.legalTitle')}</span>
+        </span>
+        <Switch
+          data-testid="modes-menu-legal"
+          checked={legalOn}
+          label={t('modes.legalTitle')}
+          title={t('modes.legalHint')}
+          className="hit-expand w-11 scale-90"
+          onCheckedChange={(enabled) => {
+            if (enabled) {
+              onActivateLegal();
+            } else {
+              onToggleLegal(false);
+            }
+          }}
+        />
+      </div>
 
-          <div className="space-y-2.5">
-            {/* Modo Abogado */}
-            <div
-              data-testid="legal-switch"
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                if ((e.target as HTMLElement).closest('button[role="switch"]')) return;
-                if (legalOn) {
-                  onToggleLegal(false);
-                } else {
-                  onActivateLegal();
-                }
-              }}
-              className={cn(
-                'flex cursor-pointer select-none items-center justify-between gap-2.5 rounded-xl border p-2.5 transition-colors',
-                legalOn ? 'border-primary/40 bg-primary/5' : 'border-border/60 bg-surface-subtle/50 hover:bg-surface-subtle',
-              )}
-            >
-              <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-text">{t('modes.legalTitle')}</div>
-                <div className="text-[11px] text-muted leading-tight mt-0.5">{t('modes.legalHint')}</div>
-              </div>
-              <Switch
-                data-testid="modes-menu-legal"
-                checked={legalOn}
-                label={t('modes.legalTitle')}
-                title={t('modes.legalHint')}
-                className="hit-expand scale-90"
-                onCheckedChange={(enabled) => {
-                  if (enabled) {
-                    onActivateLegal();
-                  } else {
-                    onToggleLegal(false);
-                  }
-                }}
-              />
-              <span className="sr-only">
-                <span>{t('modes.legalShort')}</span>
-                <span>{t('modes.legalTitle')}</span>
-              </span>
-            </div>
+      {legalOn && onOpenCase !== undefined ? (
+        <button
+          type="button"
+          data-testid="modes-menu-open-case"
+          onClick={onOpenCase}
+          className="inline-flex h-7 items-center gap-1 rounded-full border border-border/80 bg-surface px-2.5 text-[11px] font-medium text-muted transition-colors hover:bg-surface-subtle hover:text-text"
+        >
+          <span>{t('modes.openCase')}</span>
+        </button>
+      ) : null}
 
-            {legalOn && onOpenCase !== undefined ? (
-              <button
-                type="button"
-                data-testid="modes-menu-open-case"
-                onClick={() => {
-                  setPopoverOpen(false);
-                  onOpenCase();
-                }}
-                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-surface py-2 text-xs font-medium text-text transition-colors hover:bg-surface-subtle"
-              >
-                {t('modes.openCase')}
-              </button>
-            ) : null}
-
-            {!legalConfigured ? (
-              <button
-                type="button"
-                data-testid="modes-menu-configure"
-                onClick={() => {
-                  setPopoverOpen(false);
-                  onConfigureLegal();
-                }}
-                className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-border/80 bg-surface py-2 text-xs font-medium text-text transition-colors hover:bg-surface-subtle"
-              >
-                {t('modes.configureLegal')}
-              </button>
-            ) : null}
-          </div>
-        </div>
+      {!legalConfigured ? (
+        <button
+          type="button"
+          data-testid="modes-menu-configure"
+          onClick={onConfigureLegal}
+          className="inline-flex h-7 items-center gap-1 rounded-full border border-border/80 bg-surface px-2.5 text-[11px] font-medium text-muted transition-colors hover:bg-surface-subtle hover:text-text"
+        >
+          <span>{t('modes.configureLegal')}</span>
+        </button>
       ) : null}
 
       {/* Contenedor accesible / de compatibilidad para tests */}
@@ -195,43 +126,6 @@ export function ModesMenu({
           hint={t('modes.researchHint')}
           onToggle={() => onToggleResearch(!researchMode)}
         />
-        {!popoverOpen ? (
-          <>
-            <div data-testid="legal-switch" className="sr-only">
-              <Switch
-                data-testid="modes-menu-legal"
-                checked={legalOn}
-                label={t('modes.legalTitle')}
-                title={t('modes.legalHint')}
-                className="hit-expand"
-                onCheckedChange={(enabled) => {
-                  if (enabled) onActivateLegal();
-                  else onToggleLegal(false);
-                }}
-              />
-              <span>{t('modes.legalShort')}</span>
-              <span>{t('modes.legalTitle')}</span>
-            </div>
-            {legalOn && onOpenCase !== undefined ? (
-              <button
-                type="button"
-                data-testid="modes-menu-open-case"
-                onClick={onOpenCase}
-              >
-                {t('modes.openCase')}
-              </button>
-            ) : null}
-            {!legalConfigured ? (
-              <button
-                type="button"
-                data-testid="modes-menu-configure"
-                onClick={onConfigureLegal}
-              >
-                {t('modes.configureLegal')}
-              </button>
-            ) : null}
-          </>
-        ) : null}
       </div>
 
       <p data-testid="modes-menu-summary" role="status" className="sr-only">

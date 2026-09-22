@@ -432,7 +432,7 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
       }}
     >
       {research !== undefined ? (
-        <div className="flex flex-wrap items-center gap-2 text-xs">
+        <div className="sr-only">
           <Tooltip label={t('research.toggleLabel')}>
             <Switch
               checked={research.enabled}
