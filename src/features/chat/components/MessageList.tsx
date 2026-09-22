@@ -442,7 +442,7 @@ function renderBlock(
         </div>
       );
     case 'reasoning':
-      return <ReasoningBlock key={`reasoning-${index}`} text={block.text} />;
+      return <ReasoningBlock key={`reasoning-${index}`} text={block.text} streaming={live} />;
     case 'tool':
       return <ToolCallCard key={`tool-${index}`} name={block.name} result={block.result} />;
     case 'image':

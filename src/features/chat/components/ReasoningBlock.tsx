@@ -6,29 +6,40 @@ import { cn } from '@/shared/utils/cn';
 
 export interface ReasoningBlockProps {
   text: string;
+  streaming?: boolean;
 }
 
-export function ReasoningBlock({ text }: ReasoningBlockProps) {
+export function ReasoningBlock({ text, streaming = false }: ReasoningBlockProps) {
   const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
-    <div data-block="reasoning" className="rounded-lg border border-border-subtle bg-surface-subtle/60">
+    <div data-block="reasoning" className="my-1.5 w-full">
       <button
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-medium text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+        className="group -mx-1.5 flex items-center gap-2 rounded-lg px-2 py-1 text-left text-xs font-medium text-muted transition-colors hover:bg-surface-subtle hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
       >
-        <Brain aria-hidden="true" className="size-3.5 shrink-0" />
-        <span className="flex-1">{t('chat.reasoning')}</span>
-        <ChevronDown aria-hidden="true" className={cn('size-3.5 shrink-0 transition-transform', open && 'rotate-180')} />
+        <span className="flex size-5 items-center justify-center rounded-md bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+          <Brain aria-hidden="true" className="size-3.5 shrink-0" />
+        </span>
+        <span className={cn('flex-1 transition-colors', streaming && 'anim-shimmer-text font-medium')}>
+          {t('chat.reasoning')}
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          className={cn('size-3.5 shrink-0 text-muted transition-transform duration-300 ease-out', open && 'rotate-180')}
+        />
       </button>
       {open ? (
-        <div className="whitespace-pre-wrap border-t border-border-subtle px-3 py-2 text-xs leading-relaxed text-muted">
-          {text}
+        <div className="relative mt-1.5 ml-2.5 border-l border-border-subtle py-1 pl-3.5">
+          <div className="whitespace-pre-wrap break-words text-xs leading-relaxed text-muted/90 selection:bg-primary/20">
+            {text}
+          </div>
         </div>
       ) : null}
     </div>
   );
 }
+
