@@ -68,7 +68,7 @@ export function TopBar({ onOpenMenu }: TopBarProps) {
   const ThemeIcon = THEME_ICONS[theme];
 
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-1 border-b border-border bg-background/90 px-3 backdrop-blur">
+    <header className="sticky top-0 z-20 flex h-12 items-center gap-1 border-b border-border/80 bg-background/80 px-3 backdrop-blur-md">
       <IconButton
         className="lg:hidden"
         label={t('app.menu')}

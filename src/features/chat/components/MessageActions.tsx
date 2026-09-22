@@ -47,7 +47,7 @@ export function MessageActions({
   const copyText = guard.mark(text);
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="inline-flex items-center gap-0.5 rounded-lg border border-border/40 bg-surface/80 p-0.5 shadow-xs backdrop-blur-xs">
       <CopyButton text={copyText} label={t('chat.copy')} copiedLabel={t('chat.copied')} />
       {role === 'assistant' ? (
         <IconButton

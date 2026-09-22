@@ -434,79 +434,82 @@ function ChatPageContent() {
       data-conversation-id={conversationId ?? ''}
       className="flex min-h-0 flex-1 flex-col"
     >
-      <header className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-border px-4 py-1.5">
-        <h2 className="hidden min-w-0 flex-1 truncate text-sm font-medium text-text sm:block">
-          {resolveTitle(conversation?.title, conversationId, t)}
-        </h2>
-        <div className="min-w-0 flex-1 sm:hidden" />
-        <ModesMenu
-          researchMode={researchMode}
-          legalCaseId={legalCaseId}
-          legalCaseTitle={linkedCaseTitle}
-          researchDisabled={researchDisabled}
-          legalConfigured={legalConfigured}
-          onToggleResearch={(enabled) => {
-            void setResearchMode(enabled);
-          }}
-          onToggleLegal={(enabled) => {
-            // Apagar desvincula; encender lo resuelve `handleActivateLegal`.
-            if (!enabled) void setLegalCase(null);
-          }}
-          onActivateLegal={handleActivateLegal}
-          onConfigureLegal={() => navigate(SETTINGS_HREF)}
-          onOpenCase={
-            legalCaseId === null ? undefined : () => navigate(`#/legal/${legalCaseId}`)
-          }
-          className="min-w-0 flex-1 sm:flex-none"
-        />
-        {researchMode && !researchPanelVisible ? (
-          <IconButton
-            data-testid="research-panel-show"
-            label={t('research.showPanel')}
-            size="sm"
-            icon={<PanelRightOpen aria-hidden="true" className="size-4" />}
-            onClick={() => setResearchPanelVisible(true)}
-            className="shrink-0"
-          />
-        ) : null}
-        {legalCaseId !== null ? (
-          <IconButton
-            data-testid="circuit-open"
-            label={t('chat.circuit')}
-            size="sm"
-            icon={<Scale aria-hidden="true" className="size-4" />}
-            onClick={() => setCircuitOpen(true)}
-            className="shrink-0"
-          />
-        ) : null}
-        {modelTarget !== null ? (
-          <ModelPicker
-            providers={providers}
-            providerId={modelTarget.providerId}
-            modelId={modelTarget.modelId}
-            label={t('chat.selectModel')}
-            placeholder={t('chat.selectModel')}
-            onSelect={(nextProviderId, nextModelId) => {
-              setPendingTarget({ providerId: nextProviderId, modelId: nextModelId });
-              void setModel(nextProviderId, nextModelId);
+      <header className="flex min-h-12 shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-b border-border bg-background/80 px-3.5 py-1.5 backdrop-blur-xs">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <h2 className="hidden min-w-0 truncate text-sm font-semibold text-text sm:block max-w-52 md:max-w-72">
+            {resolveTitle(conversation?.title, conversationId, t)}
+          </h2>
+          {modelTarget !== null ? (
+            <ModelPicker
+              providers={providers}
+              providerId={modelTarget.providerId}
+              modelId={modelTarget.modelId}
+              label={t('chat.selectModel')}
+              placeholder={t('chat.selectModel')}
+              onSelect={(nextProviderId, nextModelId) => {
+                setPendingTarget({ providerId: nextProviderId, modelId: nextModelId });
+                void setModel(nextProviderId, nextModelId);
+              }}
+              className="w-28 shrink-0 sm:w-44"
+            />
+          ) : modelId !== null ? (
+            <Badge
+              variant="neutral"
+              title={t('chat.modelLabel', { model: modelId })}
+              className="hidden max-w-56 truncate font-mono sm:inline-flex"
+            >
+              {modelId}
+            </Badge>
+          ) : null}
+          {conversation?.summary !== undefined && conversation.summary.trim() !== '' ? (
+            <Badge variant="neutral" title={t('chat.compacted')} className="hidden sm:inline-flex">
+              {t('chat.compacted')}
+            </Badge>
+          ) : null}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1.5">
+          <ModesMenu
+            researchMode={researchMode}
+            legalCaseId={legalCaseId}
+            legalCaseTitle={linkedCaseTitle}
+            researchDisabled={researchDisabled}
+            legalConfigured={legalConfigured}
+            onToggleResearch={(enabled) => {
+              void setResearchMode(enabled);
             }}
-            className="w-28 shrink-0 sm:w-44"
+            onToggleLegal={(enabled) => {
+              // Apagar desvincula; encender lo resuelve `handleActivateLegal`.
+              if (!enabled) void setLegalCase(null);
+            }}
+            onActivateLegal={handleActivateLegal}
+            onConfigureLegal={() => navigate(SETTINGS_HREF)}
+            onOpenCase={
+              legalCaseId === null ? undefined : () => navigate(`#/legal/${legalCaseId}`)
+            }
           />
-        ) : modelId !== null ? (
-          <Badge
-            variant="neutral"
-            title={t('chat.modelLabel', { model: modelId })}
-            className="hidden max-w-56 truncate font-mono sm:inline-flex"
-          >
-            {modelId}
-          </Badge>
-        ) : null}
-        {conversation?.summary !== undefined && conversation.summary.trim() !== '' ? (
-          <Badge variant="neutral" title={t('chat.compacted')} className="hidden sm:inline-flex">
-            {t('chat.compacted')}
-          </Badge>
-        ) : null}
-        <ConversationUsage messages={controller.messages} />
+          {researchMode && !researchPanelVisible ? (
+            <IconButton
+              data-testid="research-panel-show"
+              label={t('research.showPanel')}
+              size="sm"
+              icon={<PanelRightOpen aria-hidden="true" className="size-4" />}
+              onClick={() => setResearchPanelVisible(true)}
+              className="shrink-0"
+            />
+          ) : null}
+          {legalCaseId !== null ? (
+            <IconButton
+              data-testid="circuit-open"
+              label={t('chat.circuit')}
+              size="sm"
+              icon={<Scale aria-hidden="true" className="size-4" />}
+              onClick={() => setCircuitOpen(true)}
+              className="shrink-0"
+            />
+          ) : null}
+          <ConversationUsage messages={controller.messages} />
+        </div>
       </header>
 
       <div
@@ -518,7 +521,7 @@ function ChatPageContent() {
       >
         <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
           <div className="relative min-h-0 flex-1">
-            <div ref={scrollRef} onScroll={onScroll} className="h-full overflow-y-auto px-4 py-6">
+            <div ref={scrollRef} onScroll={onScroll} className="h-full overflow-y-auto px-4 pt-4 pb-28 sm:pb-32">
               <div className="mx-auto w-full max-w-3xl space-y-4">
                 {controller.messages.length === 0 ? (
                   <EmptyChat onSuggestion={(text) => void controller.send(text)} />
@@ -545,7 +548,7 @@ function ChatPageContent() {
                 aria-label={t('chat.scrollToBottom')}
                 title={t('chat.scrollToBottom')}
                 onClick={() => scrollToBottom('smooth')}
-                className="hit-expand absolute bottom-4 left-1/2 grid size-9 -translate-x-1/2 place-items-center rounded-full border border-border bg-surface text-text shadow-sm transition-all duration-150 hover:bg-surface-subtle active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                className="hit-expand absolute bottom-24 left-1/2 z-20 grid size-9 -translate-x-1/2 place-items-center rounded-full border border-border bg-surface text-text shadow-md transition-all duration-150 hover:bg-surface-subtle hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
               >
                 <ChevronDown aria-hidden="true" className="size-4" />
               </button>
@@ -564,8 +567,11 @@ function ChatPageContent() {
           ) : null}
         </div>
 
-        <footer className="shrink-0 border-t border-border px-3 py-3">
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-2">
+        {/* Gradiente de desvanecimiento detrás del dock flotante */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[5] h-28 bg-gradient-to-t from-background via-background/85 to-transparent" />
+
+        <footer className="pointer-events-none relative z-10 shrink-0 px-3 pb-3 pt-0">
+          <div className="pointer-events-auto mx-auto flex w-full max-w-3xl flex-col gap-2">
             {controller.lastError !== null ? (
               <ErrorBanner error={controller.lastError} onRetry={() => void controller.retryLast()} />
             ) : null}

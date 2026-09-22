@@ -64,7 +64,7 @@ export function ModelPicker({
           const option = catalog.byKey.get(event.target.value);
           if (option !== undefined) onSelect(option.providerId, option.modelId);
         }}
-        className="h-8 w-full appearance-none truncate rounded-md border border-border bg-surface pr-7 pl-2.5 text-xs text-text transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+        className="h-8 w-full appearance-none truncate rounded-full border border-border/80 bg-surface/90 pr-7 pl-3 text-xs font-medium text-text shadow-2xs backdrop-blur-xs transition-all hover:border-border hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
       >
         {value === '' ? (
           <option value="" disabled>

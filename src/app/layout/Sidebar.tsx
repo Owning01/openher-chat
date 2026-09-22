@@ -19,7 +19,7 @@ export function Sidebar({ className, onNavigate }: SidebarProps) {
         className,
       )}
     >
-      <div className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b border-border/80 px-4">
         <Logo size={20} className="shrink-0" />
         <span className="truncate text-sm font-semibold text-text">{t('app.title')}</span>
       </div>

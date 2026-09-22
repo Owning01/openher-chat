@@ -294,7 +294,7 @@ function MessageItemInner({
             />
           </div>
         ) : (
-          <div className="max-w-[85%] rounded-2xl rounded-br-md bg-primary px-4 py-2.5 text-sm text-on-primary">
+          <div className="max-w-[85%] rounded-2xl bg-primary px-4 py-2.5 text-sm text-on-primary shadow-xs">
             {userImages.length > 0 ? (
               <ul aria-label={t('chat.attachments')} className="mb-2 flex flex-wrap gap-2">
                 {userImages.map((image) => (
@@ -311,7 +311,7 @@ function MessageItemInner({
               </ul>
             ) : null}
             {userSplit !== null && userSplit.text !== '' ? (
-              <p className="whitespace-pre-wrap break-words">{userSplit.text}</p>
+              <p className="whitespace-pre-wrap break-words leading-relaxed">{userSplit.text}</p>
             ) : null}
             {userSplit?.attachments.map((attachment) => (
               <details
@@ -332,7 +332,7 @@ function MessageItemInner({
           </div>
         )
       ) : (
-        <div className="w-full space-y-2 rounded-2xl rounded-bl-md border border-border bg-surface px-4 py-3">
+        <div className="w-full space-y-3 px-1 py-1 text-text leading-relaxed">
           {blocks.map((block, index) =>
             renderBlock(
               block,
@@ -346,11 +346,16 @@ function MessageItemInner({
           {htmlReport !== null && message.status === 'complete' ? (
             <div
               data-testid="visual-report-callout"
-              className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3"
+              className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3.5 shadow-xs transition-all hover:border-primary/40 hover:bg-primary/10"
             >
-              <div className="flex items-center gap-2 text-xs font-medium text-primary">
-                <Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                <span>{t('chat.viewVisualReport')}</span>
+              <div className="flex items-center gap-2.5 text-xs font-medium text-primary">
+                <span className="flex size-7 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <Sparkles className="size-4 shrink-0" aria-hidden="true" />
+                </span>
+                <div>
+                  <div className="font-semibold text-text">{t('chat.viewVisualReport')}</div>
+                  <div className="text-[11px] text-muted">Informe interactivo renderizado en HTML</div>
+                </div>
               </div>
               <Button
                 size="sm"
@@ -366,27 +371,29 @@ function MessageItemInner({
         </div>
       )}
       {editing ? null : (
-        <MessageActions
-          messageId={message.id}
-          role={message.role}
-          text={text}
-          canRegenerate={!isUser && isLastAssistant}
-          onContinue={
-            onContinue !== undefined && !isUser && isLastAssistant && !busy && message.truncated === true
-              ? onContinue
-              : undefined
-          }
-          disabled={busy}
-          onRegenerate={onRegenerate}
-          onEditStart={handleEditStart}
-          onDelete={onDelete}
-          onVisualReport={
-            !isUser && (htmlReport !== null || onGenerateVisualReport !== undefined)
-              ? handleVisualReportClick
-              : undefined
-          }
-          hasVisualReport={htmlReport !== null}
-        />
+        <div className="opacity-90 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+          <MessageActions
+            messageId={message.id}
+            role={message.role}
+            text={text}
+            canRegenerate={!isUser && isLastAssistant}
+            onContinue={
+              onContinue !== undefined && !isUser && isLastAssistant && !busy && message.truncated === true
+                ? onContinue
+                : undefined
+            }
+            disabled={busy}
+            onRegenerate={onRegenerate}
+            onEditStart={handleEditStart}
+            onDelete={onDelete}
+            onVisualReport={
+              !isUser && (htmlReport !== null || onGenerateVisualReport !== undefined)
+                ? handleVisualReportClick
+                : undefined
+            }
+            hasVisualReport={htmlReport !== null}
+          />
+        </div>
       )}
       {showCounts ? (
         <p
