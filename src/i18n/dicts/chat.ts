@@ -53,6 +53,9 @@ export const chat = defineDict({
     toolDurationSeconds: '{seconds} s',
     modelLabel: 'Modelo: {model}',
     selectModel: 'Modelo',
+    contextStatus: 'Estado del contexto',
+    contextUsage: 'Uso de contexto',
+    contextIsolated: 'Contexto aislado',
 
     attach: 'Adjuntar archivo o imagen',
     attachments: 'Archivos adjuntos',
@@ -158,6 +161,9 @@ export const chat = defineDict({
     toolDurationSeconds: '{seconds} s',
     modelLabel: 'Model: {model}',
     selectModel: 'Model',
+    contextStatus: 'Context Status',
+    contextUsage: 'Context Usage',
+    contextIsolated: 'Isolated Context',
 
     attach: 'Attach file or image',
     attachments: 'Attachments',

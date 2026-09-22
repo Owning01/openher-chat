@@ -25,6 +25,7 @@ export interface ChatController {
   editUserMessage: (userMessageId: string, text: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
   retryLast: () => Promise<void>;
+  reset: () => void;
 }
 
 /** Store de respaldo por `AppServices` cuando la UI no monta un `ChatStoreProvider`. */
@@ -63,6 +64,7 @@ export function useChatController(): ChatController {
   const editUserMessage = useStore(store, (state) => state.editUserMessage);
   const deleteMessage = useStore(store, (state) => state.deleteMessage);
   const retryLast = useStore(store, (state) => state.retryLast);
+  const reset = useStore(store, (state) => state.reset);
 
   return {
     messages,
@@ -79,5 +81,6 @@ export function useChatController(): ChatController {
     editUserMessage,
     deleteMessage,
     retryLast,
+    reset,
   };
 }

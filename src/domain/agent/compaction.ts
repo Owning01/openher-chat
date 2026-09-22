@@ -15,6 +15,8 @@ export const MIN_PRESERVE_RECENT_TOKENS = 2_000;
 export const MAX_PRESERVE_RECENT_TOKENS = 15_000;
 export const TOOL_OUTPUT_MAX_CHARS = 2_000;
 export const SUMMARY_OUTPUT_TOKENS = 4_096;
+/** Umbral global de autocompactación / autoresumen (250k tokens). */
+export const AUTOCOMPACT_THRESHOLD_TOKENS = 250_000;
 
 /** Plantilla de resumen anclado (idéntica a la de OpenCode). */
 export const SUMMARY_TEMPLATE = `Output exactly the Markdown structure shown inside <template> and keep the section order unchanged. Do not include the <template> tags in your response.
@@ -151,11 +153,12 @@ export interface ShouldCompactInput {
 
 /** Umbral de OpenCode: `estimate <= context - max(output, buffer)` no compacta. */
 export function shouldCompact(input: ShouldCompactInput): boolean {
-  if (input.contextWindow <= 0) return false;
   const estimate =
     input.history.reduce((total, message) => total + estimateMessageTokens(message), 0) +
     estimateToolsTokens([...(input.tools ?? [])]) +
     (input.systemTokens ?? 0);
+  if (estimate >= AUTOCOMPACT_THRESHOLD_TOKENS) return true;
+  if (input.contextWindow <= 0) return false;
   return estimate > input.contextWindow - Math.max(input.reservedOutput, input.buffer ?? COMPACTION_BUFFER_TOKENS);
 }
 

@@ -5,7 +5,7 @@ import { createToolRegistry } from '@/adapters/tools';
 import { isNativePlatform } from '@/adapters/tools/platform';
 import type { AppServices } from '@/app/services';
 import { generateTitle } from '@/domain/agent/generateTitle';
-import { compactMessages, preserveRecentBudget, shouldCompact } from '@/domain/agent/compaction';
+import { AUTOCOMPACT_THRESHOLD_TOKENS, compactMessages, preserveRecentBudget, shouldCompact } from '@/domain/agent/compaction';
 import { runAgent } from '@/domain/agent/runAgent';
 import type { RunAgentParams } from '@/domain/agent/runAgent';
 import { buildSystemPrompt } from '@/domain/agent/systemPrompt';
@@ -108,6 +108,8 @@ export interface ChatState {
   /** Tool que espera autorización (null si no hay ninguna pendiente). */
   pendingApproval: ToolApprovalRequest | null;
   load(conversationId: string): Promise<void>;
+  /** Restablece el store a una nueva sesión vacía (contexto aislado). */
+  reset(): void;
   /**
    * Envía el turno. `images` son imágenes ya comprimidas (dataUrl) del
    * composer; el texto puede ir vacío si hay imágenes. Sin imágenes el
@@ -909,9 +911,10 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
     }
 
     /**
-     * Compacta cuando la estimación de contexto supera `ventana - max(salida, buffer)`
-     * (umbral de OpenCode). Guarda el resumen anclado y el punto de corte; el turno
-     * siguiente reinyecta el resumen y descarta los mensajes ya resumidos.
+     * Compacta cuando la estimación de contexto supera el umbral global de 250k
+     * tokens o `ventana - max(salida, buffer)`. Guarda el resumen anclado y el
+     * punto de corte; el turno siguiente reinyecta el resumen y descarta los
+     * mensajes ya resumidos.
      */
     async function maybeCompact(
       token: number,
@@ -920,14 +923,17 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       target: ResolvedTarget,
       settings: AppSettings,
     ): Promise<void> {
-      const contextWindow =
+      const modelWindow =
         target.model?.contextWindow ??
         (settings.history.mode === 'fixed' ? settings.history.maxPromptTokens : null);
-      if (contextWindow === null || contextWindow <= 0) return;
+      const effectiveWindow =
+        modelWindow != null && modelWindow > 0
+          ? Math.min(modelWindow, AUTOCOMPACT_THRESHOLD_TOKENS)
+          : AUTOCOMPACT_THRESHOLD_TOKENS;
 
       const history = get().messages;
       const reservedOutput = settings.chat.maxOutputTokens ?? settings.history.reservedOutputTokens;
-      if (!shouldCompact({ history, contextWindow, reservedOutput })) return;
+      if (!shouldCompact({ history, contextWindow: effectiveWindow, reservedOutput })) return;
 
       const conversation = await repo.get(conversationId);
       if (conversation === null || !isCurrent(token)) return;
@@ -939,7 +945,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         modelId: target.modelId,
         messages: history,
         previousSummary: conversation.summary,
-        keepTokens: preserveRecentBudget(contextWindow),
+        keepTokens: preserveRecentBudget(effectiveWindow),
         maxSummaryTokens: reservedOutput > 0 ? reservedOutput : undefined,
         sessionId: conversationId,
         signal: local.signal,
@@ -956,6 +962,24 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         publishConversation?.(updated);
       } catch {
         // Persistencia best-effort: el historial completo sigue siendo válido.
+      }
+    }
+
+    /**
+     * Limpia el resumen anclado si alguno de los mensajes resumidos fue eliminado,
+     * garantizando aislamiento estricto y que los turnos borrados salgan del contexto.
+     */
+    async function cleanStaleSummary(conversationId: string, remaining: readonly ChatMessage[]): Promise<void> {
+      const conversation = await repo.get(conversationId);
+      if (conversation === null || conversation.summary === undefined) return;
+      const throughId = conversation.summaryThroughMessageId;
+      const stillHasThrough = throughId != null && remaining.some((m) => m.id === throughId);
+      if (!stillHasThrough || remaining.length === 0) {
+        const updated = await repo.update(conversationId, {
+          summary: undefined,
+          summaryThroughMessageId: undefined,
+        });
+        publishConversation?.(updated);
       }
     }
 
@@ -977,6 +1001,23 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
       pendingSeed: null,
       setPendingSeed(seed) {
         set({ pendingSeed: seed });
+      },
+
+      reset() {
+        abortRun();
+        generation += 1;
+        set({
+          conversationId: null,
+          messages: [],
+          runStatus: 'idle',
+          liveSteps: [],
+          lastError: null,
+          researchMode: false,
+          legalCaseId: null,
+          legalRole: null,
+          pendingApproval: null,
+          pendingSeed: null,
+        });
       },
 
       async load(conversationId) {
@@ -1089,6 +1130,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         try {
           await repo.deleteMessagesFrom(conversationId, assistantMessageId);
           if (!isCurrent(token)) return;
+          await cleanStaleSummary(conversationId, before);
           const conversation = await repo.get(conversationId);
           if (!isCurrent(token)) return;
           if (conversation === null) throw configurationError('The conversation no longer exists.');
@@ -1118,7 +1160,9 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
         try {
           await repo.deleteMessagesFrom(conversationId, userMessageId);
           if (!isCurrent(token)) return;
-          set({ messages: messages.slice(0, index), liveSteps: [], lastError: null });
+          const remaining = messages.slice(0, index);
+          await cleanStaleSummary(conversationId, remaining);
+          set({ messages: remaining, liveSteps: [], lastError: null });
           // La edición conserva las imágenes del mensaje original (el texto se reescribe).
           const keptImages: ImageDraft[] = [];
           for (const block of target.content) {
@@ -1147,6 +1191,7 @@ export function createChatStore(deps: ChatStoreDeps): ChatStore {
           const remaining = messages.slice(0, index);
           set({ messages: remaining });
           await syncConversationSummary(conversationId, remaining);
+          await cleanStaleSummary(conversationId, remaining);
         } catch (cause) {
           set({ lastError: toMessageError(cause) });
         }

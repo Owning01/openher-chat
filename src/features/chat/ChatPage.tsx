@@ -105,6 +105,7 @@ function ChatPageContent() {
   const conversationId = route.name === 'chat' ? route.conversationId : null;
 
   const load = useChatStore((state) => state.load);
+  const reset = useChatStore((state) => state.reset);
   const storeConversationId = useChatStore((state) => state.conversationId);
   const researchMode = useChatStore((state) => state.researchMode);
   const setResearchMode = useChatStore((state) => state.setResearchMode);
@@ -169,10 +170,21 @@ function ChatPageContent() {
     void loadConversations();
   }, [loadConversations]);
 
+  const previousRouteConversationId = useRef(conversationId);
+
   useEffect(() => {
-    if (conversationId === null || conversationId === storeConversationId) return;
+    const prev = previousRouteConversationId.current;
+    previousRouteConversationId.current = conversationId;
+
+    if (conversationId === storeConversationId) return;
+    if (conversationId === null) {
+      if (prev !== null) {
+        reset();
+      }
+      return;
+    }
     void load(conversationId);
-  }, [conversationId, storeConversationId, load]);
+  }, [conversationId, storeConversationId, load, reset]);
 
   // Si el primer envío crea la conversación, sincroniza la URL y refresca el historial.
   // Sólo aplica con la ruta de chat: al abrir Ajustes/Expedientes el `conversationId`
@@ -562,6 +574,9 @@ function ChatPageContent() {
               status={controller.runStatus}
               onSend={(text, images) => void controller.send(text, images)}
               onStop={controller.stop}
+              messages={controller.messages}
+              summary={conversation?.summary}
+              modelName={modelId ?? undefined}
               research={{
                 enabled: researchMode,
                 disabled: researchDisabled,

@@ -317,3 +317,39 @@ describe('Composer — handle imperativo (archivos soltados fuera del formulario
     expect(screen.queryByText('nota.txt')).not.toBeInTheDocument();
   });
 });
+
+describe('Composer — Prompt Bar & Medidor de Contexto (250k)', () => {
+  it('muestra el medidor de contexto y abre el diálogo al clickearlo', () => {
+    const messages = [
+      {
+        id: 'm1',
+        conversationId: 'c1',
+        role: 'user' as const,
+        status: 'complete' as const,
+        content: [{ type: 'text' as const, text: 'Hola mundo' }],
+        createdAt: 0,
+        updatedAt: 0,
+      },
+    ];
+
+    render(
+      <Composer
+        status="idle"
+        onSend={vi.fn()}
+        onStop={vi.fn()}
+        messages={messages}
+        modelName="llama-3.3-70b"
+      />,
+    );
+
+    const contextBtn = screen.getByRole('button', { name: 'Ver estado de contexto' });
+    expect(contextBtn).toBeInTheDocument();
+    expect(contextBtn).toHaveTextContent('/ 250k');
+    expect(screen.getByText(/llama-3.3-70b/)).toBeInTheDocument();
+
+    fireEvent.click(contextBtn);
+    expect(screen.getByText('Estado del Contexto')).toBeInTheDocument();
+    expect(screen.getByText('Consumo de Contexto')).toBeInTheDocument();
+  });
+});
+

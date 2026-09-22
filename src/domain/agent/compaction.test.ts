@@ -100,7 +100,16 @@ describe('shouldCompact', () => {
     expect(shouldCompact({ history, contextWindow: 5_000, reservedOutput: 4_000 })).toBe(true);
   });
 
-  it('nunca compacta sin ventana conocida', () => {
+  it('activa autocompactación automáticamente al alcanzar 250k tokens', () => {
+    // Genera un historial con más de 250.000 tokens estimados
+    const hugeHistory = [message('m_huge', 'user', [{ type: 'text', text: 'x'.repeat(1_000_000) }])];
+    // Con ventana de 1M (donde normalmente no compactaría), activa autocompact a los 250k
+    expect(shouldCompact({ history: hugeHistory, contextWindow: 1_000_000, reservedOutput: 4_000 })).toBe(true);
+    // Incluso sin ventana definida (>0), a los 250k compacta
+    expect(shouldCompact({ history: hugeHistory, contextWindow: 0, reservedOutput: 0 })).toBe(true);
+  });
+
+  it('nunca compacta sin ventana conocida si está debajo de 250k', () => {
     expect(shouldCompact({ history, contextWindow: 0, reservedOutput: 0 })).toBe(false);
   });
 });

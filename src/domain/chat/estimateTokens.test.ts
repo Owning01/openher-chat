@@ -120,3 +120,35 @@ describe('estimateToolsTokens', () => {
     expect(two).toBeGreaterThan(one);
   });
 });
+
+describe('computeContextBreakdown', () => {
+  it('desglosa tokens por roles, tools, resumen y umbral de 250k', async () => {
+    const { computeContextBreakdown } = await import('./estimateTokens');
+    const uMsg = message([{ type: 'text', text: 'hola mundo' }], 'user');
+    const aMsg = message([
+      { type: 'text', text: 'respuesta' },
+      { type: 'tool-call', toolCall: { id: 't1', name: 'search', argumentsText: '{"q":"x"}' } },
+    ], 'assistant');
+
+    const breakdown = computeContextBreakdown({
+      messages: [uMsg, aMsg],
+      systemTokens: 100,
+      summary: 'Resumen anterior',
+      autocompactThreshold: 250_000,
+    });
+
+    expect(breakdown.messageCount).toBe(2);
+    expect(breakdown.userCount).toBe(1);
+    expect(breakdown.assistantCount).toBe(1);
+    expect(breakdown.userTokens).toBeGreaterThan(0);
+    expect(breakdown.assistantTokens).toBeGreaterThan(0);
+    expect(breakdown.toolTokens).toBeGreaterThan(0);
+    expect(breakdown.summaryTokens).toBeGreaterThan(0);
+    expect(breakdown.systemTokens).toBe(100);
+    expect(breakdown.autocompactThreshold).toBe(250_000);
+    expect(breakdown.totalTokens).toBe(
+      breakdown.userTokens + breakdown.assistantTokens + breakdown.toolTokens + breakdown.summaryTokens + breakdown.systemTokens,
+    );
+    expect(breakdown.percentage).toBeLessThanOrEqual(100);
+  });
+});

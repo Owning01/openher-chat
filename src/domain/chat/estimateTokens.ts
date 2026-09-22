@@ -75,3 +75,75 @@ export function estimateToolsTokens(tools: ToolDefinition[]): number {
   }
   return Math.ceil(bytes / 4);
 }
+
+export interface ContextBreakdown {
+  totalTokens: number;
+  userTokens: number;
+  assistantTokens: number;
+  toolTokens: number;
+  summaryTokens: number;
+  systemTokens: number;
+  messageCount: number;
+  userCount: number;
+  assistantCount: number;
+  autocompactThreshold: number;
+  percentage: number;
+}
+
+/** Desglose detallado del contexto activo y consumo respecto al umbral de 250k. */
+export function computeContextBreakdown(input: {
+  messages: readonly ChatMessage[];
+  systemTokens?: number;
+  summary?: string;
+  tools?: readonly ToolDefinition[];
+  autocompactThreshold?: number;
+}): ContextBreakdown {
+  const threshold = input.autocompactThreshold ?? 250_000;
+  let userTokens = 0;
+  let assistantTokens = 0;
+  let toolTokens = 0;
+  let userCount = 0;
+  let assistantCount = 0;
+
+  for (const msg of input.messages) {
+    if (msg.role === 'user') {
+      userCount += 1;
+      userTokens += estimateMessageTokens(msg);
+    } else if (msg.role === 'assistant') {
+      assistantCount += 1;
+      let regularTokens = 0;
+      for (const block of msg.content) {
+        const bTokens = estimateBlockTokens(block);
+        if (block.type === 'tool-call' || block.type === 'tool-result') {
+          toolTokens += bTokens;
+        } else {
+          regularTokens += bTokens;
+        }
+      }
+      assistantTokens += regularTokens + TOKENS_PER_MESSAGE;
+    }
+  }
+
+  const systemTokens = (input.systemTokens ?? 0) + estimateToolsTokens([...(input.tools ?? [])]);
+  const summaryTokens =
+    input.summary && input.summary.trim() !== ''
+      ? estimateTokens(input.summary) + TOKENS_PER_MESSAGE
+      : 0;
+
+  const totalTokens = userTokens + assistantTokens + toolTokens + summaryTokens + systemTokens;
+  const percentage = Math.min(100, Math.round((totalTokens / threshold) * 100));
+
+  return {
+    totalTokens,
+    userTokens,
+    assistantTokens,
+    toolTokens,
+    summaryTokens,
+    systemTokens,
+    messageCount: input.messages.length,
+    userCount,
+    assistantCount,
+    autocompactThreshold: threshold,
+    percentage,
+  };
+}

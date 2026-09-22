@@ -1,9 +1,12 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
 
 import { useT } from '@/i18n/useT';
 import type { Translate } from '@/i18n/useT';
 import type { RedactionKind } from '@/domain/legal/redaction';
+import type { ChatMessage } from '@/domain/types/chat';
+import { computeContextBreakdown } from '@/domain/chat/estimateTokens';
+import { AUTOCOMPACT_THRESHOLD_TOKENS } from '@/domain/agent/compaction';
 import {
   composeMessageWithAttachments,
   isSupportedAttachment,
@@ -26,11 +29,12 @@ import { extractPdf } from '@/adapters/documents/pdf';
 import { compressImageFile, ImageTooLargeError } from '@/adapters/documents/images';
 import { matchCommands, expandSlashInput } from '@/domain/prompts/commands';
 import type { SlashCommand } from '@/domain/prompts/commands';
-import { Mic, Paperclip, Send, Square, TriangleAlert, X } from '@/shared/icons';
+import { Brain, Globe, Mic, Paperclip, Plus, Send, Sparkles, Square, TriangleAlert, X } from '@/shared/icons';
 import { Button, IconButton, Switch, TextArea, Tooltip } from '@/shared/ui';
 import { newId } from '@/shared/utils/ids';
 
 import { CommandMenu } from './CommandMenu';
+import { ContextDialog } from './ContextDialog';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import type { ChatRunStatus } from '../state/chatStore';
 
@@ -110,6 +114,9 @@ export interface ComposerProps {
   research?: ComposerResearch;
   /** Ausente = modo general (sin preview ni gate). Lo cablea T27 al vincular el expediente. */
   legal?: ComposerLegal;
+  messages?: readonly ChatMessage[];
+  summary?: string;
+  modelName?: string;
 }
 
 /**
@@ -144,8 +151,20 @@ function redactionLabel(t: Translate, kind: RedactionKind): string {
   }
 }
 
+function formatTokens(count: number): string {
+  if (count >= 1_000_000) {
+    const m = count / 1_000_000;
+    return `${m % 1 === 0 ? m : m.toFixed(1)}M`;
+  }
+  if (count >= 1_000) {
+    const k = count / 1_000;
+    return `${k % 1 === 0 ? k : k.toFixed(1)}k`;
+  }
+  return count.toLocaleString();
+}
+
 export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Composer(
-  { status, onSend, onStop, research, legal },
+  { status, onSend, onStop, research, legal, messages = [], summary, modelName },
   ref,
 ) {
   const t = useT();
@@ -154,6 +173,8 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   const [images, setImages] = useState<ImageDraft[]>([]);
   const [attachNotice, setAttachNotice] = useState<string | null>(null);
   const [reading, setReading] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   // Guardia anti-carrera: dos gestos pegados (doble click en el clip, soltar
   // dos veces) disparan `addFiles` en paralelo y mezclan chips con avisos
   // viejos. El segundo se ignora; el estado sólo lo escribe una invocación.
@@ -189,6 +210,28 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
     setText(`/${command.name} `);
     setHighlighted(0);
   };
+
+  const contextBreakdown = useMemo(
+    () =>
+      computeContextBreakdown({
+        messages,
+        summary,
+        autocompactThreshold: AUTOCOMPACT_THRESHOLD_TOKENS,
+      }),
+    [messages, summary],
+  );
+
+  useEffect(() => {
+    if (!sourcesOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-testid="chat-composer"]')) {
+        setSourcesOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sourcesOpen]);
 
   // Solo bloquea el Stop si el turno arrancó estando montado (evita el click del doble envío);
   // un run que ya venía corriendo al montar deja detener de inmediato.
@@ -470,7 +513,11 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           ) : null}
         </section>
       ) : null}
-      <div className={`relative flex w-full items-end gap-2 rounded-2xl${busy ? ' anim-breathe' : ''}`}>
+      <div
+        className={`relative isolate flex flex-col w-full rounded-2xl border border-border bg-surface shadow-xs transition-all duration-150 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/40 p-2 gap-2${
+          busy ? ' anim-breathe' : ''
+        }`}
+      >
         <input
           ref={fileInputRef}
           type="file"
@@ -484,14 +531,56 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
             event.target.value = '';
           }}
         />
-        <IconButton
-          size="sm"
-          label={t('chat.attach')}
-          icon={<Paperclip aria-hidden="true" className="size-4" />}
-          disabled={busy || reading || (attachments.length >= MAX_ATTACHMENTS && images.length >= MAX_IMAGES_PER_MESSAGE)}
-          onClick={() => fileInputRef.current?.click()}
-          className="mb-0.5 shrink-0"
-        />
+
+        {/* Adjuntos e imágenes en la parte superior del composer */}
+        {attachments.length > 0 || images.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5 px-1 pt-0.5">
+            {attachments.map((attachment) => (
+              <span
+                key={attachment.id}
+                className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border/80 bg-surface-subtle px-2.5 py-1 text-xs text-text shadow-xs"
+                style={{ animation: 'pop-in 180ms ease-out both' }}
+              >
+                <Paperclip aria-hidden="true" className="size-3 text-muted shrink-0" />
+                <span className="min-w-0 max-w-44 truncate" title={attachment.name}>
+                  {attachment.name}
+                  {attachment.truncated ? ` · ${t('chat.attachTruncated')}` : ''}
+                </span>
+                <button
+                  type="button"
+                  aria-label={t('chat.attachRemove', { name: attachment.name })}
+                  className="hit-expand shrink-0 rounded-full p-0.5 text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
+                  onClick={() =>
+                    setAttachments((current) => current.filter((entry) => entry.id !== attachment.id))
+                  }
+                >
+                  <X aria-hidden="true" className="size-3.5" />
+                </button>
+              </span>
+            ))}
+            {images.map((image) => (
+              <span
+                key={image.id}
+                className="inline-flex max-w-full items-center gap-2 rounded-xl border border-border/80 bg-surface-subtle py-1 pl-1 pr-2 text-xs text-text shadow-xs"
+                style={{ animation: 'pop-in 180ms ease-out both' }}
+              >
+                <img src={image.dataUrl} alt={image.name} title={image.name} className="h-8 w-8 rounded-lg object-cover" />
+                <span className="min-w-0 max-w-36 truncate" title={image.name}>
+                  {image.name}
+                </span>
+                <button
+                  type="button"
+                  aria-label={t('chat.attachRemove', { name: image.name })}
+                  className="hit-expand shrink-0 rounded-full p-1 text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
+                  onClick={() => setImages((current) => current.filter((entry) => entry.id !== image.id))}
+                >
+                  <X aria-hidden="true" className="size-3.5" />
+                </button>
+              </span>
+            ))}
+          </div>
+        ) : null}
+
         {commands.length > 0 ? (
           <CommandMenu
             commands={commands}
@@ -500,6 +589,8 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
             onHighlight={setHighlighted}
           />
         ) : null}
+
+        {/* Textarea del prompt */}
         <TextArea
           autoResize
           rows={1}
@@ -507,88 +598,182 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
           disabled={busy}
           placeholder={t('chat.composerPlaceholder')}
           aria-label={t('chat.composerPlaceholder')}
-          className="flex-1"
-          onChange={(event) => setText(event.target.value)}
+          className="w-full border-0 bg-transparent px-2 py-1 text-sm shadow-none focus:ring-0 focus-visible:ring-0"
+          onChange={(event) => {
+            setText(event.target.value);
+            setSourcesOpen(false);
+          }}
           onKeyDown={handleKeyDown}
         />
-        {speech.supported ? (
-          <Button
-            type="button"
-            variant={speech.isListening ? 'primary' : 'secondary'}
-            iconOnly
-            disabled={busy}
-            aria-label={speech.isListening ? t('chat.voiceListening') : t('chat.voiceInput')}
-            aria-pressed={speech.isListening}
-            title={speech.isListening ? t('chat.voiceListening') : t('chat.voiceInput')}
-            icon={<Mic aria-hidden="true" className="size-4" />}
-            onClick={toggleDictation}
-          />
-        ) : null}
-        {busy ? (
-          <Button
-            type="button"
-            variant="secondary"
-            loading={status === 'stopping'}
-            disabled={status === 'stopping' || !stopReady}
-            icon={<Square aria-hidden="true" className="size-4" />}
-            onClick={onStop}
-          >
-            {t('chat.stop')}
-          </Button>
-        ) : (
-          <Button type="submit" disabled={!canSend} icon={<Send aria-hidden="true" className="size-4" />}>
-            {t('chat.send')}
-          </Button>
-        )}
-      </div>
-      {attachments.length > 0 ? (
-        <ul aria-label={t('chat.attachments')} className="flex flex-wrap gap-1.5">
-          {attachments.map((attachment) => (
-            <li
-              key={attachment.id}
-              className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-surface px-2.5 py-1 text-xs text-text"
+
+        {/* Barra de controles inferior — estilo Beautiful UI Prompt Bar */}
+        <div className="flex items-center justify-between gap-1 pt-1.5 border-t border-border/40 px-0.5">
+          {/* Lado izquierdo: +, Medidor de Contexto (250k), Modelo */}
+          <div className="relative flex items-center gap-1.5 min-w-0">
+            <div className="relative">
+              <IconButton
+                size="sm"
+                label={t('chat.attach')}
+                icon={<Plus aria-hidden="true" className="size-4" />}
+                disabled={busy || reading || (attachments.length >= MAX_ATTACHMENTS && images.length >= MAX_IMAGES_PER_MESSAGE)}
+                onClick={() => setSourcesOpen((open) => !open)}
+                className="shrink-0 transition-transform active:scale-95"
+              />
+
+              {/* Menú pop-in de Fuentes / @ / Adjuntos */}
+              {sourcesOpen ? (
+                <div
+                  role="menu"
+                  className="absolute bottom-full left-0 z-20 mb-2 w-56 rounded-xl border border-border bg-surface p-1.5 shadow-raised"
+                  style={{ animation: 'pop-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both', transformOrigin: 'bottom left' }}
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setSourcesOpen(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-text transition-colors hover:bg-surface-subtle"
+                  >
+                    <Paperclip aria-hidden="true" className="size-4 text-muted shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-text font-medium">{t('chat.attach')}</div>
+                      <div className="text-[11px] text-muted truncate">Fotos, documentos y texto</div>
+                    </div>
+                  </button>
+
+                  {research !== undefined && !research.disabled ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        research.onToggle(!research.enabled);
+                        setSourcesOpen(false);
+                      }}
+                      className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-text transition-colors hover:bg-surface-subtle"
+                    >
+                      <Globe aria-hidden="true" className="size-4 text-accent shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-text font-medium">{t('research.toggleLabel')}</div>
+                        <div className="text-[11px] text-muted truncate">
+                          {research.enabled ? 'Activado' : 'Desactivado'}
+                        </div>
+                      </div>
+                    </button>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setText('/');
+                      setSourcesOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs font-medium text-text transition-colors hover:bg-surface-subtle"
+                  >
+                    <Sparkles aria-hidden="true" className="size-4 text-primary shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-text font-medium">Comandos /</div>
+                      <div className="text-[11px] text-muted truncate">Comandos y atajos rápidos</div>
+                    </div>
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Medidor visual de Tokens de Contexto hacia 250k (Autocompact) */}
+            <button
+              type="button"
+              aria-label="Ver estado de contexto"
+              title={`Contexto: ${contextBreakdown.totalTokens.toLocaleString()} / 250k tokens (${contextBreakdown.percentage}%). Clic para detalles.`}
+              onClick={() => setContextOpen(true)}
+              className="flex h-7 items-center gap-1.5 rounded-lg border border-border/70 bg-surface-subtle/70 px-2 text-[11px] font-medium text-muted transition-colors hover:border-primary/60 hover:text-text focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
             >
-              <span className="min-w-0 truncate" title={attachment.name}>
-                {attachment.name}
-                {attachment.truncated ? ` · ${t('chat.attachTruncated')}` : ''}
+              <Brain aria-hidden="true" className="size-3.5 text-primary shrink-0" />
+              <span>{formatTokens(contextBreakdown.totalTokens)}</span>
+              <span className="text-muted/60">/ 250k</span>
+              <span
+                className={`size-1.5 rounded-full shrink-0 ${
+                  contextBreakdown.percentage >= 80 ? 'bg-amber-500' : 'bg-emerald-500'
+                }`}
+              />
+            </button>
+
+            {modelName ? (
+              <span className="hidden sm:inline-flex items-center gap-1 rounded-lg border border-border/50 bg-surface-subtle/50 px-2 py-0.5 text-[11px] font-mono text-muted max-w-36 truncate">
+                ⚡ {modelName}
               </span>
-              <button
+            ) : null}
+          </div>
+
+          {/* Lado derecho: Dictado y Enviar/Detener */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {speech.supported ? (
+              <Button
                 type="button"
-                aria-label={t('chat.attachRemove', { name: attachment.name })}
-                className="hit-expand shrink-0 rounded-full p-1 text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-                onClick={() =>
-                  setAttachments((current) => current.filter((entry) => entry.id !== attachment.id))
+                variant={speech.isListening ? 'primary' : 'secondary'}
+                iconOnly
+                disabled={busy}
+                aria-label={speech.isListening ? t('chat.voiceListening') : t('chat.voiceInput')}
+                aria-pressed={speech.isListening}
+                title={speech.isListening ? t('chat.voiceListening') : t('chat.voiceInput')}
+                icon={
+                  speech.isListening ? (
+                    <span className="flex h-3.5 items-center gap-[2.5px]" aria-hidden="true">
+                      {[0, 1, 2].map((i) => (
+                        <span
+                          key={i}
+                          className="w-[2.5px] rounded-full bg-current"
+                          style={{
+                            height: '100%',
+                            animation: `eq-bounce 800ms ease-in-out ${i * 160}ms infinite`,
+                          }}
+                        />
+                      ))}
+                    </span>
+                  ) : (
+                    <Mic aria-hidden="true" className="size-4" />
+                  )
                 }
-              >
-                <X aria-hidden="true" className="size-3.5" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      {images.length > 0 ? (
-        <ul aria-label={t('chat.attachedImages')} className="flex flex-wrap gap-1.5">
-          {images.map((image) => (
-            <li
-              key={image.id}
-              className="inline-flex max-w-full items-center gap-1.5 rounded-xl border border-border bg-surface py-1 pl-1 pr-2 text-xs text-text"
-            >
-              <img src={image.dataUrl} alt={image.name} title={image.name} className="h-10 w-10 rounded-lg object-cover" />
-              <span className="min-w-0 max-w-40 truncate" title={image.name}>
-                {image.name}
-              </span>
-              <button
+                onClick={toggleDictation}
+                className="transition-transform active:scale-95"
+              />
+            ) : null}
+
+            {busy ? (
+              <Button
                 type="button"
-                aria-label={t('chat.attachRemove', { name: image.name })}
-                className="hit-expand shrink-0 rounded-full p-1 text-muted transition-colors hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-                onClick={() => setImages((current) => current.filter((entry) => entry.id !== image.id))}
+                variant="secondary"
+                loading={status === 'stopping'}
+                disabled={status === 'stopping' || !stopReady}
+                icon={<Square aria-hidden="true" className="size-4" />}
+                onClick={onStop}
+                className="transition-transform active:scale-95"
               >
-                <X aria-hidden="true" className="size-3.5" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+                {t('chat.stop')}
+              </Button>
+            ) : (
+              <Button
+                type="submit"
+                disabled={!canSend}
+                icon={<Send aria-hidden="true" className="size-4" />}
+                className="transition-transform enabled:active:scale-95 shadow-xs"
+              >
+                {t('chat.send')}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ContextDialog
+        open={contextOpen}
+        onClose={() => setContextOpen(false)}
+        messages={messages}
+        summary={summary}
+      />
+
       {legalGate && images.length > 0 ? (
         <p role="note" className="text-xs text-warning">
           {t('chat.attachImageLegalWarn')}

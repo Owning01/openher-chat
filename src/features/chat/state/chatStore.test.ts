@@ -456,6 +456,49 @@ describe('chatStore - regenerar, editar y borrar', () => {
     expect(await h.repo.listMessages(conversationId)).toHaveLength(0);
   });
 
+  it('reset() aísla la sesión y limpia el contexto completamente', async () => {
+    const h = createChatHarness();
+    await startConversation(h);
+    h.provider.scripts.push(scriptFor('uno'));
+    await h.store.getState().send('primera');
+
+    expect(h.store.getState().conversationId).not.toBeNull();
+    expect(h.store.getState().messages.length).toBeGreaterThan(0);
+
+    h.store.getState().reset();
+
+    expect(h.store.getState().conversationId).toBeNull();
+    expect(h.store.getState().messages).toEqual([]);
+    expect(h.store.getState().runStatus).toBe('idle');
+  });
+
+  it('deleteMessage invalida el resumen anclado si los mensajes resumidos fueron borrados', async () => {
+    const h = createChatHarness();
+    const conversationId = await startConversation(h);
+    h.provider.scripts.push(scriptFor('uno'));
+    await h.store.getState().send('primera');
+    h.provider.scripts.push(scriptFor('dos'));
+    await h.store.getState().send('segunda');
+
+    const assistantMsg = h.store.getState().messages[1];
+    if (assistantMsg === undefined) return;
+
+    // Simula que la conversación tenía un resumen anclado hasta el primer turno
+    await h.repo.update(conversationId, {
+      summary: 'Resumen anclado de la primera parte',
+      summaryThroughMessageId: assistantMsg.id,
+    });
+
+    // Borramos desde el primer mensaje de usuario
+    const firstUser = h.store.getState().messages[0];
+    if (firstUser === undefined) return;
+    await h.store.getState().deleteMessage(firstUser.id);
+
+    const updatedConv = await h.repo.get(conversationId);
+    expect(updatedConv?.summary).toBeUndefined();
+    expect(updatedConv?.summaryThroughMessageId).toBeUndefined();
+  });
+
   it('sincroniza preview (sin markdown) y messageCount al enviar y borrar, notificando a la lista', async () => {
     const published: Array<{ id: string; messageCount: number; lastMessagePreview: string }> = [];
     const h = createChatHarness({ onConversationUpdated: (conversation) => published.push(conversation) });
