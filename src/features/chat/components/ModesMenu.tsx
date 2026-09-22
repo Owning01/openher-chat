@@ -67,31 +67,38 @@ export function ModesMenu({
       role="group"
       aria-label={t('modes.buttonLabel')}
       className={cn(
-        'flex min-w-0 shrink-0 flex-wrap items-center justify-end gap-x-2 gap-y-1.5',
+        'flex items-center gap-1.5 shrink-0',
         className,
       )}
     >
-      {/* Compatibilidad de contrato: ChatPage.test.tsx (fuera de alcance) sigue
-          abriendo los modos con un click en `modes-menu-button`. Ahora están
-          siempre visibles, así que el testid del disparador vive en el grupo. */}
-      <div data-testid="modes-menu-button" className="flex flex-wrap items-center gap-4">
+      {/* Compatibilidad de contrato: ChatPage.test.tsx sigue
+          abriendo los modos con un click en `modes-menu-button`. */}
+      <div data-testid="modes-menu-button" className="flex items-center gap-1.5">
         <ModeToggle
           testId="modes-menu-research"
           checked={researchMode}
           disabled={researchDisabled}
-          icon={<Globe aria-hidden="true" className="size-4 shrink-0" />}
+          icon={<Globe aria-hidden="true" className="size-3.5 shrink-0" />}
           label={t('modes.researchTitle')}
           shortLabel={t('modes.researchShort')}
           hint={t('modes.researchHint')}
           onToggle={() => onToggleResearch(!researchMode)}
         />
-        <div data-testid="legal-switch" className="flex min-w-0 items-center gap-2">
+        <div
+          data-testid="legal-switch"
+          className={cn(
+            'flex h-9 min-w-0 items-center gap-1.5 rounded-full border px-2.5 shadow-2xs transition-all duration-150',
+            legalOn
+              ? 'border-primary/50 bg-primary-soft text-primary'
+              : 'border-border/80 bg-surface/80 text-muted backdrop-blur-xs hover:border-border hover:bg-surface hover:text-text',
+          )}
+        >
           <Switch
             data-testid="modes-menu-legal"
             checked={legalOn}
             label={t('modes.legalTitle')}
             title={t('modes.legalHint')}
-            className="hit-expand"
+            className="hit-expand scale-90"
             onCheckedChange={(enabled) => {
               if (enabled) {
                 // Encender activa el modo directo: el dueño auto-crea o vincula
@@ -102,7 +109,7 @@ export function ModesMenu({
               onToggleLegal(false);
             }}
           />
-          <span className="min-w-0 text-sm font-medium whitespace-nowrap text-text">
+          <span className="min-w-0 text-sm font-medium whitespace-nowrap">
             {/* Igual que el toggle de investigación: rótulo corto en mobile. */}
             <span className="sm:hidden">{t('modes.legalShort')}</span>
             <span className="hidden sm:inline">{t('modes.legalTitle')}</span>
@@ -132,7 +139,7 @@ export function ModesMenu({
       <p
         data-testid="modes-menu-summary"
         role="status"
-        className="min-w-0 max-w-44 truncate text-xs text-muted sm:max-w-64"
+        className="sr-only"
       >
         {summary}
       </p>
@@ -176,10 +183,10 @@ function ModeToggle({
       data-testid={testId}
       onClick={onToggle}
       className={cn(
-        'hit-expand inline-flex h-9 shrink-0 items-center gap-2 rounded-lg border px-3 text-sm font-medium whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50',
+        'hit-expand inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-medium whitespace-nowrap shadow-2xs transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:pointer-events-none disabled:opacity-50 active:scale-95',
         checked
-          ? 'border-primary bg-primary-soft text-primary'
-          : 'border-border bg-surface text-text hover:bg-surface-subtle',
+          ? 'border-primary/50 bg-primary-soft text-primary'
+          : 'border-border/80 bg-surface/80 text-muted backdrop-blur-xs hover:border-border hover:bg-surface hover:text-text',
       )}
     >
       {icon}
@@ -188,10 +195,10 @@ function ModeToggle({
         <span className="sm:hidden">{shortLabel}</span>
         <span className="hidden sm:inline">{label}</span>
       </span>
-      {checked ? <Check aria-hidden="true" className="size-4 shrink-0" /> : null}
+      {checked ? <Check aria-hidden="true" className="size-3.5 shrink-0" /> : null}
     </button>
   );
 }
 
 const SECONDARY_BUTTON_CLASSES =
-  'inline-flex h-9 shrink-0 items-center rounded-lg border border-border bg-surface px-3 text-sm whitespace-nowrap text-text transition-colors hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring';
+  'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border/80 bg-surface/80 px-3 text-sm font-medium whitespace-nowrap text-text shadow-2xs backdrop-blur-xs transition-all hover:bg-surface hover:border-border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring active:scale-95';
