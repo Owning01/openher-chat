@@ -434,27 +434,31 @@ export type GroupedDisplayBlock =
   | { type: 'image'; imageId: string; name: string; dataUrl: string };
 
 export function groupDisplayBlocks(blocks: readonly DisplayBlock[]): GroupedDisplayBlock[] {
-  const grouped: GroupedDisplayBlock[] = [];
-  let currentTools: Array<{ name: string; result: ToolResult | undefined; argumentsText?: string }> = [];
-
+  // Unifica todas las llamadas a herramientas del turno en un único componente acoplable
+  const allTools: Array<{ name: string; result: ToolResult | undefined; argumentsText?: string }> = [];
   for (const block of blocks) {
     if (block.type === 'tool') {
-      currentTools.push({
+      allTools.push({
         name: block.name,
         result: block.result,
         argumentsText: block.argumentsText,
       });
-    } else {
-      if (currentTools.length > 0) {
-        grouped.push({ type: 'tools', items: currentTools });
-        currentTools = [];
-      }
-      grouped.push(block);
     }
   }
 
-  if (currentTools.length > 0) {
-    grouped.push({ type: 'tools', items: currentTools });
+  const grouped: GroupedDisplayBlock[] = [];
+  let toolsEmitted = false;
+
+  for (const block of blocks) {
+    if (block.type === 'tool') {
+      if (!toolsEmitted && allTools.length > 0) {
+        grouped.push({ type: 'tools', items: allTools });
+        toolsEmitted = true;
+      }
+      // Las llamadas subsiguientes ya están dentro de allTools
+    } else {
+      grouped.push(block);
+    }
   }
 
   return grouped;
