@@ -89,6 +89,23 @@ func clampCount(raw string) string {
 	return strconv.Itoa(value)
 }
 
+// flexibleCount acepta `count` como número JSON (lo que manda la app) o como
+// string (clientes manuales). Sin esto, `{"count":3}` falla el decode con 400.
+type flexibleCount int
+
+func (c *flexibleCount) UnmarshalJSON(data []byte) error {
+	raw := strings.Trim(strings.TrimSpace(string(data)), `"`)
+	if raw == "" || raw == "null" {
+		return nil
+	}
+	value, err := strconv.Atoi(raw)
+	if err != nil {
+		return fmt.Errorf("count inválido: %w", err)
+	}
+	*c = flexibleCount(value)
+	return nil
+}
+
 func cleanUser(raw string) (string, bool) {
 	user := strings.TrimPrefix(strings.TrimSpace(raw), "@")
 	if user == "" || strings.ContainsAny(user, " \t/\\&?") {
@@ -139,12 +156,12 @@ func (s *server) handleFeed(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) handleSearch(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Query string `json:"query"`
-		Count string `json:"count"`
-		From  string `json:"from"`
-		Since string `json:"since"`
-		Until string `json:"until"`
-		Lang  string `json:"lang"`
+		Query string        `json:"query"`
+		Count flexibleCount `json:"count"`
+		From  string        `json:"from"`
+		Since string        `json:"since"`
+		Until string        `json:"until"`
+		Lang  string        `json:"lang"`
 	}
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 8*1024)).Decode(&body); err != nil {
 		s.fail(w, http.StatusBadRequest, "JSON inválido")
@@ -159,7 +176,7 @@ func (s *server) handleSearch(w http.ResponseWriter, r *http.Request) {
 	if query != "" {
 		args = append(args, query)
 	}
-	args = append(args, "-n", clampCount(body.Count), "--json")
+	args = append(args, "-n", clampCount(strconv.Itoa(int(body.Count))), "--json")
 	if from, ok := cleanUser(body.From); ok {
 		args = append(args, "--from", from)
 	}

@@ -9,7 +9,25 @@ Endpoints:
 - `GET /x/user-posts?user=<screenName>&count=<1..20>`
 - `GET /x/user?user=<screenName>`
 - `GET /x/feed?count=<1..20>`
-- `POST /x/search` (best-effort: el buscador de X puede devolver 404 según su API)
+- `POST /x/search` — búsqueda (best-effort; requiere el `twitter-cli` pinneado de abajo)
+
+`count` acepta número o string; el proxy lo normaliza y lo acota a 1..20.
+
+## twitter-cli (dependencia del proxy)
+
+El proxy ejecuta `twitter-cli` (`/root/.local/bin/twitter`, instalado con pipx).
+**La búsqueda de X necesita el fix de ClientTransaction** (PR
+`public-clis/twitter-cli#86`: manda las cookies de sesión al pedir `x.com` para
+el bootstrap). Sin ese fix, `SearchTimeline` responde 404 en toda búsqueda
+(aunque `user-posts`/`feed` funcionen). Está pinneado a ese commit:
+
+```sh
+pipx install --force "git+https://github.com/public-clis/twitter-cli.git@456c32512bd5129c5ea9bc8f3d8081b9cefc3bb4"
+```
+
+Cuando salga un release con el fix, volver a PyPI (`pipx install --force twitter-cli`)
+y borrar el pin. Para revertir temporalmente: `pipx install --force twitter-cli==0.8.5`
+(la búsqueda volvería a fallar con 404).
 
 ## Falta un paso (solo el dueño)
 
