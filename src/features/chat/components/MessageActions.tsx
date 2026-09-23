@@ -8,7 +8,6 @@ import { CopyButton } from '@/shared/markdown/CopyButton';
 import { Button, IconButton, TextArea } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 import { downloadBinaryFile, downloadTextFile } from '@/shared/utils/download';
-import { DOCX_MIME, markdownToDocx } from '@/adapters/documents/docxWriter';
 
 export interface MessageActionsProps {
   messageId: string;
@@ -66,9 +65,11 @@ export function MessageActions({
           disabled={disabled || text.trim() === ''}
           label={t('chat.downloadWord')}
           icon={<FileText aria-hidden="true" className="size-4" />}
-          onClick={() =>
-            downloadBinaryFile(`respuesta-${messageId.slice(0, 8)}.docx`, markdownToDocx(copyText), DOCX_MIME)
-          }
+          onClick={() => {
+            void import('@/adapters/documents/docxWriter').then(({ markdownToDocx, DOCX_MIME }) => {
+              downloadBinaryFile(`respuesta-${messageId.slice(0, 8)}.docx`, markdownToDocx(copyText), DOCX_MIME);
+            });
+          }}
         />
       ) : null}
       {role === 'assistant' && onVisualReport !== undefined ? (

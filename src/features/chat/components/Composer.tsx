@@ -24,8 +24,6 @@ import {
   toDocumentDraftText,
 } from '@/domain/documents/documents';
 import type { ImageDraft } from '@/domain/documents/documents';
-import { extractDocxMarkdown } from '@/adapters/documents/docx';
-import { extractPdf } from '@/adapters/documents/pdf';
 import { compressImageFile, ImageTooLargeError } from '@/adapters/documents/images';
 import { matchCommands, expandSlashInput } from '@/domain/prompts/commands';
 import type { SlashCommand } from '@/domain/prompts/commands';
@@ -57,6 +55,7 @@ async function extractDocument(file: File, kind: 'docx' | 'pdf'): Promise<Extrac
   if (kind === 'docx') {
     // Markdown estructural (títulos, listas, tablas): misma información con
     // menos ambigüedad para la IA; con HTML vacío cae solo al texto crudo.
+    const { extractDocxMarkdown } = await import('@/adapters/documents/docx');
     const text = await extractDocxMarkdown(buffer);
     if (text.trim() === '') throw new Error('empty-document');
     const draft = toDocumentDraftText(text);
@@ -66,6 +65,7 @@ async function extractDocument(file: File, kind: 'docx' | 'pdf'): Promise<Extrac
       renderedImages: [],
     };
   }
+  const { extractPdf } = await import('@/adapters/documents/pdf');
   const pdf = await extractPdf(file.name.replace(/\.[^.]*$/, ''), buffer);
   if (pdf.text.trim() === '' && pdf.renderedImages.length === 0) throw new Error('empty-document');
   const draft = toDocumentDraftText(pdf.text);

@@ -42,6 +42,9 @@ export default defineConfig({
           if (id.includes('node_modules/idb/')) {
             return 'vendor-storage';
           }
+          if (id.includes('node_modules/firebase/') || id.includes('node_modules/@firebase/')) {
+            return 'vendor-firebase';
+          }
         },
       },
     },

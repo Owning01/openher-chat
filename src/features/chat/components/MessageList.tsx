@@ -238,6 +238,7 @@ function MessageItemInner({
       ),
     [message.content, guard, legalMode, mapping],
   );
+  const groupedBlocks = useMemo(() => groupDisplayBlocks(blocks), [blocks]);
   const userImages = useMemo(() => blocks.filter((block) => block.type === 'image'), [blocks]);
   // Adjuntos acoplados pero colapsados: la burbuja muestra el texto y cada
   // documento como <details> (se abre al tocar). Solo presentación.
@@ -338,11 +339,11 @@ function MessageItemInner({
         )
       ) : (
         <div className="w-full space-y-3 px-1 py-1 text-text leading-relaxed">
-          {blocks.map((block, index) =>
-            renderBlock(
+          {groupedBlocks.map((block, index) =>
+            renderGroupedBlock(
               block,
               index,
-              blocks.length,
+              groupedBlocks.length,
               streaming,
               (html) => onOpenVisualReport?.(message.id, html),
               onRequestHtmlEdit,
@@ -384,8 +385,8 @@ function MessageItemInner({
             canRegenerate={!isUser && isLastAssistant}
             onContinue={
               onContinue !== undefined && !isUser && isLastAssistant && !busy && message.truncated === true
-                ? onContinue
-                : undefined
+              ? onContinue
+              : undefined
             }
             disabled={busy}
             onRegenerate={onRegenerate}
@@ -423,8 +424,44 @@ function MessageItemInner({
  */
 const MessageItem = memo(MessageItemInner);
 
-function renderBlock(
-  block: DisplayBlock,
+export type GroupedDisplayBlock =
+  | { type: 'text'; text: string }
+  | { type: 'reasoning'; text: string }
+  | {
+      type: 'tools';
+      items: Array<{ name: string; result: ToolResult | undefined; argumentsText?: string }>;
+    }
+  | { type: 'image'; imageId: string; name: string; dataUrl: string };
+
+export function groupDisplayBlocks(blocks: readonly DisplayBlock[]): GroupedDisplayBlock[] {
+  const grouped: GroupedDisplayBlock[] = [];
+  let currentTools: Array<{ name: string; result: ToolResult | undefined; argumentsText?: string }> = [];
+
+  for (const block of blocks) {
+    if (block.type === 'tool') {
+      currentTools.push({
+        name: block.name,
+        result: block.result,
+        argumentsText: block.argumentsText,
+      });
+    } else {
+      if (currentTools.length > 0) {
+        grouped.push({ type: 'tools', items: currentTools });
+        currentTools = [];
+      }
+      grouped.push(block);
+    }
+  }
+
+  if (currentTools.length > 0) {
+    grouped.push({ type: 'tools', items: currentTools });
+  }
+
+  return grouped;
+}
+
+function renderGroupedBlock(
+  block: GroupedDisplayBlock,
   index: number,
   total: number,
   streaming: boolean,
@@ -448,13 +485,14 @@ function renderBlock(
       );
     case 'reasoning':
       return <ReasoningBlock key={`reasoning-${index}`} text={block.text} streaming={live} />;
-    case 'tool':
+    case 'tools':
       return (
         <ToolCallCard
-          key={`tool-${index}`}
-          name={block.name}
-          result={block.result}
-          argumentsText={block.argumentsText}
+          key={`tools-${index}`}
+          items={block.items}
+          name={block.items[0]?.name ?? 'tool'}
+          result={block.items[0]?.result}
+          argumentsText={block.items[0]?.argumentsText}
         />
       );
     case 'image':
@@ -464,6 +502,34 @@ function renderBlock(
         </figure>
       );
   }
+}
+
+export function renderBlock(
+  block: DisplayBlock,
+  index: number,
+  total: number,
+  streaming: boolean,
+  onOpenVisualReport?: (html: string) => void,
+  onRequestHtmlEdit?: (instruction: string, code: string) => void,
+): ReactNode {
+  if (block.type === 'tool') {
+    return renderGroupedBlock(
+      { type: 'tools', items: [{ name: block.name, result: block.result, argumentsText: block.argumentsText }] },
+      index,
+      total,
+      streaming,
+      onOpenVisualReport,
+      onRequestHtmlEdit,
+    );
+  }
+  return renderGroupedBlock(
+    block,
+    index,
+    total,
+    streaming,
+    onOpenVisualReport,
+    onRequestHtmlEdit,
+  );
 }
 
 function StreamingCursor() {

@@ -82,24 +82,6 @@ function BootedApp({ services, settings, storageError }: BootedAppProps) {
   );
 }
 
-/**
- * Espera máxima del espejo en la nube durante el arranque: pasado este
- * tiempo se monta con lo local y el pull completa en fondo.
- */
-const BOOT_SYNC_TIMEOUT_MS = 3000;
-
-const BOOT_SYNC_TIMEOUT = Symbol('boot-sync-timeout');
-
-/** `promise` o el centinela si tarda más de `ms` (el original sigue vivo). */
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | typeof BOOT_SYNC_TIMEOUT> {
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<typeof BOOT_SYNC_TIMEOUT>((resolve) => {
-    timer = setTimeout(() => resolve(BOOT_SYNC_TIMEOUT), ms);
-  });
-  return Promise.race([promise, timeout]).finally(() => {
-    if (timer !== undefined) clearTimeout(timer);
-  });
-}
 
 /**
  * Fase 2 (con sesión): migra el storage legacy a la partición del usuario y
@@ -131,34 +113,24 @@ function ScopedApp() {
       try {
         const result = await bootstrapApp(undefined, { userId: uid });
         if (!active) return;
-        // Espejo en la nube (misma cuenta = mismos datos en todos los
-        // dispositivos). Para no frenar el arranque con red lenta, se monta
-        // con lo local tras una espera corta y el pull completa en fondo:
-        // si la nube traía algo más nuevo, se recarga una vez para tomarlo
-        // (raro y sin pérdida: todo lo local persiste).
-        if (result.services.sync === undefined) {
-          if (active) setScoped({ status: 'ready', ...result });
-          return;
-        }
-        const syncStore = createSettingsStore(result.services);
-        try {
-          await syncStore.getState().load();
-        } catch {
-          // Local-first: se ignora y se sigue con lo del dispositivo.
-        }
-        if (!active) return;
-        const syncTask = synchronizeWithCloud(syncStore, result.services.sync);
-        const outcome = await withTimeout(syncTask, BOOT_SYNC_TIMEOUT_MS);
-        if (!active) return;
+        // Local-first: renderiza de inmediato con los datos locales del dispositivo
+        // y ejecuta la sincronización con la nube en segundo plano sin bloquear el arranque.
         if (active) setScoped({ status: 'ready', ...result });
-        // Sin suscriptores: el store transitorio se descarta sin más trámite.
-        if (outcome === BOOT_SYNC_TIMEOUT) {
-          void syncTask.then(
-            (late) => {
-              if (active && late === 'pulled') setSyncEpoch((epoch) => epoch + 1);
-            },
-            () => undefined,
-          );
+
+        if (result.services.sync !== undefined) {
+          const syncStore = createSettingsStore(result.services);
+          void (async () => {
+            try {
+              await syncStore.getState().load();
+              if (!active) return;
+              const late = await synchronizeWithCloud(syncStore, result.services.sync!);
+              if (active && late === 'pulled') {
+                setSyncEpoch((epoch) => epoch + 1);
+              }
+            } catch {
+              // Local-first: se ignora y se sigue con lo del dispositivo.
+            }
+          })();
         }
       } catch (error: unknown) {
         if (active) {
