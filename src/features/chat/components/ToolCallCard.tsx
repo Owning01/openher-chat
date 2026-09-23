@@ -39,7 +39,7 @@ function pickToolIcon(name: string) {
   return Sparkles;
 }
 
-function extractChipText(name: string, argumentsText?: string, result?: ToolResult): string {
+function extractChipText(argumentsText?: string, result?: ToolResult): string {
   if (argumentsText) {
     try {
       const parsed = JSON.parse(argumentsText) as Record<string, unknown>;
@@ -70,7 +70,7 @@ export function ToolCallCard({ name, result, argumentsText }: ToolCallCardProps)
   const duration = result === undefined ? null : formatDuration(result.durationMs, t);
   const sources = result?.sources ?? [];
   const hasSources = sources.length > 0;
-  const chipText = extractChipText(name, argumentsText, result);
+  const chipText = extractChipText(argumentsText, result);
   const hasContent = result?.content != null && result.content.trim() !== '';
 
   return (
