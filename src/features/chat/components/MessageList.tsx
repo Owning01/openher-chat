@@ -24,7 +24,7 @@ import { VisualReportDialog } from './VisualReportDialog';
 export type DisplayBlock =
   | { type: 'text'; text: string }
   | { type: 'reasoning'; text: string }
-  | { type: 'tool'; name: string; result: ToolResult | undefined }
+  | { type: 'tool'; name: string; result: ToolResult | undefined; argumentsText?: string }
   | { type: 'image'; imageId: string; name: string; dataUrl: string };
 
 /** Agrupa `tool-call` con su `tool-result` (en orden) sin perder bloques huérfanos. */
@@ -46,7 +46,12 @@ export function buildDisplayBlocks(content: readonly MessageContent[]): DisplayB
         break;
       case 'tool-call':
         consumedCalls.add(block.toolCall.id);
-        display.push({ type: 'tool', name: block.toolCall.name, result: results.get(block.toolCall.id) });
+        display.push({
+          type: 'tool',
+          name: block.toolCall.name,
+          result: results.get(block.toolCall.id),
+          argumentsText: block.toolCall.argumentsText,
+        });
         break;
       case 'tool-result':
         if (!consumedCalls.has(block.toolCallId)) {
@@ -444,7 +449,14 @@ function renderBlock(
     case 'reasoning':
       return <ReasoningBlock key={`reasoning-${index}`} text={block.text} streaming={live} />;
     case 'tool':
-      return <ToolCallCard key={`tool-${index}`} name={block.name} result={block.result} />;
+      return (
+        <ToolCallCard
+          key={`tool-${index}`}
+          name={block.name}
+          result={block.result}
+          argumentsText={block.argumentsText}
+        />
+      );
     case 'image':
       return (
         <figure key={`image-${index}`} data-block="image">

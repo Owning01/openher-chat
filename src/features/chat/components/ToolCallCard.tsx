@@ -21,6 +21,7 @@ import { cn } from '@/shared/utils/cn';
 export interface ToolCallCardProps {
   name: string;
   result?: ToolResult;
+  argumentsText?: string;
 }
 
 type ToolState = 'running' | 'done' | 'error';
@@ -38,7 +39,27 @@ function pickToolIcon(name: string) {
   return Sparkles;
 }
 
-export function ToolCallCard({ name, result }: ToolCallCardProps) {
+function extractChipText(name: string, argumentsText?: string, result?: ToolResult): string {
+  if (argumentsText) {
+    try {
+      const parsed = JSON.parse(argumentsText) as Record<string, unknown>;
+      if (typeof parsed.query === 'string' && parsed.query.trim() !== '') return parsed.query;
+      if (typeof parsed.url === 'string' && parsed.url.trim() !== '') return parsed.url;
+      if (typeof parsed.file === 'string' && parsed.file.trim() !== '') return parsed.file;
+      if (typeof parsed.path === 'string' && parsed.path.trim() !== '') return parsed.path;
+      if (typeof parsed.skill === 'string' && parsed.skill.trim() !== '') return parsed.skill;
+      if (typeof parsed.name === 'string' && parsed.name.trim() !== '') return parsed.name;
+    } catch {
+      // Ignorar fallback
+    }
+  }
+  if (result?.sources && result.sources.length > 0) {
+    return `${result.sources.length} ${result.sources.length === 1 ? 'fuente' : 'fuentes'}`;
+  }
+  return result === undefined ? 'ejecutando…' : result.ok ? 'ejecutado' : 'error';
+}
+
+export function ToolCallCard({ name, result, argumentsText }: ToolCallCardProps) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const state: ToolState = result === undefined ? 'running' : result.ok ? 'done' : 'error';
@@ -49,6 +70,7 @@ export function ToolCallCard({ name, result }: ToolCallCardProps) {
   const duration = result === undefined ? null : formatDuration(result.durationMs, t);
   const sources = result?.sources ?? [];
   const hasSources = sources.length > 0;
+  const chipText = extractChipText(name, argumentsText, result);
   const hasContent = result?.content != null && result.content.trim() !== '';
 
   return (
@@ -56,25 +78,27 @@ export function ToolCallCard({ name, result }: ToolCallCardProps) {
       data-block="tool"
       aria-label={t('chat.toolLabel', { name })}
       title={result?.error?.message}
-      className="my-1.5 w-full max-w-2xl rounded-xl border border-border/70 bg-surface/80 p-2 shadow-2xs transition-all hover:border-border hover:bg-surface"
-      style={{ animation: 'fade-up 240ms cubic-bezier(0.23, 1, 0.32, 1) both' }}
+      className="my-1 w-full max-w-2xl"
     >
-      {/* Fila principal estilo ToolChips */}
-      <div className="flex items-center gap-2">
+      {/* Fila compacta estilo Beautiful UI ToolChips */}
+      <div className="group -mx-1.5 flex h-7 items-center gap-2 rounded-lg px-2 text-left transition-colors hover:bg-surface-subtle/80">
         <button
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((prev) => !prev)}
-          className="group flex min-w-0 flex-1 items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-lg p-0.5"
+          className="flex min-w-0 flex-1 items-center gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded py-0.5"
         >
-          <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-surface-subtle text-muted transition-colors group-hover:bg-primary/10 group-hover:text-primary">
-            <ToolIcon aria-hidden="true" className="size-3.5 shrink-0" />
+          <span className="relative flex size-4 shrink-0 items-center justify-center text-muted group-hover:text-primary transition-colors">
+            <ToolIcon aria-hidden="true" className="size-3.5" />
           </span>
 
-          <span className="min-w-0 truncate font-mono text-xs font-semibold text-text">{name}</span>
+          <span className="shrink-0 font-medium text-[12.5px] text-text">{name}</span>
 
-          <span className="hidden sm:inline-flex min-w-0 max-w-48 truncate rounded-full border border-border/60 bg-surface-subtle/80 px-2 py-0.5 font-mono text-[11px] text-muted">
-            {state === 'running' ? 'ejecutando…' : hasSources ? `${sources.length} fuentes` : 'ejecutado'}
+          <span
+            title={chipText}
+            className="inline-flex h-5 min-w-0 max-w-44 sm:max-w-72 items-center truncate rounded-md border border-border/50 bg-surface-subtle px-1.5 font-mono text-[11px] text-muted transition-colors hover:border-primary/40 hover:text-text"
+          >
+            {chipText}
           </span>
         </button>
 
@@ -92,7 +116,7 @@ export function ToolCallCard({ name, result }: ToolCallCardProps) {
           aria-expanded={open}
           aria-label={hasSources ? t('research.toggleSources') : 'Detalles de herramienta'}
           onClick={() => setOpen((prev) => !prev)}
-          className="shrink-0 rounded-lg p-1 text-muted transition-colors hover:bg-surface-subtle hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          className="shrink-0 rounded p-1 text-muted transition-colors hover:bg-surface hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
         >
           <ChevronDown
             aria-hidden="true"
@@ -101,9 +125,9 @@ export function ToolCallCard({ name, result }: ToolCallCardProps) {
         </button>
       </div>
 
-      {/* Traza de detalle expandible */}
+      {/* Traza de detalle expandible con línea vertical estilo ToolChips */}
       {open ? (
-        <div className="relative mt-2 ml-2.5 border-l border-border-subtle py-1 pl-3.5 space-y-2">
+        <div className="relative mt-1 mb-1.5 ml-2 border-l border-border-subtle py-1 pl-3.5 space-y-1.5 animate-in fade-in-50 duration-150">
           {result?.error?.message ? (
             <p role="alert" className="text-xs text-danger font-mono leading-relaxed">
               {result.error.message}
@@ -111,13 +135,13 @@ export function ToolCallCard({ name, result }: ToolCallCardProps) {
           ) : null}
 
           {hasContent ? (
-            <pre className="max-h-48 overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-surface-subtle/70 p-2 font-mono text-[11px] leading-relaxed text-muted">
+            <pre className="max-h-48 overflow-y-auto whitespace-pre-wrap break-words rounded-lg bg-surface-subtle/80 p-2 font-mono text-[11px] leading-relaxed text-muted/90">
               {result.content}
             </pre>
           ) : null}
 
           {hasSources ? (
-            <SourcesList sources={sources} className="border-t border-border-subtle/80 pt-2" />
+            <SourcesList sources={sources} className="border-t border-border-subtle/80 pt-1.5" />
           ) : null}
         </div>
       ) : null}
