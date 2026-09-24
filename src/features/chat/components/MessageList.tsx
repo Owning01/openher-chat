@@ -111,6 +111,7 @@ export function MessageList({
   const busy = runStatus !== 'idle';
   const lastAssistantId = useMemo(() => findLastAssistantId(messages), [messages]);
   const streamingId = useMemo(() => findStreamingAssistantId(messages), [messages]);
+  const latestHtmlId = useMemo(() => findLatestHtmlAssistantId(messages), [messages]);
   const [activeVisualReport, setActiveVisualReport] = useState<{
     id: string;
     html: string;
@@ -139,6 +140,7 @@ export function MessageList({
             <MessageItem
               message={message}
               isLastAssistant={message.id === lastAssistantId}
+              isLatestHtml={message.id === latestHtmlId}
               streaming={message.id === streamingId}
               busy={busy}
               legalMode={legalMode}
@@ -190,6 +192,7 @@ function deanonymizeOrSelf(text: string, mapping: RedactionMapping | null): stri
 interface MessageItemProps {
   message: ChatMessage;
   isLastAssistant: boolean;
+  isLatestHtml: boolean;
   streaming: boolean;
   busy: boolean;
   legalMode: boolean;
@@ -205,6 +208,7 @@ interface MessageItemProps {
 function MessageItemInner({
   message,
   isLastAssistant,
+  isLatestHtml,
   streaming,
   busy,
   legalMode,
@@ -351,11 +355,12 @@ function MessageItemInner({
               index,
               groupedBlocks.length,
               streaming,
+              isLatestHtml,
               (html) => onOpenVisualReport?.(message.id, html),
               onRequestHtmlEdit,
             ),
           )}
-          {htmlReport !== null && message.status === 'complete' ? (
+          {htmlReport !== null && message.status === 'complete' && isLatestHtml ? (
             <div
               data-testid="visual-report-callout"
               className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 p-3.5 shadow-xs transition-all hover:border-primary/40 hover:bg-primary/10"
@@ -488,6 +493,7 @@ function renderGroupedBlock(
   index: number,
   total: number,
   streaming: boolean,
+  isLatestArtifact: boolean,
   onOpenVisualReport?: (html: string) => void,
   onRequestHtmlEdit?: (instruction: string, code: string) => void,
 ): ReactNode {
@@ -498,6 +504,7 @@ function renderGroupedBlock(
         <div key={`text-${index}`} data-block="text">
           <Markdown
             streaming={live}
+            isLatestArtifact={isLatestArtifact}
             onOpenVisualReport={onOpenVisualReport}
             onRequestHtmlEdit={onRequestHtmlEdit}
           >
@@ -534,6 +541,7 @@ export function renderBlock(
   streaming: boolean,
   onOpenVisualReport?: (html: string) => void,
   onRequestHtmlEdit?: (instruction: string, code: string) => void,
+  isLatestArtifact: boolean = true,
 ): ReactNode {
   if (block.type === 'tool') {
     return renderGroupedBlock(
@@ -541,6 +549,7 @@ export function renderBlock(
       index,
       total,
       streaming,
+      isLatestArtifact,
       onOpenVisualReport,
       onRequestHtmlEdit,
     );
@@ -550,6 +559,7 @@ export function renderBlock(
     index,
     total,
     streaming,
+    isLatestArtifact,
     onOpenVisualReport,
     onRequestHtmlEdit,
   );
@@ -576,4 +586,17 @@ function findLastAssistantId(messages: readonly ChatMessage[]): string | null {
 function findStreamingAssistantId(messages: readonly ChatMessage[]): string | null {
   const message = messages[messages.length - 1];
   return message !== undefined && message.role === 'assistant' && message.status === 'streaming' ? message.id : null;
+}
+
+function findLatestHtmlAssistantId(messages: readonly ChatMessage[]): string | null {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+    if (message !== undefined && message.role === 'assistant') {
+      const text = messageText(message);
+      if (extractHtmlReport(text) !== null || /```(html|htm|svg|html-patch)\b/i.test(text)) {
+        return message.id;
+      }
+    }
+  }
+  return null;
 }

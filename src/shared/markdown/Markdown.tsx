@@ -17,6 +17,8 @@ export interface MarkdownProps {
    * complete (ver `CodeBlock`). Sólo lo usa el último bloque en streaming.
    */
   streaming?: boolean;
+  /** Si es false, colapsa artefactos HTML a una tarjeta compacta */
+  isLatestArtifact?: boolean;
   /** Callback para abrir el reporte visual / artefacto HTML a pantalla completa */
   onOpenVisualReport?: (html: string) => void;
   /** Callback para solicitar modificaciones al agente sobre el bloque HTML */
@@ -185,10 +187,11 @@ export function Markdown({
   children,
   className,
   streaming = false,
+  isLatestArtifact = true,
   onOpenVisualReport,
   onRequestHtmlEdit,
 }: MarkdownProps) {
-  // Objeto estable mientras `streaming`, `onOpenVisualReport` o `onRequestHtmlEdit` no cambien
+  // Objeto estable mientras `streaming`, `isLatestArtifact`, `onOpenVisualReport` o `onRequestHtmlEdit` no cambien
   const components = useMemo<Components>(
     () => ({
       ...BASE_COMPONENTS,
@@ -200,13 +203,14 @@ export function Markdown({
             code={block.code}
             language={block.language}
             streaming={streaming}
+            isLatestArtifact={isLatestArtifact}
             onExpand={onOpenVisualReport}
             onRequestEdit={onRequestHtmlEdit}
           />
         );
       },
     }),
-    [streaming, onOpenVisualReport, onRequestHtmlEdit],
+    [streaming, isLatestArtifact, onOpenVisualReport, onRequestHtmlEdit],
   );
   return (
     <div className={cn('space-y-2.5 break-words text-sm leading-relaxed text-text selection:bg-primary-soft selection:text-text', className)}>

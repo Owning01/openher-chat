@@ -235,7 +235,7 @@ function ChatPageContent() {
   const handleVisualReport = useCallback(
     (_messageId: string): void => {
       void controller.send(
-        'Por favor, genera un informe visual interactivo y detallado en HTML que sintetice los hallazgos y datos de este análisis con un diseño moderno, métricas visuales y estructura limpia en un bloque ```html.'
+        'Por favor, genera un informe visual interactivo y detallado en HTML que sintetice los hallazgos y datos de este análisis con un diseño moderno, métricas visuales y estructura limpia en un bloque ```html. (Nota: La aplicación renderiza el HTML directamente en mi pantalla de forma interactiva en tiempo real; no des instrucciones para guardar archivos ni abrir en un navegador).'
       );
     },
     [controller.send],
@@ -246,6 +246,8 @@ function ChatPageContent() {
         `Por favor, modifica el informe HTML interactivo anterior aplicando la siguiente instrucción:
 
 ${instruction}
+
+(Nota: Veo el resultado renderizado e interactivo en tiempo real directamente en la interfaz; no des instrucciones para guardar archivos ni abrir en un navegador).
 
 Puedes responder aplicando únicamente los cambios requeridos mediante un bloque de parche quirúrgico (SEARCH/REPLACE) sin reescribir todo el documento:
 \`\`\`html-patch

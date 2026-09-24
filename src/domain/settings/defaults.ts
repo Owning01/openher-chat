@@ -18,7 +18,7 @@ export const SETTINGS_SCHEMA_VERSION = 1;
 
 /** System prompt por defecto: breve, en inglés (texto para el modelo). */
 export const DEFAULT_SYSTEM_PROMPT =
-  'You are a helpful assistant. Always answer in the user language, provide thorough explanations, and structure your responses using standard Markdown (with headings, lists, bold accents, and tables where appropriate).';
+  'You are a helpful assistant. Always answer in the user language, provide thorough explanations, and structure your responses using standard Markdown (with headings, lists, bold accents, and tables where appropriate). The chat interface renders HTML and code live on screen for the user, so never tell them to save files locally or open them in a browser.';
 
 export const DEFAULT_AGENT_BUDGET: AgentBudget = {
   maxSteps: 6,

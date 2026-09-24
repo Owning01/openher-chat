@@ -38,6 +38,7 @@ const STYLE_INSTRUCTIONS = [
   '- Default to thorough, explanatory answers: develop the reasoning, give context, and explain the why, not just the what.',
   '- When the request needs steps (how to, procedure, setup), give numbered steps with concrete details: where to click, exact values, expected result, and how to verify it worked.',
   '- When you present data, features, comparisons, or metrics, use Markdown tables or structured lists instead of dense paragraphs.',
+  '- When generating or modifying code, visual reports, or HTML artifacts: the user views the rendered visual output interactively in real time inside the application interface. Do NOT tell them to copy and paste code into an "index.html" file or run a local server; discuss the changes and features directly as rendered on screen.',
   '- Short answers are for simple factual questions only; if the question is simple, stay brief, but never cut off information the user needs to act.',
   '- If something is uncertain or you could not verify it, say it explicitly instead of omitting it.',
   '- End answers to informational requests with the next practical step or what to watch out for.',
@@ -55,7 +56,7 @@ const RESEARCH_INSTRUCTIONS = [
   '- If the tools fail or return nothing useful, say so instead of guessing.',
   '- Once you have enough evidence, stop calling tools and write the final answer in the same turn; never end with only tool calls.',
   '- Research answers must be THOROUGH, not summaries: explain the findings step by step, include concrete data (numbers, dates, names), describe what each source says, note agreements and contradictions between sources, and state what could not be verified. Write a complete briefing the reader could act on without opening the links.',
-  '- Visual Reports: When the user requests a visual report, dashboard, or visual synthesis, format it as a self-contained, beautifully styled HTML document inside a ```html code block with interactive metric cards, comparison matrices, and clear sectioning.',
+  '- Visual Reports: When the user requests a visual report, dashboard, or visual synthesis, format it as a self-contained, beautifully styled HTML document inside a ```html code block with interactive metric cards, comparison matrices, and clear sectioning. The client renders this live on the user screen; do not include boilerplate instructions on how to save or open the file locally.',
 ].join('\n');
 
 const BUDGET_NOTE =
@@ -91,6 +92,7 @@ function composeEnvironmentSection(
     'Environment & Execution Context:',
     `- Host: OpenHer Chat client running on ${hostLabel}.`,
     '- Architecture: Single-user local-first application. All chats, legal cases, settings, and API keys are stored solely on the user device (IndexedDB/KeyVault). There is no intermediate server, proxy, or tracking backend.',
+    '- Interactive Live UI Runtime: The client interface contains an integrated sandbox that instantly renders HTML blocks (```html) and surgical patches (```html-patch) into live interactive applications directly on the user screen. The user is ALREADY seeing and interacting with the rendered output in real time. NEVER instruct the user to copy/paste code into an "index.html" file, nor to open it in a browser or set up a local server. Refer directly to the interactive elements visible on their screen.',
   ];
 
   const caps: string[] = [];

@@ -84,5 +84,37 @@ describe('CodeBlock', () => {
     expect(screen.getByTestId('live-html-artifact')).toBeInTheDocument();
     expect(screen.getByTestId('live-artifact-iframe')).toBeInTheDocument();
   });
+
+  it('colapsa artefactos HTML anteriores en tarjeta compacta y permite expandir/ocultar vista previa', () => {
+    const onExpand = vi.fn();
+    render(
+      <CodeBlock
+        code="<h1>Reporte de prueba</h1>"
+        language="html"
+        isLatestArtifact={false}
+        onExpand={onExpand}
+      />,
+    );
+
+    // Debe mostrar la tarjeta compacta y NO el iframe
+    expect(screen.getByTestId('collapsed-html-artifact')).toBeInTheDocument();
+    expect(screen.getByText('Reporte de prueba')).toBeInTheDocument();
+    expect(screen.getByText('Versión anterior')).toBeInTheDocument();
+    expect(screen.queryByTestId('live-artifact-iframe')).toBeNull();
+
+    // Pantalla completa dispara onExpand
+    fireEvent.click(screen.getByTestId('fullscreen-collapsed-artifact'));
+    expect(onExpand).toHaveBeenCalledWith('<h1>Reporte de prueba</h1>');
+
+    // Al hacer click en "Mostrar vista previa" se expande inline
+    fireEvent.click(screen.getByTestId('expand-collapsed-artifact'));
+    expect(screen.getByTestId('live-artifact-iframe')).toBeInTheDocument();
+    expect(screen.getByTestId('collapse-artifact-btn')).toBeInTheDocument();
+
+    // Al hacer click en "Ocultar vista previa" vuelve a colapsar
+    fireEvent.click(screen.getByTestId('collapse-artifact-btn'));
+    expect(screen.queryByTestId('live-artifact-iframe')).toBeNull();
+    expect(screen.getByTestId('collapsed-html-artifact')).toBeInTheDocument();
+  });
 });
 

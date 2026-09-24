@@ -262,5 +262,28 @@ describe('MessageList', () => {
 
     expect(screen.getByTestId('visual-report-dialog')).toBeInTheDocument();
   });
+
+  it('colapsa las visualizaciones HTML anteriores y solo mantiene activa y con callout la más reciente', () => {
+    const report1 = '```html\n<h1>Primer Reporte</h1>\n```';
+    const report2 = '```html\n<h1>Segundo Reporte Actualizado</h1>\n```';
+
+    const msg1 = assistantMessage('a1', [{ type: 'text', text: report1 }], { status: 'complete' });
+    const userMsg = userMessage('u1', 'Agregale más contenido');
+    const msg2 = assistantMessage('a2', [{ type: 'text', text: report2 }], { status: 'complete' });
+
+    render(<MessageList messages={[msg1, userMsg, msg2]} runStatus="idle" {...handlers()} />);
+
+    // El mensaje anterior debe estar colapsado
+    expect(screen.getByTestId('collapsed-html-artifact')).toBeInTheDocument();
+    expect(screen.getByText('Primer Reporte')).toBeInTheDocument();
+
+    // Solo debe haber UN callout y UN iframe activo en el DOM (el del último reporte a2)
+    const callouts = screen.getAllByTestId('visual-report-callout');
+    expect(callouts).toHaveLength(1);
+
+    const iframes = screen.getAllByTestId('live-artifact-iframe');
+    expect(iframes).toHaveLength(1);
+    expect(screen.getByText('Segundo Reporte Actualizado')).toBeInTheDocument();
+  });
 });
 

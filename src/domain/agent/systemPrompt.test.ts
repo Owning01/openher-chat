@@ -100,4 +100,11 @@ describe('buildSystemPrompt', () => {
     expect(prompt).toContain('Never output unstructured walls of plain text');
     expect(prompt).toContain('Markdown tables or structured lists');
   });
+
+  it('instruye al modelo sobre el entorno de ejecución HTML en vivo e interactivo', () => {
+    const prompt = buildSystemPrompt({ researchMode: false, now: NOW, locale: 'es' });
+    expect(prompt).toContain('Interactive Live UI Runtime:');
+    expect(prompt).toContain('The user is ALREADY seeing and interacting with the rendered output in real time');
+    expect(prompt).toContain('NEVER instruct the user to copy/paste code into an "index.html" file');
+  });
 });
