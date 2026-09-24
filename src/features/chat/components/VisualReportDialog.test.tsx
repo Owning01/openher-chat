@@ -1,10 +1,16 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { VisualReportDialog } from './VisualReportDialog';
+import { useArtifactStore } from '../state/artifactStore';
 
 describe('VisualReportDialog', () => {
+  beforeEach(() => {
+    useArtifactStore.setState({ artifacts: {}, latestHtml: null });
+  });
+
   afterEach(() => {
     cleanup();
+    useArtifactStore.setState({ artifacts: {}, latestHtml: null });
   });
   it('renderiza el iframe con el contenido HTML preparado cuando está abierto', () => {
     render(
@@ -98,4 +104,69 @@ describe('VisualReportDialog', () => {
     expect(onRequestEdit).toHaveBeenCalledWith('Agrega una tabla de costos', html);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('permite cambiar a la pestaña de código, editar directamente y guardar como nueva versión', () => {
+    render(
+      <VisualReportDialog
+        open={true}
+        onClose={vi.fn()}
+        rawHtml="<h1>Versión Inicial</h1>"
+        messageId="msg-edit-test"
+      />,
+    );
+
+    // Cambia a pestaña Código
+    const codeTab = screen.getByTestId('visual-report-tab-code');
+    fireEvent.click(codeTab);
+
+    // Verifica que el editor contiene el HTML
+    const editor = screen.getByTestId('visual-report-code-editor');
+    expect(editor).toHaveValue('<h1>Versión Inicial</h1>');
+
+    // Modifica el código
+    fireEvent.change(editor, { target: { value: '<h1>Versión Editada Manualmente</h1>' } });
+    const saveBtn = screen.getByTestId('visual-report-save-code');
+    fireEvent.click(saveBtn);
+
+    // Vuelve a la pestaña Preview y verifica que se actualizó
+    const previewTab = screen.getByTestId('visual-report-tab-preview');
+    fireEvent.click(previewTab);
+
+    const iframe = screen.getByTestId('visual-report-iframe');
+    expect(iframe.getAttribute('srcdoc')).toContain('<h1>Versión Editada Manualmente</h1>');
+  });
+
+  it('muestra el historial de versiones y permite restaurar una versión anterior', () => {
+    render(
+      <VisualReportDialog
+        open={true}
+        onClose={vi.fn()}
+        rawHtml="<h1>Versión 1</h1>"
+        messageId="msg-history-test"
+      />,
+    );
+
+    // Edita para crear v2
+    fireEvent.click(screen.getByTestId('visual-report-tab-code'));
+    const editor = screen.getByTestId('visual-report-code-editor');
+    fireEvent.change(editor, { target: { value: '<h1>Versión 2</h1>' } });
+    fireEvent.click(screen.getByTestId('visual-report-save-code'));
+
+    // Cambia a pestaña Historial
+    const historyTab = screen.getByTestId('visual-report-tab-history');
+    fireEvent.click(historyTab);
+
+    expect(screen.getByTestId('visual-report-history-view')).toBeInTheDocument();
+    expect(screen.getByText('Versión 1')).toBeInTheDocument();
+    expect(screen.getByText('Versión 2')).toBeInTheDocument();
+
+    // Restaura versión 1
+    const restoreBtn = screen.getByTestId('restore-version-1');
+    fireEvent.click(restoreBtn);
+
+    // Automáticamente vuelve a preview con el contenido restaurado
+    const iframe = screen.getByTestId('visual-report-iframe');
+    expect(iframe.getAttribute('srcdoc')).toContain('<h1>Versión 1</h1>');
+  });
 });
+

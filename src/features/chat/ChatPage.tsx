@@ -243,7 +243,24 @@ function ChatPageContent() {
   const handleRequestHtmlEdit = useCallback(
     (instruction: string, code: string): void => {
       void controller.send(
-        `Por favor, modifica el informe HTML anterior aplicando las siguientes instrucciones:\n\n${instruction}\n\nCódigo HTML actual como referencia:\n\`\`\`html\n${code}\n\`\`\``
+        `Por favor, modifica el informe HTML interactivo anterior aplicando la siguiente instrucción:
+
+${instruction}
+
+Puedes responder aplicando únicamente los cambios requeridos mediante un bloque de parche quirúrgico (SEARCH/REPLACE) sin reescribir todo el documento:
+\`\`\`html-patch
+<<<< SEARCH
+(código exacto original a reemplazar)
+====
+(nuevo código)
+>>>>
+\`\`\`
+O bien, si la reestructuración es completa, puedes proporcionar el bloque \`\`\`html actualizado.
+
+Código HTML actual de referencia:
+\`\`\`html
+${code}
+\`\`\``
       );
     },
     [controller.send],

@@ -5,6 +5,7 @@ import type { ChatMessage, MessageContent, ToolResult } from '@/domain/types/cha
 import { splitAttachmentBlocks } from '@/domain/chat/attachments';
 import { deanonymize } from '@/domain/legal/redaction';
 import type { RedactionMapping } from '@/domain/legal/redaction';
+import { resolveMessageHtml } from '@/domain/visualReport/htmlArtifacts';
 import { extractHtmlReport, pickDynamicTheme } from '@/domain/visualReport/reportThemes';
 import { useCitationGuard } from '@/features/legal/state/CitationGuardContext';
 import { useT } from '@/i18n/useT';
@@ -13,6 +14,7 @@ import { Markdown } from '@/shared/markdown/Markdown';
 import { Button } from '@/shared/ui';
 import { cn } from '@/shared/utils/cn';
 
+import { useArtifactStore } from '../state/artifactStore';
 import { useChatStore } from '../state/chatStore';
 import type { ChatRunStatus } from '../state/chatStore';
 import { MessageActions, MessageEditForm } from './MessageActions';
@@ -156,6 +158,7 @@ export function MessageList({
           open={Boolean(activeVisualReport)}
           rawHtml={currentVisualReportHtml}
           title={activeVisualReport.title}
+          messageId={activeVisualReport.id}
           initialThemeId={pickDynamicTheme(activeVisualReport.id).id}
           onRequestEdit={onRequestHtmlEdit}
           onClose={() => setActiveVisualReport(null)}
@@ -262,10 +265,13 @@ function MessageItemInner({
     setEditing(false);
   }, []);
 
-  const htmlReport = useMemo(
-    () => (!isUser && message.status === 'complete' ? extractHtmlReport(rawText) : null),
-    [isUser, message.status, rawText],
-  );
+  const htmlResolution = useMemo(() => {
+    if (isUser || message.status !== 'complete') return null;
+    const latest = useArtifactStore.getState().latestHtml;
+    return resolveMessageHtml(rawText, latest ?? undefined);
+  }, [isUser, message.status, rawText]);
+
+  const htmlReport = htmlResolution?.html ?? null;
 
   const handleVisualReportClick = useCallback(
     (messageId: string) => {
@@ -359,8 +365,21 @@ function MessageItemInner({
                   <Sparkles className="size-4 shrink-0" aria-hidden="true" />
                 </span>
                 <div>
-                  <div className="font-semibold text-text">{t('chat.viewVisualReport')}</div>
-                  <div className="text-[11px] text-muted">Informe interactivo renderizado en HTML</div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-text">{t('chat.viewVisualReport')}</span>
+                    {htmlResolution?.isPatch ? (
+                      <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                        {htmlResolution.patchCount === 1
+                          ? '1 cambio quirúrgico'
+                          : `${htmlResolution.patchCount} cambios quirúrgicos`}
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="text-[11px] text-muted">
+                    {htmlResolution?.isPatch
+                      ? 'Parche quirúrgico aplicado sobre el informe existente'
+                      : 'Informe interactivo renderizado en HTML'}
+                  </div>
                 </div>
               </div>
               <Button
