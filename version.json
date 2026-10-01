@@ -1,8 +1,8 @@
 {
-  "version": "1.7.5",
-  "versionCode": 18,
+  "version": "1.7.6",
+  "versionCode": 19,
   "apkUrl": "https://github.com/Owning01/openher-chat/releases/latest/download/OpenHer-Chat.apk",
-  "sha256": "76AA31FB1BEDA3610E8C0D5F0567673D36F7E694E488927D0D4889C096488E76",
-  "notes": "Skills: el asistente puede cargar y leer habilidades guardadas (Ajustes > Avanzado) cuando la tarea coincide. Incluye importar SKILL.md.",
-  "publishedAt": "2026-09-17"
+  "sha256": "16B3FC51625A972B48357ACC797A686E93B2B79008EB6E3A9847DC095DC7A0DB",
+  "notes": "Extensión de navegador: abre el chat con lo que seleccionaste, la página y una captura de tu pantalla. La app expone un gancho de intake para recibir ese contexto.",
+  "publishedAt": "2026-09-22"
 }

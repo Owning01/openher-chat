@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setLocale } from '@/i18n';
 
 import type { ChatRunStatus } from '../state/chatStore';
+import { installOpenHerIntake } from '../intake/openherIntake';
 import type { ComposerHandle } from './Composer';
 import { Composer, STOP_GUARD_MS } from './Composer';
 
@@ -292,6 +293,30 @@ describe('Composer — handle imperativo (archivos soltados fuera del formulario
     const sent = String(onSend.mock.calls[0]?.[0] ?? '');
     expect(sent).toContain('va adjunto');
     expect(sent).toContain('## Archivo adjunto: anexo.txt');
+  });
+
+  it('intake externo: agrega texto al final y adjunta la captura sin pisar el borrador', async () => {
+    const ref = createRef<ComposerHandle>();
+    render(<Composer ref={ref} status="idle" onSend={vi.fn()} onStop={vi.fn()} />);
+    const textarea = screen.getByRole('textbox', { name: 'Escribe un mensaje…' });
+
+    fireEvent.change(textarea, { target: { value: 'lo que escribí' } });
+    const cleanup = installOpenHerIntake({
+      appendText: (next) => ref.current?.appendText(next),
+      addFiles: async (files) => {
+        await ref.current?.addFiles(files);
+      },
+    });
+    await act(async () => {
+      await window.__openherIntake?.({
+        text: 'Contexto desde otra pestaña',
+        imageDataUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==',
+      });
+    });
+    cleanup();
+
+    expect(textarea).toHaveValue('lo que escribí\n\nContexto desde otra pestaña');
+    expect(await screen.findByText('captura.png')).toBeInTheDocument();
   });
 
   it('reusa los avisos de rechazo del composer', async () => {

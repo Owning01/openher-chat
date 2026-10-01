@@ -126,6 +126,8 @@ export interface ComposerProps {
 export interface ComposerHandle {
   /** Reusa el mismo camino que el clip y el drop interno (límites y avisos incluidos). */
   addFiles(files: readonly File[]): Promise<void>;
+  /** Agrega texto al final del composer sin pisar lo que el usuario ya escribió. */
+  appendText(next: string): void;
 }
 
 /** Categorías de redacción en orden estable para el preview (mismo orden que `redaction.ts`). */
@@ -343,7 +345,13 @@ export const Composer = forwardRef<ComposerHandle, ComposerProps>(function Compo
   );
 
   // Superficie imperativa para los adjuntos soltados fuera del formulario.
-  useImperativeHandle(ref, () => ({ addFiles }), [addFiles]);
+  /** Intake externo (extensión del navegador): agrega texto al final, nunca pisa lo escrito. */
+  const appendText = useCallback((next: string): void => {
+    if (next === '') return;
+    setText((current) => (current.trim() === '' ? next : `${current.replace(/\s+$/, '')}\n\n${next}`));
+  }, []);
+
+  useImperativeHandle(ref, () => ({ addFiles, appendText }), [addFiles, appendText]);
 
   const handleConsentChange = (accepted: boolean): void => {
     setSessionConsent(accepted);

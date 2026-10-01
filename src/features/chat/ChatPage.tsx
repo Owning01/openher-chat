@@ -25,6 +25,7 @@ import type { CircuitStage } from './components/CircuitDialog';
 import { Composer } from './components/Composer';
 import { messageText } from './components/MessageList';
 import type { ComposerHandle, LegalRedactionCounts } from './components/Composer';
+import { installOpenHerIntake } from './intake/openherIntake';
 import { EmptyChat } from './components/EmptyChat';
 import { ErrorBanner } from './components/ErrorBanner';
 import { MessageList } from './components/MessageList';
@@ -154,6 +155,20 @@ function ChatPageContent() {
     const files = Array.from(event.dataTransfer.files);
     if (files.length > 0) void composerRef.current?.addFiles(files);
   };
+
+  // Intake externo (extensión del navegador): expone `window.__openherIntake`
+  // mientras el chat está montado, para que la extensión pegue texto y capturas
+  // en el composer sin pasar por el portapapeles.
+  useEffect(
+    () =>
+      installOpenHerIntake({
+        appendText: (next) => composerRef.current?.appendText(next),
+        addFiles: async (files) => {
+          await composerRef.current?.addFiles(files);
+        },
+      }),
+    [],
+  );
 
   const warning =
     appSettings === null
